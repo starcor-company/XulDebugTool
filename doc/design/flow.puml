@@ -1,0 +1,21 @@
+@startuml
+start
+:连接设备;
+if (连接成功?) then (Yes)
+    fork
+        :列出页面;
+        :请求并展示页面详情;
+        :选择控件并展示属性/样式;
+        :修改属性/样式;
+    fork again
+        :列出数据;
+        :执行数据请求并展示;
+    fork again
+        :列出插件;
+    end fork
+else (No)
+    :显示错误日志;
+    stop
+endif
+stop
+@enduml
