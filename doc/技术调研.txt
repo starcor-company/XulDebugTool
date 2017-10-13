@@ -1,0 +1,44 @@
+Tools实现方式
+
+1.Python+GUI
+
+PyQt
+PyQt是一个创建GUI应用程序的工具包。它是Python编程语言和Qt库的成功融合。Qt库是目前最强大的库之一。PyQt是由Phil Thompson 开发。
+PyQt实现了一个Python模块集。它有超过300类，将近6000个函数和方法。它是一个多平台的工具包，可以运行在所有主要操作系统上，包括UNIX，Windows和Mac。
+QT-开发者  https://www1.qt.io/cn_old/developers/
+
+Python+PyQt 
+桌面图形
+
+PyQt5资料
+https://pythonspot.com/en/pyqt5/
+http://www.cnblogs.com/archisama/tag/PyQt5/
+
+2.web Python
+
+将GUI的渲染交给浏览器. 将逻辑的处理交给Python.
+HTML5+JS+CSS
+
+
+3.IDEA插件
+
+插件开发手册(英文)
+http://www.jetbrains.org/intellij/sdk/docs/basics/getting_started.html
+JAVA语言来开发
+
+4.Chrome插件
+HTML5+JS+CSS,遵循Chrome手册标准即可
+https://developer.chrome.com/extensions/getstarted
+
+
+学习角度来分析
+1.能学习用QT来编写界面，python处理数据
+2.能学习前端技术，及PythonWeb开发
+3.能学习到插件的整个开发流程，也应该是对安卓开发人员最容易上手的一种方式
+4.纯前端
+
+使用角度
+1.需要发布成exe并进行安装
+2.浏览器直接访问
+3.安装到idea开发工具中使用
+4.浏览器安装该插件后使用
