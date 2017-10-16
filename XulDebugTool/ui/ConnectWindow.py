@@ -56,9 +56,9 @@ class ConnectWindow(BaseWindow):
         if ip == '' or port == '':
             self.statusBar().showMessage('请输出正确的地址or端口.')
         else:
-            t = ConnectDeviceThread(ip)
-            t.start()
-            t.finishSignal.connect(self.onConnect)
+            self.t = ConnectDeviceThread(ip)
+            self.t.finishSignal.connect(self.onConnect)
+            self.t.start()
 
     def onConnect(self, result):
         for r in result:
