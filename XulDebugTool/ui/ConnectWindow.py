@@ -11,7 +11,7 @@ author: Kenshin
 last edited: 2017.10.14
 """
 
-from PyQt5.QtCore import pyqtSlot, Qt
+from PyQt5.QtCore import pyqtSlot, Qt, QPropertyAnimation, QTimer
 from PyQt5.QtWidgets import QPushButton, QLineEdit, QLabel, QTextEdit
 from XulDebugTool.ui.BaseWindow import BaseWindow
 from XulDebugTool.utils.CmdExecutor import CmdExecutor
@@ -22,6 +22,10 @@ class ConnectWindow(BaseWindow):
         super().__init__()
         self.cmdExecutor = CmdExecutor()
         self.cmdExecutor.finishSignal.connect(self.onCmdExectued)
+        self.timer = QTimer()
+        self.timer.timeout.connect(self.updateButtonText)
+        self.updateCount = 0
+        self.connectState = ['.', '..', '...']
         self.initUI()
         self.show()
 
@@ -50,6 +54,7 @@ class ConnectWindow(BaseWindow):
 
         self.connectButton = QPushButton('connect', self)
         self.connectButton.move(180, 90)
+        self.connectButton.setGeometry(180, 90, 120, 25)
         self.connectButton.clicked.connect(self.onConnectClick)
 
         self.detailLabel = QPushButton(self)
@@ -71,10 +76,10 @@ class ConnectWindow(BaseWindow):
             self.detailEdit.append('请输出正确的地址or端口.')
             print('请输出正确的地址or端口.')
         else:
+            self.timer.start(1000)
             self.currentCmd = 'adb connect ' + ip
             self.detailEdit.append(self.currentCmd)
             self.connectButton.setEnabled(False)
-            self.connectButton.setText('connecting...')
             self.detailEdit.append('connecting...')
             self.cmdExecutor.exec(self.currentCmd)
 
@@ -83,8 +88,10 @@ class ConnectWindow(BaseWindow):
             self.detailEdit.append(r)
             print(r)
         if self.currentCmd.startswith('adb connect'):
+            self.timer.stop()
             self.connectButton.setEnabled(True)
             self.connectButton.setText('connect')
+            self.connectButton.setStyleSheet("QPushButton{text-align : middle;}")
             self.checkDeviceStatus()
         elif self.currentCmd == 'adb devices':
             pass
@@ -104,3 +111,10 @@ class ConnectWindow(BaseWindow):
         else:
             self.setFixedSize(460, 150)
             self.detailLabel.setText('↓detail')
+
+    def updateButtonText(self):
+        self.connectButton.setStyleSheet("QPushButton{text-align : left;}")
+        self.connectButton.setText(' connecting' + self.connectState[self.updateCount])
+        self.updateCount += 1
+        if self.updateCount == 3:
+            self.updateCount = 0
