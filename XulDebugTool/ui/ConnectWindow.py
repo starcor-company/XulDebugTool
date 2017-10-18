@@ -30,68 +30,68 @@ class ConnectWindow(BaseWindow):
         self.setWindowFlags(Qt.WindowCloseButtonHint)
         self.setFixedSize(460, 150)
 
-        ip_label = QLabel(self)
-        ip_label.setText('ip:')
-        ip_label.move(45, 15)
+        ipLabel = QLabel(self)
+        ipLabel.setText('ip:')
+        ipLabel.move(45, 15)
 
-        port_label = QLabel(self)
-        port_label.setText('port:')
-        port_label.move(28, 45)
+        portLabel = QLabel(self)
+        portLabel.setText('port:')
+        portLabel.move(28, 45)
 
-        self.ip_editbox = QLineEdit(self)
-        self.ip_editbox.move(80, 20)
-        self.ip_editbox.resize(280, 25)
-        self.ip_editbox.setText('172.31.11.144')
+        self.ipEditbox = QLineEdit(self)
+        self.ipEditbox.move(80, 20)
+        self.ipEditbox.resize(280, 25)
+        self.ipEditbox.setText('172.31.11.144')
 
-        self.port_editbox = QLineEdit(self)
-        self.port_editbox.move(80, 50)
-        self.port_editbox.resize(100, 25)
-        self.port_editbox.setText('55550')
+        self.portEditbox = QLineEdit(self)
+        self.portEditbox.move(80, 50)
+        self.portEditbox.resize(100, 25)
+        self.portEditbox.setText('55550')
 
-        self.connect_button = QPushButton('connect', self)
-        self.connect_button.move(180, 90)
-        self.connect_button.clicked.connect(self.onConnectClick)
+        self.connectButton = QPushButton('connect', self)
+        self.connectButton.move(180, 90)
+        self.connectButton.clicked.connect(self.onConnectClick)
 
-        self.detail_label = QPushButton(self)
-        self.detail_label.setText('↓detail')
-        self.detail_label.move(350, 110)
-        self.detail_label.setFlat(True)
-        self.detail_label.setStyleSheet("QPushButton{background: transparent;}");
-        self.detail_label.clicked.connect(self.onDetailClick)
+        self.detailLabel = QPushButton(self)
+        self.detailLabel.setText('↓detail')
+        self.detailLabel.move(350, 110)
+        self.detailLabel.setFlat(True)
+        self.detailLabel.setStyleSheet("QPushButton{background: transparent;}");
+        self.detailLabel.clicked.connect(self.onDetailClick)
 
-        self.detail_edit = QTextEdit(self)
-        self.detail_edit.move(25, 150)
-        self.detail_edit.resize(420, 180)
+        self.detailEdit = QTextEdit(self)
+        self.detailEdit.move(25, 150)
+        self.detailEdit.resize(420, 180)
 
     @pyqtSlot()
     def onConnectClick(self):
-        ip = self.ip_editbox.text()
-        port = self.port_editbox.text()
+        ip = self.ipEditbox.text()
+        port = self.portEditbox.text()
         if ip == '' or port == '':
-            self.detail_edit.append('请输出正确的地址or端口.')
+            self.detailEdit.append('请输出正确的地址or端口.')
             print('请输出正确的地址or端口.')
         else:
             self.currentCmd = 'adb connect ' + ip
-            self.detail_edit.append(self.currentCmd)
-            self.connect_button.setEnabled(False)
-            self.connect_button.setText('connecting...')
-            self.detail_edit.append('connecting...')
+            self.detailEdit.append(self.currentCmd)
+            self.connectButton.setEnabled(False)
+            self.connectButton.setText('connecting...')
+            self.detailEdit.append('connecting...')
             self.cmdExecutor.exec(self.currentCmd)
 
     def onCmdExectued(self, result):
         for r in result:
-            self.detail_edit.append(r)
+            self.detailEdit.append(r)
             print(r)
         if self.currentCmd.startswith('adb connect'):
-            self.connect_button.setEnabled(True)
-            self.connect_button.setText('connect')
+            self.connectButton.setEnabled(True)
+            self.connectButton.setText('connect')
             self.checkDeviceStatus()
         elif self.currentCmd == 'adb devices':
             pass
 
     def checkDeviceStatus(self):
         self.currentCmd = 'adb devices'
-        self.detail_edit.append(self.currentCmd)
+        self.detailEdit.append(self.currentCmd)
         self.cmdExecutor.exec(self.currentCmd)
 
     @pyqtSlot()
@@ -99,8 +99,8 @@ class ConnectWindow(BaseWindow):
         # show log
         if self.height() == 150:
             self.setFixedSize(460, 350)
-            self.detail_label.setText('↑detail')
+            self.detailLabel.setText('↑detail')
         # hide log
         else:
             self.setFixedSize(460, 150)
-            self.detail_label.setText('↓detail')
+            self.detailLabel.setText('↓detail')
