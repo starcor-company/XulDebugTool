@@ -153,6 +153,9 @@ class ConnectWindow(BaseWindow):
             conn.close()
         except Exception:
             return []
+        finally:
+            cursor.close()
+            conn.close()
         return result
 
     def addDeviceToDB(self):
@@ -164,8 +167,10 @@ class ConnectWindow(BaseWindow):
             cursor.execute('create table if not exists device (name varchar(50) primary key)')
             if self.ip != '':
                 cursor.execute('insert into device (name) values (\'' + device + '\')')
-            cursor.close()
             conn.commit()
-            conn.close()
         except Exception as e:
             print(e)
+        finally:
+            cursor.close()
+            conn.close()
+
