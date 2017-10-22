@@ -56,7 +56,7 @@ class ConnectWindow(BaseWindow):
         self.ipComboBox.setEditable(True)
         self.ipComboBox.setMaxVisibleItems(5)
         self.ipComboBox.setInsertPolicy(QComboBox.InsertAtTop)
-        # self.ipComboBox.addItem('172.31.11.144')
+        # self.ipComboBox.addItem('localhost')
         self.ipComboBox.setToolTip('''格式: ip[:adb port][:xul port]
         default adb port is 5555
         default xul port is 55550''')
@@ -98,9 +98,9 @@ class ConnectWindow(BaseWindow):
         except IndexError:
             self.xulPort = '55550'
 
-        self.timer.start(1000)
+        self.timer.start(500)
         self.currentCmd = 'adb connect ' + self.ip + ':' + self.adbPort
-        self.detailEdit.append(self.currentCmd)
+        self.detailEdit.append('# ' + self.currentCmd)
         self.connectButton.setEnabled(False)
         self.detailEdit.append('connecting...')
         self.cmdExecutor.exec(self.currentCmd)
@@ -110,19 +110,24 @@ class ConnectWindow(BaseWindow):
             self.detailEdit.append(r)
             print(r)
         if self.currentCmd.startswith('adb connect'):
+            self.checkDeviceStatus()
+        elif self.currentCmd == 'adb devices':
+            for r in result:
+                # 找到连接成功的设备
+                if self.ip in r:
+                    # 存入该设备到历史记录
+                    self.addDeviceToDB()
+                    if self.isXulDebugServerAlive():
+                        self.startMainWindow()
+            # 重置connect button
             self.timer.stop()
             self.connectButton.setEnabled(True)
             self.connectButton.setText('connect')
             self.connectButton.setStyleSheet("QPushButton{text-align : middle;}")
-            self.checkDeviceStatus()
-        elif self.currentCmd == 'adb devices':
-            for r in result:
-                if self.ip in r:
-                    self.addDeviceToDB()
 
     def checkDeviceStatus(self):
         self.currentCmd = 'adb devices'
-        self.detailEdit.append(self.currentCmd)
+        self.detailEdit.append('# ' + self.currentCmd)
         self.cmdExecutor.exec(self.currentCmd)
 
     @pyqtSlot()
@@ -149,8 +154,6 @@ class ConnectWindow(BaseWindow):
             cursor = conn.cursor()
             cursor.execute('select * from device')
             result = cursor.fetchall()
-            cursor.close()
-            conn.close()
         except Exception:
             return []
         finally:
@@ -159,7 +162,8 @@ class ConnectWindow(BaseWindow):
         return result
 
     def addDeviceToDB(self):
-        device = self.ip + ':' + self.adbPort
+        device = self.ip + ':' + self.adbPort + ':' + self.xulPort
+        self.detailEdit.append('# add ' + device + ' to db.')
         print('add ' + device + ' to db.')
         try:
             conn = sqlite3.connect('XulDebugTool.db')
@@ -174,3 +178,20 @@ class ConnectWindow(BaseWindow):
             cursor.close()
             conn.close()
 
+    def isXulDebugServerAlive(self):
+        from urllib.request import urlopen
+        try:
+            url = 'http://' + self.ip + ':' + self.xulPort + '/api/list-pages'
+            print('Http Request: ' + url)
+            self.detailEdit.append('# open url: ' + url)
+            httpCode = urlopen(url).getcode()
+            print('Http Response: ' + str(httpCode))
+            self.detailEdit.append('Http Response: ' + str(httpCode))
+        except Exception as e:
+            print(e)
+        return httpCode == 200
+
+    def startMainWindow(self):
+        print('Start main window.')
+        self.detailEdit.append('# Start main window.')
+        pass
