@@ -11,21 +11,33 @@ author: Kenshin
 last edited: 2017.10.14
 """
 
-from PyQt5.QtCore import pyqtSlot, Qt, QPropertyAnimation, QTimer
-from PyQt5.QtWidgets import QPushButton, QLineEdit, QLabel, QTextEdit
+from PyQt5.QtCore import pyqtSlot, Qt, QTimer
+from PyQt5.QtWidgets import QPushButton, QLineEdit, QLabel, QTextEdit, QComboBox
 from XulDebugTool.ui.BaseWindow import BaseWindow
 from XulDebugTool.utils.CmdExecutor import CmdExecutor
+import sqlite3
 
 
 class ConnectWindow(BaseWindow):
     def __init__(self):
         super().__init__()
+        # 命令行执行器
         self.cmdExecutor = CmdExecutor()
         self.cmdExecutor.finishSignal.connect(self.onCmdExectued)
+
+        # 连接动画需要的timer, 1秒触发一次
         self.timer = QTimer()
         self.timer.timeout.connect(self.updateButtonText)
+
+        # 文字动画相关变量
         self.updateCount = 0
         self.connectState = ['.', '..', '...']
+
+        # ip, adb port, xul port
+        self.ip = ''
+        self.adbPort = ''
+        self.xulPort = ''
+
         self.initUI()
         self.show()
 
@@ -36,21 +48,20 @@ class ConnectWindow(BaseWindow):
 
         ipLabel = QLabel(self)
         ipLabel.setText('ip:')
-        ipLabel.move(45, 15)
+        ipLabel.move(45, 30)
 
-        portLabel = QLabel(self)
-        portLabel.setText('port:')
-        portLabel.move(28, 45)
-
-        self.ipEditbox = QLineEdit(self)
-        self.ipEditbox.move(80, 20)
-        self.ipEditbox.resize(280, 25)
-        self.ipEditbox.setText('172.31.11.144')
-
-        self.portEditbox = QLineEdit(self)
-        self.portEditbox.move(80, 50)
-        self.portEditbox.resize(100, 25)
-        self.portEditbox.setText('55550')
+        self.ipComboBox = QComboBox(self)
+        self.ipComboBox.move(80, 30)
+        self.ipComboBox.resize(280, 25)
+        self.ipComboBox.setEditable(True)
+        self.ipComboBox.setMaxVisibleItems(5)
+        self.ipComboBox.setInsertPolicy(QComboBox.InsertAtTop)
+        # self.ipComboBox.addItem('172.31.11.144')
+        self.ipComboBox.setToolTip('''格式: ip[:adb port][:xul port]
+        default adb port is 5555
+        default xul port is 55550''')
+        for device in self.getDevicesFromDB():
+            self.ipComboBox.addItem(device[0])
 
         self.connectButton = QPushButton('connect', self)
         self.connectButton.move(180, 90)
@@ -61,7 +72,7 @@ class ConnectWindow(BaseWindow):
         self.detailLabel.setText('↓detail')
         self.detailLabel.move(350, 110)
         self.detailLabel.setFlat(True)
-        self.detailLabel.setStyleSheet("QPushButton{background: transparent;}");
+        self.detailLabel.setStyleSheet("QPushButton{background: transparent;}")
         self.detailLabel.clicked.connect(self.onDetailClick)
 
         self.detailEdit = QTextEdit(self)
@@ -70,18 +81,29 @@ class ConnectWindow(BaseWindow):
 
     @pyqtSlot()
     def onConnectClick(self):
-        ip = self.ipEditbox.text()
-        port = self.portEditbox.text()
-        if ip == '' or port == '':
-            self.detailEdit.append('请输出正确的地址or端口.')
-            print('请输出正确的地址or端口.')
-        else:
-            self.timer.start(1000)
-            self.currentCmd = 'adb connect ' + ip
-            self.detailEdit.append(self.currentCmd)
-            self.connectButton.setEnabled(False)
-            self.detailEdit.append('connecting...')
-            self.cmdExecutor.exec(self.currentCmd)
+        comboBoxText = self.ipComboBox.currentText()
+        self.ip = comboBoxText.split(':')[0]
+        if self.ip == '':
+            self.detailEdit.append('ip非法,请输出正确的ip地址,格式:')
+            self.detailEdit.append('ip[:adb port][:xul port]')
+            self.detailEdit.append('default adb port:5555')
+            self.detailEdit.append('default xul port:55550')
+            return
+        try:
+            self.adbPort = comboBoxText.split(':')[1]
+        except IndexError:
+            self.adbPort = '5555'
+        try:
+            self.xulPort = comboBoxText.split(':')[2]
+        except IndexError:
+            self.xulPort = '55550'
+
+        self.timer.start(1000)
+        self.currentCmd = 'adb connect ' + self.ip + ':' + self.adbPort
+        self.detailEdit.append(self.currentCmd)
+        self.connectButton.setEnabled(False)
+        self.detailEdit.append('connecting...')
+        self.cmdExecutor.exec(self.currentCmd)
 
     def onCmdExectued(self, result):
         for r in result:
@@ -94,7 +116,9 @@ class ConnectWindow(BaseWindow):
             self.connectButton.setStyleSheet("QPushButton{text-align : middle;}")
             self.checkDeviceStatus()
         elif self.currentCmd == 'adb devices':
-            pass
+            for r in result:
+                if self.ip in r:
+                    self.addDeviceToDB()
 
     def checkDeviceStatus(self):
         self.currentCmd = 'adb devices'
@@ -118,3 +142,30 @@ class ConnectWindow(BaseWindow):
         self.updateCount += 1
         if self.updateCount == 3:
             self.updateCount = 0
+
+    def getDevicesFromDB(self):
+        try:
+            conn = sqlite3.connect('XulDebugTool.db')
+            cursor = conn.cursor()
+            cursor.execute('select * from device')
+            result = cursor.fetchall()
+            cursor.close()
+            conn.close()
+        except Exception:
+            return []
+        return result
+
+    def addDeviceToDB(self):
+        device = self.ip + ':' + self.adbPort
+        print('add ' + device + ' to db.')
+        try:
+            conn = sqlite3.connect('XulDebugTool.db')
+            cursor = conn.cursor()
+            cursor.execute('create table if not exists device (name varchar(500) primary key)')
+            if self.ip != '':
+                cursor.execute('insert into device (name) values (\'' + device + '\')')
+            cursor.close()
+            conn.commit()
+            conn.close()
+        except Exception as e:
+            print(e)
