@@ -14,6 +14,7 @@ last edited: 2017.10.14
 from PyQt5.QtCore import pyqtSlot, Qt, QTimer
 from PyQt5.QtWidgets import QPushButton, QLineEdit, QLabel, QTextEdit, QComboBox
 from XulDebugTool.ui.BaseWindow import BaseWindow
+from XulDebugTool.ui.MainWindow import MainWindow
 from XulDebugTool.utils.CmdExecutor import CmdExecutor
 import sqlite3
 
@@ -78,9 +79,15 @@ class ConnectWindow(BaseWindow):
         self.detailEdit = QTextEdit(self)
         self.detailEdit.move(25, 150)
         self.detailEdit.resize(420, 180)
+        super().initWindow()
 
     @pyqtSlot()
     def onConnectClick(self):
+        # if True:
+        #     self.mainWindow = MainWindow()
+        #     self.mainWindow.show()
+        #     self.close()
+        #     return
         comboBoxText = self.ipComboBox.currentText()
         self.ip = comboBoxText.split(':')[0]
         if self.ip == '':
