@@ -11,21 +11,18 @@ author: Kenshin
 last edited: 2017.10.14
 """
 
-import os
 from PyQt5.QtWidgets import QMainWindow, QDesktopWidget
-from PyQt5.QtGui import QIcon
+from XulDebugTool.utils.IconTool import IconTool
 
 
 class BaseWindow(QMainWindow):
     def __init__(self):
         super().__init__()
         self.title = 'XulDebugTool'
-        self.initWindow()
 
     def initWindow(self):
         self.setWindowTitle(self.title)
-        iconPath = os.path.join('..', 'resources', 'images', 'icon.png')
-        self.setWindowIcon(QIcon(iconPath))
+        self.setWindowIcon(IconTool.buildQIcon('icon.png'))
         self.center()
 
     # 设置窗口居中
