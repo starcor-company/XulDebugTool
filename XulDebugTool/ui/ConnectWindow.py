@@ -201,4 +201,6 @@ class ConnectWindow(BaseWindow):
     def startMainWindow(self):
         print('Start main window.')
         self.detailEdit.append('# Start main window.')
-        pass
+        self.mainWindow = MainWindow()
+        self.mainWindow.show()
+        self.close()
