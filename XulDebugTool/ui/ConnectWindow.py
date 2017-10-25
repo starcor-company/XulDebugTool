@@ -196,6 +196,8 @@ class ConnectWindow(BaseWindow):
             self.detailEdit.append('Http Response: ' + str(httpCode))
         except Exception as e:
             print(e)
+            self.detailEdit.append(str(e))
+            return False
         return httpCode == 200
 
     def startMainWindow(self):
