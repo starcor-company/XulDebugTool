@@ -16,7 +16,8 @@ from XulDebugTool.ui.widget.CustomHeaderView import CustomHeaderView
 from XulDebugTool.ui.widget.SearchBarQLineEdit import SearchBarQLineEdit
 from XulDebugTool.utils.IconTool import IconTool
 from PyQt5.QtWidgets import *
-from PyQt5.QtCore import Qt
+from PyQt5.QtCore import Qt, QUrl
+from PyQt5.QtWebEngineWidgets import QWebEnginePage, QWebEngineView
 
 import XulDebugTool.model.model as model
 
@@ -126,7 +127,9 @@ class MainWindow(BaseWindow):
         self.searchHolder.layout().setContentsMargins(6, 6, 6, 0)
 
         middleContainer.stackedWidget = QStackedWidget()
-        middleContainer.stackedWidget.addWidget(QLabel('tab1 content'))
+        browser = QWebEngineView()
+        browser.load(QUrl('https://github.com/starcor-company/XulDebugTool'))
+        middleContainer.stackedWidget.addWidget(browser)
         middleContainer.stackedWidget.addWidget(QLabel('tab2 content'))
 
         self.tabBar.currentChanged.connect(lambda: middleContainer.stackedWidget.setCurrentIndex(
