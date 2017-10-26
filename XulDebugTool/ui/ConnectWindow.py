@@ -186,19 +186,18 @@ class ConnectWindow(BaseWindow):
             conn.close()
 
     def isXulDebugServerAlive(self):
-        from urllib.request import urlopen
+        import urllib3
         try:
             url = 'http://' + self.ip + ':' + self.xulPort + '/api/list-pages'
-            print('Http Request: ' + url)
-            self.detailEdit.append('# open url: ' + url)
-            httpCode = urlopen(url).getcode()
-            print('Http Response: ' + str(httpCode))
-            self.detailEdit.append('Http Response: ' + str(httpCode))
+            http = urllib3.PoolManager()
+            r = http.request('GET', url)
+            self.detailEdit.append('Http Response: ' + str(r.status))
+            print(r.status, r.data)
         except Exception as e:
             print(e)
             self.detailEdit.append(str(e))
             return False
-        return httpCode == 200
+        return r.status == 200
 
     def startMainWindow(self):
         print('Start main window.')
