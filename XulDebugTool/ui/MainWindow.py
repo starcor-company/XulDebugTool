@@ -21,6 +21,7 @@ from PyQt5.QtGui import *
 from PyQt5.QtWebEngineWidgets import QWebEnginePage, QWebEngineView
 
 import XulDebugTool.model.model as model
+import pyperclip
 
 
 class MainWindow(BaseWindow):
@@ -162,7 +163,6 @@ class MainWindow(BaseWindow):
 
     @pyqtSlot(QPoint)
     def openContextMenu(self, point):
-        import pyperclip
         index = self.treeView.indexAt(point)
         if not index.isValid():
             return
