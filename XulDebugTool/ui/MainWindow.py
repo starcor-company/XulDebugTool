@@ -74,7 +74,6 @@ class MainWindow(BaseWindow):
         self.treeView.setVerticalScrollMode(QAbstractItemView.ScrollPerPixel)
 
         leftContainer = QWidget()
-        leftContainer.setMaximumWidth(255)
         layout = QVBoxLayout()
         layout.setContentsMargins(0, 0, 6, 0)  # left, top, right, bottom
         layout.addWidget(self.treeView)
