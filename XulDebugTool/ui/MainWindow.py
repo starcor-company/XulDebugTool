@@ -16,7 +16,8 @@ from XulDebugTool.ui.widget.CustomHeaderView import CustomHeaderView
 from XulDebugTool.ui.widget.SearchBarQLineEdit import SearchBarQLineEdit
 from XulDebugTool.utils.IconTool import IconTool
 from PyQt5.QtWidgets import *
-from PyQt5.QtCore import Qt, QUrl
+from PyQt5.QtCore import *
+from PyQt5.QtGui import *
 from PyQt5.QtWebEngineWidgets import QWebEnginePage, QWebEngineView
 
 import XulDebugTool.model.model as model
@@ -63,8 +64,8 @@ class MainWindow(BaseWindow):
         self.treeView = ExpandTreeView(self.itemModel)
         self.treeView.setItemDelegate(model.BookmarkDelegate(self, self.itemModel))
         self.treeView.setContextMenuPolicy(Qt.CustomContextMenu)
-        # self.treeView.customContextMenuRequested.connect(self.open_edit_shortcut_contextmenu)
-        # self.treeView.clicked.connect(lambda i: self.focus_index(self.filter_proxy_index_from_model_index(i)))
+        self.treeView.customContextMenuRequested.connect(self.openContextMenu)
+        self.treeView.clicked.connect(self.getDebugData)
         self.treeView.setEditTriggers(QAbstractItemView.NoEditTriggers)
         self.treeView.setHeader(CustomHeaderView('Model'))
         self.treeView.hideColumn(1)
@@ -158,3 +159,19 @@ class MainWindow(BaseWindow):
         self.mainSplitter.setStretchFactor(2, 3)
 
         self.setCentralWidget(self.mainSplitter)
+
+    @pyqtSlot(QPoint)
+    def openContextMenu(self, point):
+        import pyperclip
+        index = self.treeView.indexAt(point)
+        if not index.isValid():
+            return
+        item = index.internalPointer()
+        menu = QMenu()
+        copyAction = QAction(IconTool.buildQIcon('copy.png'), 'Copy to Clipboard', self,
+                             triggered=lambda: pyperclip.copy('%s' % item.text))
+        menu.addAction(copyAction)
+        menu.exec_(self.treeView.viewport().mapToGlobal(point))
+
+    def getDebugData(self):
+        pass
