@@ -84,11 +84,6 @@ class ConnectWindow(BaseWindow):
 
     @pyqtSlot()
     def onConnectClick(self):
-        # if True:
-        #     self.mainWindow = MainWindow()
-        #     self.mainWindow.show()
-        #     self.close()
-        #     return
         comboBoxText = self.ipComboBox.currentText()
         self.ip = comboBoxText.split(':')[0]
         if self.ip == '':

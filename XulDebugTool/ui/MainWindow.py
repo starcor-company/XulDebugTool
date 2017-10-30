@@ -15,10 +15,11 @@ from XulDebugTool.ui.widget.ExpandTreeView import ExpandTreeView
 from XulDebugTool.ui.widget.CustomHeaderView import CustomHeaderView
 from XulDebugTool.ui.widget.SearchBarQLineEdit import SearchBarQLineEdit
 from XulDebugTool.utils.IconTool import IconTool
+from XulDebugTool.utils.XulDebugServerHelper import XulDebugServerHelper
 from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
-from PyQt5.QtWebEngineWidgets import QWebEnginePage, QWebEngineView
+from PyQt5.QtWebEngineWidgets import QWebEngineView
 
 import XulDebugTool.model.model as model
 import pyperclip
@@ -128,9 +129,9 @@ class MainWindow(BaseWindow):
         self.searchHolder.layout().setContentsMargins(6, 6, 6, 0)
 
         middleContainer.stackedWidget = QStackedWidget()
-        browser = QWebEngineView()
-        browser.load(QUrl('https://github.com/starcor-company/XulDebugTool'))
-        middleContainer.stackedWidget.addWidget(browser)
+        self.browser = QWebEngineView()
+        self.browser.load(QUrl(XulDebugServerHelper.HOST + 'list-pages'))
+        middleContainer.stackedWidget.addWidget(self.browser)
         middleContainer.stackedWidget.addWidget(QLabel('tab2 content'))
 
         self.tabBar.currentChanged.connect(lambda: middleContainer.stackedWidget.setCurrentIndex(
@@ -173,5 +174,22 @@ class MainWindow(BaseWindow):
         menu.addAction(copyAction)
         menu.exec_(self.treeView.viewport().mapToGlobal(point))
 
-    def getDebugData(self):
-        pass
+    @pyqtSlot(QModelIndex)
+    def getDebugData(self, index):
+        item = index.internalPointer()
+
+        if item.parentItem.text == '/':  # page/data/plugin节点
+            if item.text == 'page':
+                self.browser.load(QUrl(XulDebugServerHelper.HOST + 'list-pages'))
+            elif item.text == 'data':
+                self.browser.load(QUrl(XulDebugServerHelper.HOST + 'list-user-objects'))
+                pass
+            elif item.text == 'plugin':
+                pass
+        elif item.parentItem.text == 'page':  # page下的子节点
+            pageId = item.text[item.text.find('(') + 1:-1]
+            self.browser.load(QUrl(XulDebugServerHelper.HOST + 'get-layout/' + pageId))
+        elif item.parentItem.text == 'data':  # data下的子节点
+            pass
+        elif item.parentItem.text == 'plugin':  # plugin下的子节点
+            pass
