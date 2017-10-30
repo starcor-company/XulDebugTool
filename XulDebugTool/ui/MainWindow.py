@@ -61,10 +61,10 @@ class MainWindow(BaseWindow):
     def initLayout(self):
         # ----------------------------left layout---------------------------- #
         self.treeHeader = ['Model']
-        self.itemModel = model.TreeModel(self, header_list=self.treeHeader)
+        self.treeModel = model.TreeModel(self, header_list=self.treeHeader)
 
-        self.treeView = ExpandTreeView(self.itemModel)
-        self.treeView.setItemDelegate(model.BookmarkDelegate(self, self.itemModel))
+        self.treeView = ExpandTreeView(self.treeModel)
+        self.treeView.setItemDelegate(model.BookmarkDelegate(self, self.treeModel))
         self.treeView.setContextMenuPolicy(Qt.CustomContextMenu)
         self.treeView.customContextMenuRequested.connect(self.openContextMenu)
         self.treeView.clicked.connect(self.getDebugData)
@@ -181,6 +181,7 @@ class MainWindow(BaseWindow):
         if item.parentItem.text == '/':  # page/data/plugin节点
             if item.text == 'page':
                 self.browser.load(QUrl(XulDebugServerHelper.HOST + 'list-pages'))
+                self.treeModel.refreshChildItems(item)
             elif item.text == 'data':
                 self.browser.load(QUrl(XulDebugServerHelper.HOST + 'list-user-objects'))
                 pass

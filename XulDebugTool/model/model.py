@@ -79,6 +79,10 @@ class Tree_item():
         self.childItems.insert(position, item)
         return item
 
+    def remove_all_child(self):
+        for child in self.childItems:
+            self.childItems.remove(child)
+
     def __str__(self):
         return 'Tree_item({}, planned={}, planned_order={})'.format(self.text, self.planned, self.planned_order)
 
@@ -95,16 +99,7 @@ class TreeModel(QAbstractItemModel):
         self.rootItem.header_list = header_list
         self.pageItem = self.rootItem.add_child(0)
         self.pageItem.text = 'page'
-
-        r = XulDebugServerHelper.listPages()
-        if r:
-            pageXml = r.data
-            pagesStr = json.dumps(dict(xmltodict.parse(pageXml)['pages']))  # str
-            pagesNodes = json.loads(pagesStr)  # dict
-            for i, page in enumerate(pagesNodes['page']):
-                child = self.pageItem.add_child(i)
-                child.text = '%s(%s)' % (page['@pageId'], page['@id'])
-                child.data = page
+        self.refreshChildItems(self.pageItem)
 
         self.dataItem = self.rootItem.add_child(1)
         self.dataItem.text = 'data'
@@ -116,7 +111,23 @@ class TreeModel(QAbstractItemModel):
 
         self.selected_item = self.rootItem.childItems[0]
 
-
+    def refreshChildItems(self, treeItem):
+        # treeItem.remove_all_child()
+        r = XulDebugServerHelper.listPages()
+        if r:
+            pageXml = r.data
+            pagesStr = json.dumps(dict(xmltodict.parse(pageXml)['pages']))  # str
+            pagesNodes = json.loads(pagesStr)  # dict
+            if isinstance(pagesNodes['page'], list):
+                for i, page in enumerate(pagesNodes['page']):
+                    child = self.pageItem.add_child(i)
+                    child.text = '%s(%s)' % (page['@pageId'], page['@id'])
+                    child.data = page
+            else:
+                page = pagesNodes['page']
+                child = self.pageItem.add_child(0)
+                child.text = '%s(%s)' % (page['@pageId'], page['@id'])
+                child.data = page
 
     def child_indexes(self, parent_index):
         indexes = []
