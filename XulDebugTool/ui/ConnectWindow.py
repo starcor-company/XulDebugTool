@@ -16,6 +16,7 @@ from PyQt5.QtWidgets import QPushButton, QLineEdit, QLabel, QTextEdit, QComboBox
 from XulDebugTool.ui.BaseWindow import BaseWindow
 from XulDebugTool.ui.MainWindow import MainWindow
 from XulDebugTool.utils.CmdExecutor import CmdExecutor
+from XulDebugTool.utils.XulDebugServerHelper import XulDebugServerHelper
 import sqlite3
 
 
@@ -105,6 +106,7 @@ class ConnectWindow(BaseWindow):
         except IndexError:
             self.xulPort = '55550'
 
+        XulDebugServerHelper.HOST = 'http://' + self.ip + ':' + self.xulPort + '/api/'
         self.timer.start(500)
         self.currentCmd = 'adb connect ' + self.ip + ':' + self.adbPort
         self.detailEdit.append('# ' + self.currentCmd)
@@ -124,7 +126,7 @@ class ConnectWindow(BaseWindow):
                 if self.ip in r:
                     # 存入该设备到历史记录
                     self.addDeviceToDB()
-                    if self.isXulDebugServerAlive():
+                    if XulDebugServerHelper.isXulDebugServerAlive():
                         self.startMainWindow()
             # 重置connect button
             self.timer.stop()
@@ -184,20 +186,6 @@ class ConnectWindow(BaseWindow):
         finally:
             cursor.close()
             conn.close()
-
-    def isXulDebugServerAlive(self):
-        import urllib3
-        try:
-            url = 'http://' + self.ip + ':' + self.xulPort + '/api/list-pages'
-            http = urllib3.PoolManager()
-            r = http.request('GET', url)
-            self.detailEdit.append('Http Response: ' + str(r.status))
-            print(r.status, r.data)
-        except Exception as e:
-            print(e)
-            self.detailEdit.append(str(e))
-            return False
-        return r.status == 200
 
     def startMainWindow(self):
         print('Start main window.')

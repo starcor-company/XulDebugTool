@@ -7,6 +7,7 @@ import sys
 import xmltodict
 import json
 from xml.sax.saxutils import escape
+from XulDebugTool.utils.XulDebugServerHelper import XulDebugServerHelper
 
 from PyQt5.QtCore import QAbstractItemModel, QModelIndex, QSortFilterProxyModel, QSize, Qt, QEvent, \
     QPersistentModelIndex, QDate
@@ -94,16 +95,16 @@ class TreeModel(QAbstractItemModel):
         self.rootItem.header_list = header_list
         self.pageItem = self.rootItem.add_child(0)
         self.pageItem.text = 'page'
-        pageXml = '''<pages>
-<page id="426878758" pageId="page_main_noopsyche" layoutFile="xul_layouts/pages/xul_main_page_noopsyche.xml" behavior="NoopsycheMainPageBehavior" pageClass="MainActivity" taskId="1379" intentFlags="RECEIVER_FOREGROUND" status="stopped" resumeTime="43" readyTime="55" drawing="frames:1147, avg:6.44, min:2.08, max:27.54"/>
-<page id="824003288" pageId="page_media_detail" layoutFile="xul_layouts/pages/xul_media_detail_page.xml" behavior="media_detail_behavior" pageClass="CommonActivity" taskId="1379" intentFlags="RECEIVER_FOREGROUND" status="resumed" resumeTime="53" readyTime="61" drawing="frames:2, avg:14.94, min:3.45, max:26.43"/>
-</pages>'''
-        pagesStr = json.dumps(dict(xmltodict.parse(pageXml)['pages']))  # str
-        pagesNodes = json.loads(pagesStr)  # dict
-        for i, page in enumerate(pagesNodes['page']):
-            child = self.pageItem.add_child(i)
-            child.text = '%s(%s)' % (page['@pageId'], page['@id'])
-            child.data = page
+
+        r = XulDebugServerHelper.listPages()
+        if r:
+            pageXml = r.data
+            pagesStr = json.dumps(dict(xmltodict.parse(pageXml)['pages']))  # str
+            pagesNodes = json.loads(pagesStr)  # dict
+            for i, page in enumerate(pagesNodes['page']):
+                child = self.pageItem.add_child(i)
+                child.text = '%s(%s)' % (page['@pageId'], page['@id'])
+                child.data = page
 
         self.dataItem = self.rootItem.add_child(1)
         self.dataItem.text = 'data'
