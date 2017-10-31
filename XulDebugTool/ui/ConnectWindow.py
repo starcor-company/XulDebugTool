@@ -12,9 +12,13 @@ last edited: 2017.10.14
 """
 
 from PyQt5.QtCore import pyqtSlot, Qt, QTimer
-from PyQt5.QtWidgets import QPushButton, QLineEdit, QLabel, QTextEdit, QComboBox
+from PyQt5.QtGui import QPixmap, QIcon, QKeyEvent
+from PyQt5.QtWidgets import QPushButton, QLabel, QTextEdit, QComboBox, QAbstractItemView, QHBoxLayout, QListWidget, \
+    QWidget
+
 from XulDebugTool.ui.BaseWindow import BaseWindow
-from XulDebugTool.ui.MainWindow import MainWindow
+from XulDebugTool.ui.MainWindow import MainWindow, QListWidgetItem
+from XulDebugTool.utils.IconTool import IconTool
 from XulDebugTool.utils.CmdExecutor import CmdExecutor
 from XulDebugTool.utils.XulDebugServerHelper import XulDebugServerHelper
 import sqlite3
@@ -48,22 +52,37 @@ class ConnectWindow(BaseWindow):
         self.setWindowFlags(Qt.WindowCloseButtonHint)
         self.setFixedSize(460, 150)
 
-        ipLabel = QLabel(self)
-        ipLabel.setText('ip:')
-        ipLabel.move(45, 30)
+        self.ipLabel = QLabel(self)
+        self.ipLabel.setPixmap(IconTool.buildQPixmap('ip_icon.png'))
+        self.ipLabel.move(40, 28)
+
+        self.helpLabel = QLabel(self)
+        self.helpLabel.setPixmap(IconTool.buildQPixmap('help.png'))
+        self.helpLabel.move(380, 28)
+        self.helpLabel.setToolTip('''格式: ip[:adb port][:xul port]
+        default adb port is 5555
+        default xul port is 55550
+        ps: 192.168.200.2:5555:55550''')
 
         self.ipComboBox = QComboBox(self)
         self.ipComboBox.move(80, 30)
-        self.ipComboBox.resize(280, 25)
+        self.ipComboBox.resize(290, 25)
         self.ipComboBox.setEditable(True)
         self.ipComboBox.setMaxVisibleItems(5)
         self.ipComboBox.setInsertPolicy(QComboBox.InsertAtTop)
+
+        ipListWidget = QListWidget()
+        self.ipComboBox.setView(ipListWidget)
+        self.ipComboBox.setModel(ipListWidget.model())
+
         # self.ipComboBox.addItem('localhost')
-        self.ipComboBox.setToolTip('''格式: ip[:adb port][:xul port]
-        default adb port is 5555
-        default xul port is 55550''')
-        for device in self.getDevicesFromDB():
-            self.ipComboBox.addItem(device[0])
+        for pos, device in enumerate(self.getDevicesFromDB()):
+            item = self.ComboBoxItem(pos, device[0])
+            ipListItem = QListWidgetItem(ipListWidget)
+            ipListWidget.setItemWidget(ipListItem, item)
+
+        for pos, device in enumerate(self.getDevicesFromDB()):
+            self.ipComboBox.setItemText(pos, device[0])
 
         self.connectButton = QPushButton('connect', self)
         self.connectButton.move(180, 90)
@@ -81,6 +100,35 @@ class ConnectWindow(BaseWindow):
         self.detailEdit.move(25, 150)
         self.detailEdit.resize(420, 180)
         super().initWindow()
+
+    def ComboBoxItem(self, pos, ip_src):
+        qWidget = QWidget()
+        delede_button = QPushButton()
+        delede_button.setStyleSheet("background:transparent;")
+        icon = QIcon(IconTool.buildQIcon('delete.png'))
+        delede_button.setIcon(icon)
+        delede_button.clicked.connect(lambda :self.onDeleteComBoxItem(pos, ip_src))
+        main_layout = QHBoxLayout()
+        main_layout.addStretch()
+        main_layout.addWidget(delede_button)
+        main_layout.setContentsMargins(0,0,0,0)
+        main_layout.setSpacing(5)
+        qWidget.setLayout(main_layout)
+        return qWidget
+
+    def onDeleteComBoxItem(self, pos, text):
+        try:
+            # 数据库文件数据类型文档需添加
+            conn = sqlite3.connect('XulDebugTool.db')
+            cursor = conn.cursor()
+            cursor.execute("delete from device where name = \'" + text + "\'")
+            conn.commit()
+        except Exception:
+            print('onDeleteComBoxItem error')
+        finally:
+            cursor.close()
+            conn.close()
+        self.ipComboBox.removeItem(pos)
 
     @pyqtSlot()
     def onConnectClick(self):
@@ -119,9 +167,9 @@ class ConnectWindow(BaseWindow):
             for r in result:
                 # 找到连接成功的设备
                 if self.ip in r:
-                    # 存入该设备到历史记录
-                    self.addDeviceToDB()
                     if XulDebugServerHelper.isXulDebugServerAlive():
+                        # 存入该设备到历史记录
+                        self.addDeviceToDB()
                         self.startMainWindow()
             # 重置connect button
             self.timer.stop()
