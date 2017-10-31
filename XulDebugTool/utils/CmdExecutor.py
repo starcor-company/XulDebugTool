@@ -21,6 +21,6 @@ class CmdExecutor(QThread):
         l = []
         for line in iter(p.stdout.readline, b''):
             l.append(line.decode('utf-8'))
-        p.stdout.close()
-        p.wait()
+        # p.stdout.close()
+        # p.wait()
         self.finishSignal.emit(l)
