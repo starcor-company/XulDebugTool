@@ -16,7 +16,7 @@ class STCLogger():
         self.logger.setLevel(logging.DEBUG)
 
         # create a file handler
-        self.handler = logging.FileHandler(time.strftime('%Y%m%d%H%M', time.localtime(time.time())) + ".txt", "a", encoding="UTF-8")
+        self.handler = logging.FileHandler(time.strftime('%Y%m%d%H', time.localtime(time.time())) + ".txt", "a", encoding="UTF-8")
         self.handler.setLevel(logging.DEBUG)
 
         # create a logging format
@@ -26,19 +26,33 @@ class STCLogger():
         # add the handlers to the logger
         self.logger.addHandler(self.handler)
 
+    def removeHandler(self):
+        self.logger.removeHandler(self.handler)
+        return
+
+    def error(self,msg):
+        self.logger.error(msg)
+        self.removeHandler()
+        return
+
     def debug(self, msg):
         self.logger.debug(msg)
-        self.logger.removeHandler(self.handler)
+        self.removeHandler()
         return
 
     def warning(self, msg):
         self.logger.warning(msg)
-        self.logger.removeHandler(self.handler)
+        self.removeHandler()
         return
 
     def info(self, msg):
         self.logger.info(msg)
-        self.logger.removeHandler(self.handler)
+        self.removeHandler()
+        return
+
+    def critical(self,msg):
+        self.logger.critical(msg)
+        self.removeHandler()
         return
 
 
