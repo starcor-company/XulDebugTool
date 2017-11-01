@@ -21,9 +21,13 @@ from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 from PyQt5.QtWebEngineWidgets import QWebEngineView
 
-import XulDebugTool.model.model as model
 import pyperclip
+import json
+import xmltodict
 
+ROOT_ITEM_PAGE = 'Page'
+ROOT_ITEM_USER_OBJECT = 'User-Object'
+ROOT_ITEM_PLUGIN = 'Plugin'
 
 class MainWindow(BaseWindow):
     def __init__(self):
@@ -60,21 +64,21 @@ class MainWindow(BaseWindow):
 
     def initLayout(self):
         # ----------------------------left layout---------------------------- #
-        self.treeHeader = ['Model']
-        self.treeModel = model.TreeModel(self, header_list=self.treeHeader)
+        self.treeModel = QStandardItemModel()
+        self.pageItem = QStandardItem(ROOT_ITEM_PAGE)
+        self.buildPageItem()
+        self.userobjectItem = QStandardItem(ROOT_ITEM_USER_OBJECT)
+        self.buildUserObjectItem()
+        self.pluginItem = QStandardItem(ROOT_ITEM_PLUGIN)
+        self.treeModel.appendColumn([self.pageItem, self.userobjectItem, self.pluginItem])
+        self.treeModel.setHeaderData(0, Qt.Horizontal, 'Model')
 
-        self.treeView = ExpandTreeView(self.treeModel)
-        self.treeView.setItemDelegate(model.BookmarkDelegate(self, self.treeModel))
+        self.treeView = QTreeView()
+        self.treeView.setModel(self.treeModel)
+        self.treeView.setEditTriggers(QAbstractItemView.NoEditTriggers)
         self.treeView.setContextMenuPolicy(Qt.CustomContextMenu)
         self.treeView.customContextMenuRequested.connect(self.openContextMenu)
         self.treeView.clicked.connect(self.getDebugData)
-        self.treeView.setEditTriggers(QAbstractItemView.NoEditTriggers)
-        self.treeView.setHeader(CustomHeaderView('Model'))
-        self.treeView.hideColumn(1)
-        self.treeView.hideColumn(2)
-        self.treeView.setUniformRowHeights(True)
-        self.treeView.setAnimated(True)
-        self.treeView.setVerticalScrollMode(QAbstractItemView.ScrollPerPixel)
 
         leftContainer = QWidget()
         layout = QVBoxLayout()
@@ -167,30 +171,62 @@ class MainWindow(BaseWindow):
         index = self.treeView.indexAt(point)
         if not index.isValid():
             return
-        item = index.internalPointer()
         menu = QMenu()
         copyAction = QAction(IconTool.buildQIcon('copy.png'), 'Copy to Clipboard', self,
-                             triggered=lambda: pyperclip.copy('%s' % item.text))
+                             triggered=lambda: pyperclip.copy('%s' % index.data()))
         menu.addAction(copyAction)
         menu.exec_(self.treeView.viewport().mapToGlobal(point))
 
     @pyqtSlot(QModelIndex)
     def getDebugData(self, index):
-        item = index.internalPointer()
+        # item = index.internalPointer()
+        itemText = index.data()
+        parentText = index.parent().data()
 
-        if item.parentItem.text == '/':  # page/data/plugin节点
-            if item.text == 'page':
-                self.browser.load(QUrl(XulDebugServerHelper.HOST + 'list-pages'))
-                self.treeModel.refreshChildItems(item)
-            elif item.text == 'data':
-                self.browser.load(QUrl(XulDebugServerHelper.HOST + 'list-user-objects'))
-                pass
-            elif item.text == 'plugin':
-                pass
-        elif item.parentItem.text == 'page':  # page下的子节点
-            pageId = item.text[item.text.find('(') + 1:-1]
+        if itemText == ROOT_ITEM_PAGE:  # page节点
+            self.buildPageItem()
+            self.browser.load(QUrl(XulDebugServerHelper.HOST + 'list-pages'))
+        elif itemText == ROOT_ITEM_USER_OBJECT:  # userobject节点
+            self.buildUserObjectItem()
+            self.browser.load(QUrl(XulDebugServerHelper.HOST + 'list-user-objects'))
+        elif itemText == ROOT_ITEM_PLUGIN:  # plugin节点
+            pass
+        elif parentText == ROOT_ITEM_PAGE:  # page下的子节点
+            pageId = itemText[itemText.find('(') + 1:-1]
             self.browser.load(QUrl(XulDebugServerHelper.HOST + 'get-layout/' + pageId))
-        elif item.parentItem.text == 'data':  # data下的子节点
-            pass
-        elif item.parentItem.text == 'plugin':  # plugin下的子节点
-            pass
+
+    def buildPageItem(self):
+        self.pageItem.removeRows(0, self.pageItem.rowCount())
+        r = XulDebugServerHelper.listPages()
+        if r:
+            pageXml = r.data
+            pagesStr = json.dumps(dict(xmltodict.parse(pageXml)['pages']))  # str
+            pagesNodes = json.loads(pagesStr)  # dict
+            if isinstance(pagesNodes['page'], list):
+                for i, page in enumerate(pagesNodes['page']):
+                    row = QStandardItem('%s(%s)' % (page['@pageId'], page['@id']))
+                    row.data = page
+                    self.pageItem.appendRow(row)
+            else:
+                page = pagesNodes['page']
+                row = QStandardItem('%s(%s)' % (page['@pageId'], page['@id']))
+                row.data = page
+                self.pageItem.appendRow(row)
+
+    def buildUserObjectItem(self):
+        self.userobjectItem.removeRows(0, self.userobjectItem.rowCount())
+        r = XulDebugServerHelper.listUserObject()
+        if r:
+            userObjectXml = r.data
+            userObjectStr = json.dumps(dict(xmltodict.parse(userObjectXml)['objects']))
+            userObjectNodes = json.loads(userObjectStr)
+            if isinstance(userObjectNodes['object'], list):
+                for i, o in enumerate(userObjectNodes['object']):
+                    row = QStandardItem('%s(%s)' % (o['@name'], o['@id']))
+                    row.data = o
+                    self.userobjectItem.appendRow(row)
+            else:
+                o = userObjectNodes['object']
+                row = QStandardItem('%s(%s)' % (o['@name'], o['@id']))
+                row.data = o
+                self.userobjectItem.appendRow(row)
