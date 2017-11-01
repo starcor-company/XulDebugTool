@@ -15,6 +15,7 @@ from XulDebugTool.ui.widget.ExpandTreeView import ExpandTreeView
 from XulDebugTool.ui.widget.CustomHeaderView import CustomHeaderView
 from XulDebugTool.ui.widget.SearchBarQLineEdit import SearchBarQLineEdit
 from XulDebugTool.utils.IconTool import IconTool
+from XulDebugTool.utils.Utils import Utils
 from XulDebugTool.utils.XulDebugServerHelper import XulDebugServerHelper
 from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
@@ -22,8 +23,6 @@ from PyQt5.QtGui import *
 from PyQt5.QtWebEngineWidgets import QWebEngineView
 
 import pyperclip
-import json
-import xmltodict
 
 ROOT_ITEM_PAGE = 'Page'
 ROOT_ITEM_USER_OBJECT = 'User-Object'
@@ -203,11 +202,11 @@ class MainWindow(BaseWindow):
         self.pageItem.removeRows(0, self.pageItem.rowCount())
         r = XulDebugServerHelper.listPages()
         if r:
-            pageXml = r.data
-            pagesStr = json.dumps(dict(xmltodict.parse(pageXml)['pages']))  # str
-            pagesNodes = json.loads(pagesStr)  # dict
+            pagesNodes = Utils.xml2json(r.data, 'pages')
+            # 如果只有一个page,转化出来的json不是数据.分开处理
             if isinstance(pagesNodes['page'], list):
                 for i, page in enumerate(pagesNodes['page']):
+                    # 把page解析了以后放page节点下
                     row = QStandardItem('%s(%s)' % (page['@pageId'], page['@id']))
                     row.data = page
                     self.pageItem.appendRow(row)
@@ -221,23 +220,23 @@ class MainWindow(BaseWindow):
         self.userobjectItem.removeRows(0, self.userobjectItem.rowCount())
         r = XulDebugServerHelper.listUserObject()
         if r:
-            userObjectXml = r.data
-            userObjectStr = json.dumps(dict(xmltodict.parse(userObjectXml)['objects']))
-            userObjectNodes = json.loads(userObjectStr)
+            userObjectNodes = Utils.xml2json(r.data, 'objects')
+            # 如果只有一个userObject,转化出来的json不是数据.分开处理
             if isinstance(userObjectNodes['object'], list):
                 for i, o in enumerate(userObjectNodes['object']):
+                    # 把userObject加到User-Object节点下
                     row = QStandardItem('%s(%s)' % (o['@name'], o['@id']))
                     row.data = o
                     self.userobjectItem.appendRow(row)
+                    # 如果是DataServcie, 填充所有的Provider到该节点下
                     if o['@name'] == CHILD_ITEM_DATA_SERVICE:
                         r = XulDebugServerHelper.getUserObject(o['@id'])
                         if r:
-                            dataServiceXml = r.data
-                            dataServiceStr = json.dumps(dict(xmltodict.parse(dataServiceXml)['object']))
-                            dataServiceNodes = json.loads(dataServiceStr)
+                            dataServiceNodes = Utils.xml2json(r.data, 'object')
                             for j, provider in enumerate(dataServiceNodes['object']['provider']):
                                 dsRow = QStandardItem(provider['ds']['@providerClass'])
                                 row.appendRow(dsRow)
+                            # 对Provider按升序排序
                             row.sortChildren(0)
             else:
                 o = userObjectNodes['object']
