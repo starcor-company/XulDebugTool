@@ -134,7 +134,7 @@ class MainWindow(BaseWindow):
 
         middleContainer.stackedWidget = QStackedWidget()
         self.browser = QWebEngineView()
-        self.browser.load(QUrl(XulDebugServerHelper.HOST + 'list-pages'))
+        self.showXulDebugData(XulDebugServerHelper.HOST + 'list-pages')
         middleContainer.stackedWidget.addWidget(self.browser)
         middleContainer.stackedWidget.addWidget(QLabel('tab2 content'))
 
@@ -185,18 +185,18 @@ class MainWindow(BaseWindow):
 
         if itemText == ROOT_ITEM_PAGE:  # page节点
             self.buildPageItem()
-            self.browser.load(QUrl(XulDebugServerHelper.HOST + 'list-pages'))
+            self.showXulDebugData(XulDebugServerHelper.HOST + 'list-pages')
         elif itemText == ROOT_ITEM_USER_OBJECT:  # userobject节点
             self.buildUserObjectItem()
-            self.browser.load(QUrl(XulDebugServerHelper.HOST + 'list-user-objects'))
+            self.showXulDebugData(XulDebugServerHelper.HOST + 'list-user-objects')
         elif itemText == ROOT_ITEM_PLUGIN:  # plugin节点
             pass
         elif parentText == ROOT_ITEM_PAGE:  # page下的子节点
             pageId = itemText[itemText.find('(') + 1:-1]
-            self.browser.load(QUrl(XulDebugServerHelper.HOST + 'get-layout/' + pageId))
+            self.showXulDebugData(XulDebugServerHelper.HOST + 'get-layout/' + pageId)
         elif parentText == ROOT_ITEM_USER_OBJECT:  # userobject下的子节点
             objectId = itemText[itemText.find('(') + 1:-1]
-            self.browser.load(QUrl(XulDebugServerHelper.HOST + 'get-user-object/' + objectId))
+            self.showXulDebugData(XulDebugServerHelper.HOST + 'get-user-object/' + objectId)
 
     def buildPageItem(self):
         self.pageItem.removeRows(0, self.pageItem.rowCount())
@@ -243,3 +243,7 @@ class MainWindow(BaseWindow):
                 row = QStandardItem('%s(%s)' % (o['@name'], o['@id']))
                 row.data = o
                 self.userobjectItem.appendRow(row)
+
+    def showXulDebugData(self, url):
+        self.browser.load(QUrl(url))
+        self.statusBar().showMessage(url)
