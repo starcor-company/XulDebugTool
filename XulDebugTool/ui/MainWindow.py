@@ -28,6 +28,7 @@ import xmltodict
 ROOT_ITEM_PAGE = 'Page'
 ROOT_ITEM_USER_OBJECT = 'User-Object'
 ROOT_ITEM_PLUGIN = 'Plugin'
+CHILD_ITEM_DATA_SERVICE = 'DataService'
 
 class MainWindow(BaseWindow):
     def __init__(self):
@@ -194,6 +195,9 @@ class MainWindow(BaseWindow):
         elif parentText == ROOT_ITEM_PAGE:  # page下的子节点
             pageId = itemText[itemText.find('(') + 1:-1]
             self.browser.load(QUrl(XulDebugServerHelper.HOST + 'get-layout/' + pageId))
+        elif parentText == ROOT_ITEM_USER_OBJECT:  # userobject下的子节点
+            objectId = itemText[itemText.find('(') + 1:-1]
+            self.browser.load(QUrl(XulDebugServerHelper.HOST + 'get-user-object/' + objectId))
 
     def buildPageItem(self):
         self.pageItem.removeRows(0, self.pageItem.rowCount())
@@ -225,6 +229,16 @@ class MainWindow(BaseWindow):
                     row = QStandardItem('%s(%s)' % (o['@name'], o['@id']))
                     row.data = o
                     self.userobjectItem.appendRow(row)
+                    if o['@name'] == CHILD_ITEM_DATA_SERVICE:
+                        r = XulDebugServerHelper.getUserObject(o['@id'])
+                        if r:
+                            dataServiceXml = r.data
+                            dataServiceStr = json.dumps(dict(xmltodict.parse(dataServiceXml)['object']))
+                            dataServiceNodes = json.loads(dataServiceStr)
+                            for j, provider in enumerate(dataServiceNodes['object']['provider']):
+                                dsRow = QStandardItem(provider['ds']['@providerClass'])
+                                row.appendRow(dsRow)
+                            row.sortChildren(0)
             else:
                 o = userObjectNodes['object']
                 row = QStandardItem('%s(%s)' % (o['@name'], o['@id']))
