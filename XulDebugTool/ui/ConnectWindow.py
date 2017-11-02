@@ -12,9 +12,8 @@ last edited: 2017.10.14
 """
 
 from PyQt5.QtCore import pyqtSlot, Qt, QTimer
-from PyQt5.QtGui import QPixmap, QIcon, QKeyEvent
-from PyQt5.QtWidgets import QPushButton, QLabel, QTextEdit, QComboBox, QAbstractItemView, QHBoxLayout, QListWidget, \
-    QWidget
+from PyQt5.QtGui import QIcon
+from PyQt5.QtWidgets import QPushButton, QLabel, QTextEdit, QComboBox, QHBoxLayout, QListWidget, QWidget
 
 from XulDebugTool.ui.BaseWindow import BaseWindow
 from XulDebugTool.ui.MainWindow import MainWindow, QListWidgetItem
@@ -81,6 +80,7 @@ class ConnectWindow(BaseWindow):
             ipListItem = QListWidgetItem(ipListWidget)
             ipListWidget.setItemWidget(ipListItem, item)
 
+        #combobox绘制子项完成，再向子项添加内容
         for pos, device in enumerate(self.getDevicesFromDB()):
             self.ipComboBox.setItemText(pos, device[0])
 
