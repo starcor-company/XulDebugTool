@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import os
-from PyQt5.QtGui import QIcon
+from PyQt5.QtGui import QIcon, QPicture, QPixmap
 
 
 class IconTool(object):
@@ -11,3 +11,6 @@ class IconTool(object):
 
     def buildQIcon(iconName):
         return QIcon(os.path.join('..', 'resources', 'images', iconName))
+
+    def buildQPixmap(pixmapName):
+        return QPixmap(os.path.join('..', 'resources', 'images', pixmapName))
