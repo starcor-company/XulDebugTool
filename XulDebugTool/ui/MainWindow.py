@@ -203,6 +203,8 @@ class MainWindow(BaseWindow):
         r = XulDebugServerHelper.listPages()
         if r:
             pagesNodes = Utils.xml2json(r.data, 'pages')
+            if pagesNodes == '':
+                return
             # 如果只有一个page,转化出来的json不是数据.分开处理
             if isinstance(pagesNodes['page'], list):
                 for i, page in enumerate(pagesNodes['page']):
