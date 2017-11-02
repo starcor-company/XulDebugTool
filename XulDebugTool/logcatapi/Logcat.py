@@ -6,12 +6,16 @@ last edited: 2017.10.29
 import logging
 import time
 
+from XulDebugTool.controller.ConsoleDeskController import ConsoleController
+
 
 class STCLogger():
     def __init__(self,loggername):
 
+        self.loggername = loggername
+
         #logging.basicConfig(level=logging.DEBUG)
-        self.logger = logging.getLogger(loggername)
+        self.logger = logging.getLogger(self.loggername)
 
         self.logger.setLevel(logging.DEBUG)
 
@@ -30,28 +34,33 @@ class STCLogger():
         self.logger.removeHandler(self.handler)
         return
 
-    def error(self,msg):
+    def error(self, msg):
         self.logger.error(msg)
+        ConsoleController.windowPrintInfo(self.loggername, "ERROR", msg)
         self.removeHandler()
         return
 
     def debug(self, msg):
         self.logger.debug(msg)
+        ConsoleController.windowPrintInfo(self.loggername, "DEBUG", msg)
         self.removeHandler()
         return
 
     def warning(self, msg):
         self.logger.warning(msg)
+        ConsoleController.windowPrintInfo(self.loggername,"WARNING", msg)
         self.removeHandler()
         return
 
     def info(self, msg):
         self.logger.info(msg)
+        ConsoleController.windowPrintInfo(self.loggername, "INFO", msg)
         self.removeHandler()
         return
 
     def critical(self,msg):
         self.logger.critical(msg)
+        ConsoleController.windowPrintInfo(self.loggername, "CRITICAL", msg)
         self.removeHandler()
         return
 
