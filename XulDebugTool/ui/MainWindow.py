@@ -11,8 +11,6 @@ last edited: 2017.10.23
 """
 
 from XulDebugTool.ui.BaseWindow import BaseWindow
-from XulDebugTool.ui.widget.ExpandTreeView import ExpandTreeView
-from XulDebugTool.ui.widget.CustomHeaderView import CustomHeaderView
 from XulDebugTool.ui.widget.SearchBarQLineEdit import SearchBarQLineEdit
 from XulDebugTool.utils.IconTool import IconTool
 from XulDebugTool.utils.Utils import Utils
