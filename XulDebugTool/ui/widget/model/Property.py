@@ -22,10 +22,10 @@ class Property(object):
     def addChild(self, child):
         self.children.append(child)
 
-    def key(self):
+    def getKey(self):
         return self.key
 
-    def value(self):
+    def getValue(self):
         return getattr(self.ref(), self.key)
 
     def setValue(self, value):
@@ -60,9 +60,9 @@ class Property(object):
 class ListProperty(Property):
     def __init__(self, name, propertyList, parent=None):
         super(ListProperty, self).__init__(name, None, parent)
-        self._list = []
+        self.plist = []
         for i, item in enumerate(propertyList):
-            self._list.append(Property(str(i), item, self))
+            self.plist.append(Property(str(i), item, self))
 
 
 class ColorProperty(Property):
@@ -84,15 +84,15 @@ class ColorProperty(Property):
 
     def setEditorData(self, editor, data):
         color = data.internalPointer().property()
-        editor.setCurrentIndex(editor.findData(color, QtCore.Qt.DecorationRole))
+        editor.setCurrentIndex(editor.findData(color, Qt.DecorationRole))
         if editor.currentIndex() == -1:
             editor.addItem(color.name())
-            editor.setItemData(editor.count() - 1, color, QtCore.Qt.DecorationRole)
+            editor.setItemData(editor.count() - 1, color, Qt.DecorationRole)
             editor.setCurrentIndex(editor.count() - 1)
 
     def setModelData(self, editor, model, index):
         item = index.internalPointer()
-        color = editor.itemData(editor.currentIndex(), QtCore.Qt.DecorationRole).toPyObject()
+        color = editor.itemData(editor.currentIndex(), Qt.DecorationRole).toPyObject()
 
         item.setProperty(color)
 

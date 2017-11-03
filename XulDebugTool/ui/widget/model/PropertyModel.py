@@ -15,7 +15,7 @@ class PropertyModel(QAbstractItemModel):
     def getRootItem(self):
         return self.rootItem
 
-    def rowCount(self, parent=None, *args, **kwargs):
+    def rowCount(self, parent):
         if not parent.isValid():
             parentItem = self.rootItem
         else:
@@ -23,7 +23,7 @@ class PropertyModel(QAbstractItemModel):
 
         return parentItem.childCount()
 
-    def columnCount(self, parent=None, *args, **kwargs):
+    def columnCount(self, parent):
         return 2
 
     def data(self, index, role):
@@ -34,9 +34,9 @@ class PropertyModel(QAbstractItemModel):
 
         if role == Qt.DisplayRole or role == Qt.EditRole:
             if index.column() == 0:
-                return item.key()
+                return item.getKey()
             else:
-                return item.value()
+                return item.getValue()
 
         if role == Qt.DecorationRole and index.column == 1:
             if isinstance(item.value(), QColor):
@@ -69,10 +69,10 @@ class PropertyModel(QAbstractItemModel):
 
     def parent(self, index):
         item = self.getItem(index)
-        parentItem = item.parent()
+        parentItem = item.parent
 
         if parentItem == self.rootItem:
-            return QModelIndex
+            return QModelIndex()
         else:
             return self.createIndex(parentItem.row(), 0, parentItem)
 
