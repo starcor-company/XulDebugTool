@@ -6,10 +6,11 @@ from XulDebugTool.ui.widget.model.PropertyModel import PropertyModel
 
 
 class PropertyEditor(QTreeView):
-    def __init__(self, parent=None):
+    def __init__(self, headerList=['Key', 'Value'], parent=None):
         super(PropertyEditor, self).__init__(parent)
         self.model = PropertyModel(self)
         self.setModel(self.model)
+        self.model.setHeaderData(headerList)
 
     def addProperty(self, p):
         self.model.addProperty(p)

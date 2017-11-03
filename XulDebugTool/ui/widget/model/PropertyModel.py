@@ -11,6 +11,7 @@ class PropertyModel(QAbstractItemModel):
         super(PropertyModel, self).__init__(parent)
         self.rootItem = Property('Root', None, None)
         self.items = []
+        self.headerList = []
 
     def getRootItem(self):
         return self.rootItem
@@ -90,3 +91,10 @@ class PropertyModel(QAbstractItemModel):
         self.rootItem = Property('Root', None, None)
         self.items = []
         self.endInsertRows()
+
+    def setHeaderData(self, headerList, role=Qt.DisplayRole):
+        self.headerList = headerList
+
+    def headerData(self, section, orientation, role):
+        if role == Qt.DisplayRole:
+            return self.headerList[section]
