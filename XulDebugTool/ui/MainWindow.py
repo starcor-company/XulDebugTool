@@ -11,6 +11,7 @@ last edited: 2017.10.23
 """
 
 from XulDebugTool.ui.BaseWindow import BaseWindow
+from XulDebugTool.ui.widget.PropertyEditor import PropertyEditor
 from XulDebugTool.ui.widget.SearchBarQLineEdit import SearchBarQLineEdit
 from XulDebugTool.utils.IconTool import IconTool
 from XulDebugTool.utils.Utils import Utils
@@ -26,6 +27,7 @@ ROOT_ITEM_PAGE = 'Page'
 ROOT_ITEM_USER_OBJECT = 'User-Object'
 ROOT_ITEM_PLUGIN = 'Plugin'
 CHILD_ITEM_DATA_SERVICE = 'DataService'
+
 
 class MainWindow(BaseWindow):
     def __init__(self):
@@ -147,20 +149,34 @@ class MainWindow(BaseWindow):
         middleContainer.setLayout(layout)
 
         # ----------------------------right layout---------------------------- #
-        #
-        #
-        # ----------------------------right layout---------------------------- #
 
+        self.propertyEditor = PropertyEditor(['Key', 'Value'])
+        def buildProperty():
+            qObject = QObject()
+            qObject.name = 'xxx'
+            qObject.width = 20
+            qObject.height = 20
+            return qObject
+        self.properties = buildProperty()
+        self.propertyEditor.addProperty(self.properties)
+
+        rightContainer = QWidget()
+        layout = QVBoxLayout()
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.addWidget(self.propertyEditor)
+        rightContainer.setLayout(layout)
+
+        # ----------------------------entire layout---------------------------- #
 
         self.mainSplitter = QSplitter(Qt.Horizontal)
         self.mainSplitter.setHandleWidth(0)  # thing to grab the splitter
 
         self.mainSplitter.addWidget(leftContainer)
         self.mainSplitter.addWidget(middleContainer)
-        self.mainSplitter.addWidget(QLabel('3333'))
+        self.mainSplitter.addWidget(rightContainer)
         self.mainSplitter.setStretchFactor(0, 0)
         self.mainSplitter.setStretchFactor(1, 6)
-        self.mainSplitter.setStretchFactor(2, 3)
+        self.mainSplitter.setStretchFactor(2, 6)
 
         self.setCentralWidget(self.mainSplitter)
 
