@@ -28,6 +28,18 @@ ROOT_ITEM_USER_OBJECT = 'User-Object'
 ROOT_ITEM_PLUGIN = 'Plugin'
 CHILD_ITEM_DATA_SERVICE = 'DataService'
 
+# Model树第一层的节点类型
+ITEM_TYPE_PAGE_ROOT = 'pageRoot'
+ITEM_TYPE_USER_OBJECT_ROOT = 'userObjectRoot'
+ITEM_TYPE_PLUGIN_ROOT = 'pluginRoot'
+
+# Model树第二层的节点类型
+ITEM_TYPE_PAGE = 'page'
+ITEM_TYPE_USER_OBJECT = 'userObject'
+
+# Model树第二层的节点类型
+ITEM_TYPE_PROVIDER = 'provider'
+
 
 class MainWindow(BaseWindow):
     def __init__(self):
@@ -66,10 +78,13 @@ class MainWindow(BaseWindow):
         # ----------------------------left layout---------------------------- #
         self.treeModel = QStandardItemModel()
         self.pageItem = QStandardItem(ROOT_ITEM_PAGE)
+        self.pageItem.type = ITEM_TYPE_PAGE_ROOT
         self.buildPageItem()
         self.userobjectItem = QStandardItem(ROOT_ITEM_USER_OBJECT)
+        self.userobjectItem.type = ITEM_TYPE_USER_OBJECT_ROOT
         self.buildUserObjectItem()
         self.pluginItem = QStandardItem(ROOT_ITEM_PLUGIN)
+        self.pluginItem.type = ITEM_TYPE_PLUGIN_ROOT
         self.treeModel.appendColumn([self.pageItem, self.userobjectItem, self.pluginItem])
         self.treeModel.setHeaderData(0, Qt.Horizontal, 'Model')
 
@@ -193,24 +208,25 @@ class MainWindow(BaseWindow):
 
     @pyqtSlot(QModelIndex)
     def getDebugData(self, index):
-        # item = index.internalPointer()
-        itemText = index.data()
-        parentText = index.parent().data()
+        item = self.treeModel.itemFromIndex(index)
 
-        if itemText == ROOT_ITEM_PAGE:  # page节点
+        if item.type == ITEM_TYPE_PAGE_ROOT:  # 树第一层,page节点
             self.buildPageItem()
             self.showXulDebugData(XulDebugServerHelper.HOST + 'list-pages')
-        elif itemText == ROOT_ITEM_USER_OBJECT:  # userobject节点
+        elif item.type == ITEM_TYPE_USER_OBJECT_ROOT:  # 树第一层,userObject节点
             self.buildUserObjectItem()
             self.showXulDebugData(XulDebugServerHelper.HOST + 'list-user-objects')
-        elif itemText == ROOT_ITEM_PLUGIN:  # plugin节点
+        elif item.type == ITEM_TYPE_PLUGIN_ROOT:  # 树第一层,plugin节点
             pass
-        elif parentText == ROOT_ITEM_PAGE:  # page下的子节点
-            pageId = itemText[itemText.find('(') + 1:-1]
+        elif item.type == ITEM_TYPE_PAGE:  # 树第二层,page下的子节点
+            pageId = item.id
             self.showXulDebugData(XulDebugServerHelper.HOST + 'get-layout/' + pageId)
-        elif parentText == ROOT_ITEM_USER_OBJECT:  # userobject下的子节点
-            objectId = itemText[itemText.find('(') + 1:-1]
+        elif item.type == ITEM_TYPE_USER_OBJECT:  # 树第二层,userObject下的子节点
+            objectId = item.id
             self.showXulDebugData(XulDebugServerHelper.HOST + 'get-user-object/' + objectId)
+        elif item.type == ITEM_TYPE_PROVIDER:  # 树第三层,userObject下的DataService下的子节点
+            print(item.id, item.type, item.data)
+            pass
 
     def buildPageItem(self):
         self.pageItem.removeRows(0, self.pageItem.rowCount())
@@ -223,14 +239,20 @@ class MainWindow(BaseWindow):
             if isinstance(pagesNodes['page'], list):
                 for i, page in enumerate(pagesNodes['page']):
                     # 把page解析了以后放page节点下
-                    row = QStandardItem('%s(%s)' % (page['@pageId'], page['@id']))
+                    row = QStandardItem(page['@pageId'])
+                    row.id = page['@id']
                     row.data = page
+                    row.type = ITEM_TYPE_PAGE
                     self.pageItem.appendRow(row)
             else:
                 page = pagesNodes['page']
-                row = QStandardItem('%s(%s)' % (page['@pageId'], page['@id']))
+                row = QStandardItem(page['@pageId'])
+                row.id = page['@id']
                 row.data = page
+                row.type = ITEM_TYPE_PAGE
                 self.pageItem.appendRow(row)
+            if self.pageItem.rowCount() > 0:
+                self.pageItem.setText('%s(%s)' % (ROOT_ITEM_PAGE, self.pageItem.rowCount()))
 
     def buildUserObjectItem(self):
         self.userobjectItem.removeRows(0, self.userobjectItem.rowCount())
@@ -241,8 +263,10 @@ class MainWindow(BaseWindow):
             if isinstance(userObjectNodes['object'], list):
                 for i, o in enumerate(userObjectNodes['object']):
                     # 把userObject加到User-Object节点下
-                    row = QStandardItem('%s(%s)' % (o['@name'], o['@id']))
+                    row = QStandardItem(o['@name'])
+                    row.id = o['@id']
                     row.data = o
+                    row.type = ITEM_TYPE_USER_OBJECT
                     self.userobjectItem.appendRow(row)
                     # 如果是DataServcie, 填充所有的Provider到该节点下
                     if o['@name'] == CHILD_ITEM_DATA_SERVICE:
@@ -251,14 +275,19 @@ class MainWindow(BaseWindow):
                             dataServiceNodes = Utils.xml2json(r.data, 'object')
                             for j, provider in enumerate(dataServiceNodes['object']['provider']):
                                 dsRow = QStandardItem(provider['ds']['@providerClass'])
+                                dsRow.id = provider['@name']
+                                dsRow.data = provider
+                                dsRow.type = ITEM_TYPE_PROVIDER
                                 row.appendRow(dsRow)
                             # 对Provider按升序排序
                             row.sortChildren(0)
+                    if row.rowCount() > 0:
+                        row.setText('%s(%s)' % (row.text(), row.rowCount()))
             else:
-                o = userObjectNodes['object']
-                row = QStandardItem('%s(%s)' % (o['@name'], o['@id']))
-                row.data = o
-                self.userobjectItem.appendRow(row)
+                # 没有只有一个userObject的情况, 暂不处理
+                pass
+        if self.userobjectItem.rowCount() > 0:
+            self.userobjectItem.setText('%s(%s)' % (ROOT_ITEM_USER_OBJECT, self.userobjectItem.rowCount()))
 
     def showXulDebugData(self, url):
         self.browser.load(QUrl(url))
