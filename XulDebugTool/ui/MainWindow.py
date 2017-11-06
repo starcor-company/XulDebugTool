@@ -13,6 +13,7 @@ last edited: 2017.10.23
 from XulDebugTool.ui.BaseWindow import BaseWindow
 from XulDebugTool.ui.widget.PropertyEditor import PropertyEditor
 from XulDebugTool.ui.widget.SearchBarQLineEdit import SearchBarQLineEdit
+from XulDebugTool.ui.widget.model.Property import Property
 from XulDebugTool.utils.IconTool import IconTool
 from XulDebugTool.utils.Utils import Utils
 from XulDebugTool.utils.XulDebugServerHelper import XulDebugServerHelper
@@ -166,14 +167,6 @@ class MainWindow(BaseWindow):
         # ----------------------------right layout---------------------------- #
 
         self.propertyEditor = PropertyEditor(['Key', 'Value'])
-        def buildProperty():
-            qObject = QObject()
-            qObject.name = 'xxx'
-            qObject.width = 20
-            qObject.height = 20
-            return qObject
-        self.properties = buildProperty()
-        self.propertyEditor.addProperty(self.properties)
 
         rightContainer = QWidget()
         layout = QVBoxLayout()
@@ -221,9 +214,11 @@ class MainWindow(BaseWindow):
         elif item.type == ITEM_TYPE_PAGE:  # 树第二层,page下的子节点
             pageId = item.id
             self.showXulDebugData(XulDebugServerHelper.HOST + 'get-layout/' + pageId)
+            self.fillPropertyEditor(item.data)
         elif item.type == ITEM_TYPE_USER_OBJECT:  # 树第二层,userObject下的子节点
             objectId = item.id
             self.showXulDebugData(XulDebugServerHelper.HOST + 'get-user-object/' + objectId)
+            self.fillPropertyEditor(item.data)
         elif item.type == ITEM_TYPE_PROVIDER:  # 树第三层,userObject下的DataService下的子节点
             print(item.id, item.type, item.data)
             pass
@@ -292,3 +287,10 @@ class MainWindow(BaseWindow):
     def showXulDebugData(self, url):
         self.browser.load(QUrl(url))
         self.statusBar().showMessage(url)
+
+    def fillPropertyEditor(self, data):
+        print(data)
+        self.qObject = QObject()
+
+        self.propertyEditor.addProperty(self.qObject)
+        print('xxxx')
