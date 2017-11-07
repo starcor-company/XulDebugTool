@@ -193,10 +193,18 @@ class MainWindow(BaseWindow):
         index = self.treeView.indexAt(point)
         if not index.isValid():
             return
+        item = self.treeModel.itemFromIndex(index)
         menu = QMenu()
-        copyAction = QAction(IconTool.buildQIcon('copy.png'), 'Copy to Clipboard', self,
+        copyAction = QAction(IconTool.buildQIcon('copy.png'), 'Copy', self,
                              triggered=lambda: pyperclip.copy('%s' % index.data()))
+        copyAction.setShortcut('Ctrl+C')
+        queryAction = QAction(IconTool.buildQIcon('data.png'), 'Query Data...', self,
+                              triggered=lambda: self.showQueryDialog(item.data))
+        queryAction.setShortcut('Alt+Q')
+
         menu.addAction(copyAction)
+        if item.type == ITEM_TYPE_PROVIDER:
+            menu.addAction(queryAction)
         menu.exec_(self.treeView.viewport().mapToGlobal(point))
 
     @pyqtSlot(QModelIndex)
@@ -218,7 +226,7 @@ class MainWindow(BaseWindow):
             objectId = item.id
             self.showXulDebugData(XulDebugServerHelper.HOST + 'get-user-object/' + objectId)
         elif item.type == ITEM_TYPE_PROVIDER:  # 树第三层,userObject下的DataService下的子节点
-            print(item.id, item.type, item.data)
+            pass
         self.fillPropertyEditor(item.data)
 
     def buildPageItem(self):
@@ -294,10 +302,13 @@ class MainWindow(BaseWindow):
                 self.convertProperty(k, v)
         self.propertyEditor.addProperty(self.qObject)
 
-    # 递归的将多层属性字典转成单层的.
     def convertProperty(self, k, v):
+        """递归的将多层属性字典转成单层的."""
         if isinstance(v, dict):
             for subk, subv in v.items():
                 self.convertProperty(subk, subv)
         else:
             setattr(self.qObject, k, v)
+
+    def showQueryDialog(self, param):
+        print('show query dialog')
