@@ -199,7 +199,7 @@ class MainWindow(BaseWindow):
                              triggered=lambda: pyperclip.copy('%s' % index.data()))
         copyAction.setShortcut('Ctrl+C')
         queryAction = QAction(IconTool.buildQIcon('data.png'), 'Query Data...', self,
-                              triggered=lambda: self.showQueryDialog(item.data))
+                              triggered=lambda: self.showQueryDialog({11:'a'}))
         queryAction.setShortcut('Alt+Q')
 
         menu.addAction(copyAction)
