@@ -44,6 +44,7 @@ ITEM_TYPE_PROVIDER = 'provider'
 class MainWindow(BaseWindow):
     def __init__(self):
         super().__init__()
+        self.qObject = QObject()
         self.initUI()
         self.show()
 
@@ -213,13 +214,13 @@ class MainWindow(BaseWindow):
         elif item.type == ITEM_TYPE_PAGE:  # 树第二层,page下的子节点
             pageId = item.id
             self.showXulDebugData(XulDebugServerHelper.HOST + 'get-layout/' + pageId)
-            self.fillPropertyEditor(item.data)
         elif item.type == ITEM_TYPE_USER_OBJECT:  # 树第二层,userObject下的子节点
             objectId = item.id
             self.showXulDebugData(XulDebugServerHelper.HOST + 'get-user-object/' + objectId)
         elif item.type == ITEM_TYPE_PROVIDER:  # 树第三层,userObject下的DataService下的子节点
             print(item.id, item.type, item.data)
             pass
+        self.fillPropertyEditor(item.data)
 
     def buildPageItem(self):
         self.pageItem.removeRows(0, self.pageItem.rowCount())
@@ -287,7 +288,9 @@ class MainWindow(BaseWindow):
         self.statusBar().showMessage(url)
 
     def fillPropertyEditor(self, data):
+        self.propertyEditor.clearProperty()
         self.qObject = QObject()
-        for k, v in data.items():
-            setattr(self.qObject, k, v)
+        if isinstance(data, dict):
+            for k, v in data.items():
+                setattr(self.qObject, k, v)
         self.propertyEditor.addProperty(self.qObject)
