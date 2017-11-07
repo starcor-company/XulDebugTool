@@ -219,7 +219,6 @@ class MainWindow(BaseWindow):
             self.showXulDebugData(XulDebugServerHelper.HOST + 'get-user-object/' + objectId)
         elif item.type == ITEM_TYPE_PROVIDER:  # 树第三层,userObject下的DataService下的子节点
             print(item.id, item.type, item.data)
-            pass
         self.fillPropertyEditor(item.data)
 
     def buildPageItem(self):
@@ -292,5 +291,13 @@ class MainWindow(BaseWindow):
         self.qObject = QObject()
         if isinstance(data, dict):
             for k, v in data.items():
-                setattr(self.qObject, k, v)
+                self.convertProperty(k, v)
         self.propertyEditor.addProperty(self.qObject)
+
+    # 递归的将多层属性字典转成单层的.
+    def convertProperty(self, k, v):
+        if isinstance(v, dict):
+            for subk, subv in v.items():
+                self.convertProperty(subk, subv)
+        else:
+            setattr(self.qObject, k, v)
