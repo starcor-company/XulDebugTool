@@ -87,10 +87,8 @@ class PropertyModel(QAbstractItemModel):
         self.endInsertRows()
 
     def clear(self):
-        self.beginInsertRows(QModelIndex(), 0, self.rowCount(self.rootItem))
-        self.rootItem = Property('Root', None, None)
+        self.rootItem = Property('Root', None, self)
         self.items = []
-        self.endInsertRows()
 
     def setHeaderData(self, headerList, role=Qt.DisplayRole):
         self.headerList = headerList
