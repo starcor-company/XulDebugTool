@@ -13,7 +13,7 @@ class Property(object):
         self.parent = parent
         self.children = []
 
-        if parent is not None:
+        if parent is not None and isinstance(parent, Property):
             parent.addChild(self)
 
     def isValid(self):

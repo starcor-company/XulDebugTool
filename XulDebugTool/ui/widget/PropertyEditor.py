@@ -16,8 +16,5 @@ class PropertyEditor(QTreeView):
         self.model.addProperty(p)
         self.expandToDepth(0)
 
-    def setProperty(self, p):
+    def clearProperty(self):
         self.model.clear()
-        if p:
-            self.model.addItem(p)
-        self.expandToDepth(0)
