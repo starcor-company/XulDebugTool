@@ -19,6 +19,7 @@ from PyQt5.QtWidgets import *
 from XulDebugTool.ui.BaseWindow import BaseWindow
 from XulDebugTool.ui.widget.BaseDialog import BaseDialog
 from XulDebugTool.ui.widget.ConsoleView import ConsoleWindow
+from XulDebugTool.ui.widget.DataQueryDialog import DataQueryDialog
 from XulDebugTool.ui.widget.PropertyEditor import PropertyEditor
 from XulDebugTool.ui.widget.SearchBarQLineEdit import SearchBarQLineEdit
 from XulDebugTool.utils.IconTool import IconTool
@@ -325,7 +326,5 @@ class MainWindow(BaseWindow):
 
     def showQueryDialog(self, param):
         print('show query dialog: ', param)
-        self.dialog = BaseDialog()
-        self.dialog.initWindow()
-        self.dialog.setWindowModality(Qt.ApplicationModal)
+        self.dialog = DataQueryDialog()
         self.dialog.show()
