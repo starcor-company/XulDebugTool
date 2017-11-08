@@ -10,19 +10,20 @@ author: Kenshin
 last edited: 2017.10.23
 """
 
+import pyperclip
+from PyQt5.QtCore import *
+from PyQt5.QtGui import *
+from PyQt5.QtWebEngineWidgets import QWebEngineView
+from PyQt5.QtWidgets import *
+
 from XulDebugTool.ui.BaseWindow import BaseWindow
 from XulDebugTool.ui.widget.BaseDialog import BaseDialog
+from XulDebugTool.ui.widget.ConsoleView import ConsoleWindow
 from XulDebugTool.ui.widget.PropertyEditor import PropertyEditor
 from XulDebugTool.ui.widget.SearchBarQLineEdit import SearchBarQLineEdit
 from XulDebugTool.utils.IconTool import IconTool
 from XulDebugTool.utils.Utils import Utils
 from XulDebugTool.utils.XulDebugServerHelper import XulDebugServerHelper
-from PyQt5.QtWidgets import *
-from PyQt5.QtCore import *
-from PyQt5.QtGui import *
-from PyQt5.QtWebEngineWidgets import QWebEngineView
-
-import pyperclip
 
 ROOT_ITEM_PAGE = 'Page'
 ROOT_ITEM_USER_OBJECT = 'User-Object'
@@ -46,8 +47,12 @@ class MainWindow(BaseWindow):
     def __init__(self):
         super().__init__()
         self.qObject = QObject()
+        self.initConsole()
         self.initUI()
         self.show()
+
+    def initConsole(self):
+        self.consoleView = ConsoleWindow()
 
     def initUI(self):
         self.resize(1400, 800)
@@ -177,16 +182,23 @@ class MainWindow(BaseWindow):
 
         # ----------------------------entire layout---------------------------- #
 
-        self.mainSplitter = QSplitter(Qt.Horizontal)
-        self.mainSplitter.setHandleWidth(0)  # thing to grab the splitter
+        self.contentSplitter = QSplitter(Qt.Horizontal)
+        self.contentSplitter.setHandleWidth(0)  # thing to grab the splitter
 
-        self.mainSplitter.addWidget(leftContainer)
-        self.mainSplitter.addWidget(middleContainer)
-        self.mainSplitter.addWidget(rightContainer)
-        self.mainSplitter.setStretchFactor(0, 0)
-        self.mainSplitter.setStretchFactor(1, 6)
-        self.mainSplitter.setStretchFactor(2, 6)
+        self.contentSplitter.addWidget(leftContainer)
+        self.contentSplitter.addWidget(middleContainer)
+        self.contentSplitter.addWidget(rightContainer)
+        self.contentSplitter.setStretchFactor(0, 0)
+        self.contentSplitter.setStretchFactor(1, 6)
+        self.contentSplitter.setStretchFactor(2, 6)
 
+        self.mainSplitter = QSplitter(Qt.Vertical)
+        self.mainSplitter.setHandleWidth(0)
+
+        self.mainSplitter.addWidget(self.contentSplitter)
+        self.mainSplitter.addWidget(self.consoleView)
+        self.mainSplitter.setStretchFactor(1, 0)
+        self.mainSplitter.setStretchFactor(2,1)
         self.setCentralWidget(self.mainSplitter)
 
     @pyqtSlot(QPoint)

@@ -15,3 +15,13 @@ class ConsoleController(object):
         windowStr = LogFormatTool.buildStardardTime() + " - " + loggername + " - " + mode + " - " + msg
         print(windowStr)
         return
+
+    def windowRequest(self, loggername, mode, msg, url):
+        windowStr = LogFormatTool.buildStardardTime() + " - " + loggername + "- REQUEST URL: " + url + " - " + mode + " - " + msg
+        print(windowStr)
+        return
+
+    def windowResponse(self, loggername, mode, msg, url):
+        windowStr = LogFormatTool.buildStardardTime() + " - " + loggername + "- RESPONSE URL: " + url + " - " + mode + " - " + msg
+        print(windowStr)
+        return
