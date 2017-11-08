@@ -326,5 +326,7 @@ class MainWindow(BaseWindow):
 
     def showQueryDialog(self, param):
         print('show query dialog: ', param)
+        modes = str(param['ds']['@mode']).split('|')
         self.dialog = DataQueryDialog()
+        self.dialog.setModel(modes)
         self.dialog.show()

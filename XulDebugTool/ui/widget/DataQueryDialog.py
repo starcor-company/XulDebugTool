@@ -61,3 +61,7 @@ class DataQueryDialog(BaseDialog):
         self.paramGridLayout.addWidget(self.whereLineEdit0, 0, 0, 1, 1)
         self.paramGridLayout.addWidget(self.isLneEdit0, 0, 1, 1, 1)
         self.paramGridLayout.setGeometry(QtCore.QRect(30, 90, 251, 23))
+
+    def setModel(self, supportModels):
+        for model in supportModels:
+            self.modeComboBox.addItem(model)
