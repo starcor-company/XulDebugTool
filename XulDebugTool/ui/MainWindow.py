@@ -11,6 +11,7 @@ last edited: 2017.10.23
 """
 
 from XulDebugTool.ui.BaseWindow import BaseWindow
+from XulDebugTool.ui.widget.BaseDialog import BaseDialog
 from XulDebugTool.ui.widget.PropertyEditor import PropertyEditor
 from XulDebugTool.ui.widget.SearchBarQLineEdit import SearchBarQLineEdit
 from XulDebugTool.utils.IconTool import IconTool
@@ -198,12 +199,12 @@ class MainWindow(BaseWindow):
         copyAction = QAction(IconTool.buildQIcon('copy.png'), 'Copy', self,
                              triggered=lambda: pyperclip.copy('%s' % index.data()))
         copyAction.setShortcut('Ctrl+C')
-        queryAction = QAction(IconTool.buildQIcon('data.png'), 'Query Data...', self,
-                              triggered=lambda: self.showQueryDialog({11:'a'}))
-        queryAction.setShortcut('Alt+Q')
 
         menu.addAction(copyAction)
         if item.type == ITEM_TYPE_PROVIDER:
+            queryAction = QAction(IconTool.buildQIcon('data.png'), 'Query Data...', self,
+                                  triggered=lambda: self.showQueryDialog(item.data))
+            queryAction.setShortcut('Alt+Q')
             menu.addAction(queryAction)
         menu.exec_(self.treeView.viewport().mapToGlobal(point))
 
@@ -311,4 +312,8 @@ class MainWindow(BaseWindow):
             setattr(self.qObject, k, v)
 
     def showQueryDialog(self, param):
-        print('show query dialog')
+        print('show query dialog: ', param)
+        self.dialog = BaseDialog()
+        self.dialog.initWindow()
+        self.dialog.setWindowModality(Qt.ApplicationModal)
+        self.dialog.show()
