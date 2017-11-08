@@ -44,8 +44,10 @@ class Property(object):
         return self.parent
 
     def row(self):
-        if self.parent is not None:
-            return self.parent().child().index(self)
+        if self.parent is not None and isinstance(self.parent, Property):
+            return self.parent.child().index(self)
+        else:
+            return 0
 
     def createEditor(self, parent, option, index):
         raise NotImplementedError
