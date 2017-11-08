@@ -17,6 +17,7 @@ from PyQt5.QtWebEngineWidgets import QWebEngineView
 from PyQt5.QtWidgets import *
 
 from XulDebugTool.ui.BaseWindow import BaseWindow
+from XulDebugTool.ui.widget.BaseDialog import BaseDialog
 from XulDebugTool.ui.widget.ConsoleView import ConsoleWindow
 from XulDebugTool.ui.widget.PropertyEditor import PropertyEditor
 from XulDebugTool.ui.widget.SearchBarQLineEdit import SearchBarQLineEdit
@@ -205,10 +206,18 @@ class MainWindow(BaseWindow):
         index = self.treeView.indexAt(point)
         if not index.isValid():
             return
+        item = self.treeModel.itemFromIndex(index)
         menu = QMenu()
-        copyAction = QAction(IconTool.buildQIcon('copy.png'), 'Copy to Clipboard', self,
+        copyAction = QAction(IconTool.buildQIcon('copy.png'), 'Copy', self,
                              triggered=lambda: pyperclip.copy('%s' % index.data()))
+        copyAction.setShortcut('Ctrl+C')
+
         menu.addAction(copyAction)
+        if item.type == ITEM_TYPE_PROVIDER:
+            queryAction = QAction(IconTool.buildQIcon('data.png'), 'Query Data...', self,
+                                  triggered=lambda: self.showQueryDialog(item.data))
+            queryAction.setShortcut('Alt+Q')
+            menu.addAction(queryAction)
         menu.exec_(self.treeView.viewport().mapToGlobal(point))
 
     @pyqtSlot(QModelIndex)
@@ -230,7 +239,6 @@ class MainWindow(BaseWindow):
             objectId = item.id
             self.showXulDebugData(XulDebugServerHelper.HOST + 'get-user-object/' + objectId)
         elif item.type == ITEM_TYPE_PROVIDER:  # 树第三层,userObject下的DataService下的子节点
-            print(item.id, item.type, item.data)
             pass
         self.fillPropertyEditor(item.data)
 
@@ -304,5 +312,20 @@ class MainWindow(BaseWindow):
         self.qObject = QObject()
         if isinstance(data, dict):
             for k, v in data.items():
-                setattr(self.qObject, k, v)
+                self.convertProperty(k, v)
         self.propertyEditor.addProperty(self.qObject)
+
+    def convertProperty(self, k, v):
+        """递归的将多层属性字典转成单层的."""
+        if isinstance(v, dict):
+            for subk, subv in v.items():
+                self.convertProperty(subk, subv)
+        else:
+            setattr(self.qObject, k, v)
+
+    def showQueryDialog(self, param):
+        print('show query dialog: ', param)
+        self.dialog = BaseDialog()
+        self.dialog.initWindow()
+        self.dialog.setWindowModality(Qt.ApplicationModal)
+        self.dialog.show()
