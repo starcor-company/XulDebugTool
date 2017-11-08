@@ -291,6 +291,7 @@ class MainWindow(BaseWindow):
                 split = self.url.split(checkedStr)
                 self.url=''.join(split)
                 self.url = self.url.replace('&&','&')
+                self.url = self.url.replace('?&', '?')
                 if self.url.endswith('?'):
                     self.url = self.url[:-1]
                 if self.url.endswith('&'):
