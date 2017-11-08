@@ -324,9 +324,8 @@ class MainWindow(BaseWindow):
         else:
             setattr(self.qObject, k, v)
 
-    def showQueryDialog(self, param):
-        print('show query dialog: ', param)
-        modes = str(param['ds']['@mode']).split('|')
+    def showQueryDialog(self, data):
+        print('show query dialog: ', data)
         self.dialog = DataQueryDialog()
-        self.dialog.setModel(modes)
+        self.dialog.setData(data)
         self.dialog.show()

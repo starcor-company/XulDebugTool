@@ -1,12 +1,17 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 from PyQt5 import QtCore, QtGui, QtWidgets
+from PyQt5.QtCore import pyqtSlot
+
 from XulDebugTool.ui.widget.BaseDialog import BaseDialog
 
 
 class DataQueryDialog(BaseDialog):
     def __init__(self):
         super().__init__('Data Query')
+        self.providerId = ''
+        self.modes = []
+        self.paramCount = 1
         self.initWindow()
 
     def initWindow(self):
@@ -19,6 +24,7 @@ class DataQueryDialog(BaseDialog):
 
         self.addParamButton = QtWidgets.QPushButton(self.widget)
         self.addParamButton.setText("Add Param")
+        self.addParamButton.clicked.connect(self.onAddParamClick)
         self.execButton = QtWidgets.QPushButton(self.widget)
         self.execButton.setText("Execute")
 
@@ -55,13 +61,27 @@ class DataQueryDialog(BaseDialog):
         self.widget2.setGeometry(QtCore.QRect(30, 90, 251, 23))
 
         self.whereLineEdit0 = QtWidgets.QLineEdit(self.widget2)
+        self.whereLineEdit0.setFixedSize(120, 20)
         self.isLneEdit0 = QtWidgets.QLineEdit(self.widget2)
+        self.isLneEdit0.setFixedSize(120, 20)
         self.paramGridLayout = QtWidgets.QGridLayout(self.widget2)
         self.paramGridLayout.setContentsMargins(0, 0, 0, 0)
-        self.paramGridLayout.addWidget(self.whereLineEdit0, 0, 0, 1, 1)
-        self.paramGridLayout.addWidget(self.isLneEdit0, 0, 1, 1, 1)
-        self.paramGridLayout.setGeometry(QtCore.QRect(30, 90, 251, 23))
+        self.paramGridLayout.addWidget(self.whereLineEdit0, 0, 0, QtCore.Qt.AlignTop)
+        self.paramGridLayout.addWidget(self.isLneEdit0, 0, 1, QtCore.Qt.AlignTop)
 
-    def setModel(self, supportModels):
-        for model in supportModels:
+    def setData(self, data):
+        self.modes = data['ds']['@mode'].split('|')
+        for model in self.modes:
             self.modeComboBox.addItem(model)
+        self.providerId = data['@name']
+
+    @pyqtSlot()
+    def onAddParamClick(self):
+        whereLineEdit = QtWidgets.QLineEdit(self.widget2)
+        whereLineEdit.setFixedSize(120, 20)
+        isLneEdit = QtWidgets.QLineEdit(self.widget2)
+        isLneEdit.setFixedSize(120, 20)
+        self.paramGridLayout.addWidget(whereLineEdit, self.paramCount, 0, QtCore.Qt.AlignTop)
+        self.paramGridLayout.addWidget(isLneEdit, self.paramCount, 1, QtCore.Qt.AlignTop)
+        self.paramCount += 1
+        self.widget2.setGeometry(QtCore.QRect(30, 90, 251, 30 * self.paramCount))
