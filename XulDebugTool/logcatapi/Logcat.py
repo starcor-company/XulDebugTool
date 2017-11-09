@@ -40,12 +40,6 @@ class STCLogger():
         self.removeHandler()
         return
 
-    def debug(self, msg):
-        self.logger.debug(msg)
-        ConsoleController.windowPrintInfo(self.loggername, "DEBUG", msg)
-        self.removeHandler()
-        return
-
     def warning(self, msg):
         self.logger.warning(msg)
         ConsoleController.windowPrintInfo(self.loggername,"WARNING", msg)
@@ -58,9 +52,21 @@ class STCLogger():
         self.removeHandler()
         return
 
-    def critical(self,msg):
+    def request(self, url, msg=None):
         self.logger.critical(msg)
-        ConsoleController.windowPrintInfo(self.loggername, "CRITICAL", msg)
+        ConsoleController.windowPrintInfo(self.loggername, "REQUEST URL:" + url, msg)
+        self.removeHandler()
+        return
+
+    def response(self, url, msg=None):
+        self.logger.debug(msg)
+        ConsoleController.windowPrintInfo(self.loggername, "RESPONSE URL:" + url, msg)
+        self.removeHandler()
+        return
+
+    def adb(self, cmd, msg=None):
+        self.logger.debug(msg)
+        ConsoleController.windowPrintInfo(self.loggername, "ADB:" + cmd, msg)
         self.removeHandler()
         return
 
