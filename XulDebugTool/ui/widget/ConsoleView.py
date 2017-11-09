@@ -69,7 +69,6 @@ class ConsoleWindow(QMainWindow):
 
         # 右
         self.textEdit = QTextEdit()
-        self.textEdit.setText("This is a TextEdit!")
 
 
         self.messageSplitter = QSplitter(Qt.Horizontal)
