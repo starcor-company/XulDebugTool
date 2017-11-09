@@ -12,7 +12,33 @@ class DataQueryDialog(BaseDialog):
         self.providerId = ''
         self.modes = []
         self.paramCount = 1
-        self.initWindow()
+        self.initWindow1()
+
+    def initWindow1(self):
+        super().initWindow()
+        self.setFixedSize(466, 256)
+        self.setWindowModality(QtCore.Qt.ApplicationModal)
+
+        self.requestLineEdit = QtWidgets.QLineEdit(self)
+        self.requestLineEdit.move(36, 15)
+        self.requestLineEdit.resize(404, 24)
+
+        self.modeLable = QtWidgets.QLabel(self)
+        self.modeLable.move(36, 44)
+        self.modeLable.resize(130, 24)
+        self.modeLable.setText('Mode:')
+
+        self.modeComboBox = QtWidgets.QComboBox(self)
+        self.modeComboBox.move(160, 44)
+        self.modeComboBox.resize(130, 24)
+        self.modeComboBox.setEditable(False)
+        self.modeComboBox.setCurrentText('query')
+        self.modeComboBox.setMaxVisibleItems(5)
+        # self.modeComboBox.setFrame(True)
+
+        self.execButton = QtWidgets.QPushButton(self)
+        self.execButton.move(333, 44)
+        self.execButton.resize(90, 24)
 
     def initWindow(self):
         super().initWindow()
