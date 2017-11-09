@@ -195,7 +195,6 @@ class MainWindow(BaseWindow):
         # ----------------------------right layout---------------------------- #
 
         self.propertyEditor = PropertyEditor(['Key', 'Value'])
-
         rightContainer = QWidget()
         layout = QVBoxLayout()
         layout.setContentsMargins(0, 0, 0, 0)
