@@ -21,7 +21,7 @@ class DataQueryDialog(BaseDialog):
 
         self.requestLineEdit = QtWidgets.QLineEdit(self)
         self.requestLineEdit.move(36, 15)
-        self.requestLineEdit.resize(404, 24)
+        self.requestLineEdit.resize(300, 24)
 
         self.modeLable = QtWidgets.QLabel(self)
         self.modeLable.move(36, 44)
@@ -37,8 +37,45 @@ class DataQueryDialog(BaseDialog):
         # self.modeComboBox.setFrame(True)
 
         self.execButton = QtWidgets.QPushButton(self)
-        self.execButton.move(333, 44)
+        self.execButton.move(350, 15)
         self.execButton.resize(90, 24)
+        self.execButton.setText('Request')
+
+        self.tableView = QtWidgets.QTableWidget(self)
+        self.tableView.move(36, 80)
+        self.tableView.resize(300, 24 * 2)
+        self.tableView.setColumnCount(2)
+        self.tableView.setColumnWidth(0, 150)
+        self.tableView.setColumnWidth(1, 150)
+        self.tableView.setRowCount(1)
+        self.tableView.horizontalHeader().setFixedHeight(24)
+        self.tableView.horizontalHeader().setStyleSheet("QHeaderView::section{background:lightblue;}");
+        self.tableView.verticalHeader().setDefaultSectionSize(24)
+        self.tableView.setAlternatingRowColors(True)
+        self.tableView.setHorizontalHeaderLabels(['where', 'is'])
+        self.tableView.setFrameStyle(QtWidgets.QTableWidget.NoFrame)
+        self.tableView.setShowGrid(True)
+        self.tableView.verticalHeader().setVisible(False)
+        self.tableView.cellChanged.connect(self.onCellChanged)
+
+        self.currentRowCount = 0
+
+    def onCellChanged(self):
+        item = self.tableView.currentItem()
+        brother = QtWidgets.QTableWidgetItem()
+        if item.text():
+            if item.column() == 0:
+                brother = self.tableView.itemAt(self.currentRowCount, 1)
+            else:
+                brother = self.tableView.itemAt(self.currentRowCount, 0)
+            if brother.text():
+                self.currentRowCount += 1
+                self.tableView.insertRow(self.currentRowCount)
+                # if ((self.currentRowCount + 2) <= 5):
+                self.tableView.resize(300, 24 * (self.currentRowCount + 2))
+
+        print(item.text(), item.row(), item.column())
+        print(brother.text(), brother.row(), brother.column())
 
     def initWindow(self):
         super().initWindow()
