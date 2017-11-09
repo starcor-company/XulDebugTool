@@ -6,8 +6,8 @@ from PyQt5.QtWidgets import QMainWindow, QAction, \
     QSplitter, QApplication, QTextEdit, QWidget, QHBoxLayout, QComboBox, QPushButton, \
     QLineEdit, QSizePolicy, QVBoxLayout
 
-from XulDebugTool.utils import IconTool
 from XulDebugTool.utils.ConsoleStreamEmittor import ConsoleEmittor
+from XulDebugTool.utils.IconTool import IconTool
 
 
 class ConsoleWindow(QMainWindow):
@@ -16,8 +16,6 @@ class ConsoleWindow(QMainWindow):
     def __init__(self, parent=None):
         super(ConsoleWindow, self).__init__(parent)
 
-        sys.stdout = ConsoleEmittor(textWritten=self.normalOutputWritten)
-        sys.stder = ConsoleEmittor(textWritten=self.normalOutputWritten)
 
         # 上
         self.searchButton = QLineEdit()
@@ -40,12 +38,14 @@ class ConsoleWindow(QMainWindow):
         layout_top.addWidget(self.searchButton)
 
         self.functionTabWiget = QWidget()
+        self.functionTabWiget.setFixedHeight(40)
         self.functionTabWiget.setLayout(layout_top)
 
         # 左
         self.clearButton = QPushButton(self)
         self.clearButton.setText("Clear")  # text
-        self.clearButton.setIcon(QIcon("delete.png"))  # icon
+        icon = QIcon(IconTool.buildQIcon('delete.png'))
+        self.clearButton.setIcon(icon)  # icon
         self.clearButton.clicked.connect(self.clear)
         self.clearButton.setToolTip("Clear the logcat")  # Tool tip
         self.clearButton.move(20, 20)
@@ -65,7 +65,7 @@ class ConsoleWindow(QMainWindow):
 
         self.leftTabWiget = QWidget()
         self.leftTabWiget.setLayout(layout_left)
-        self.leftTabWiget.setGeometry(10, 20, 20, 41)
+        self.leftTabWiget.setFixedWidth(60)
 
         # 右
         self.textEdit = QTextEdit()
@@ -83,12 +83,16 @@ class ConsoleWindow(QMainWindow):
         self.mainSplitter.setHandleWidth(0)
         self.setCentralWidget(self.mainSplitter)
 
-        self.mainSplitter.setStretchFactor(0, 0)
-        self.mainSplitter.setStretchFactor(1, 0)
+        self.mainSplitter.setStretchFactor(0, 1)
+        self.mainSplitter.setStretchFactor(1, 20)
 
-        self.messageSplitter.setStretchFactor(0, 0)
-        self.messageSplitter.setStretchFactor(1, 2)
+        self.messageSplitter.setStretchFactor(0, 1)
+        self.messageSplitter.setStretchFactor(1, 40)
         self.show()
+
+        # 重定向输出
+        sys.stdout = ConsoleEmittor(textWritten=self.normalOutputWritten)
+        sys.stderr = ConsoleEmittor(textWritten=self.normalOutputWritten)
 
 
 
@@ -99,9 +103,6 @@ class ConsoleWindow(QMainWindow):
         self.textEdit.setTextCursor(cursor)
         self.textEdit.ensureCursorVisible()
 
-    def __del__(self):
-        sys.stdout = sys.__stdout__
-        sys.stderr = sys.__stderr__
 
     def initMenuBar(self):
         menuBar = self.menuBar()
@@ -114,14 +115,14 @@ class ConsoleWindow(QMainWindow):
         helpMenu.addAction(aboutAction)
 
     def clear(self):
+        self.textEdit.clear()
         return
 
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
-    form = ConsoleWindow()
-    app.exec_()
-
+    mainWin = ConsoleWindow()
+    sys.exit(app.exec_())
 
 
 
