@@ -17,6 +17,7 @@ from PyQt5.QtWebEngineWidgets import QWebEngineView
 from PyQt5.QtWidgets import *
 
 from XulDebugTool.ui.BaseWindow import BaseWindow
+from XulDebugTool.ui.SettingWindow import SettingWindow
 from XulDebugTool.ui.widget.BaseDialog import BaseDialog
 from XulDebugTool.ui.widget.ConsoleView import ConsoleWindow
 from XulDebugTool.ui.widget.DataQueryDialog import DataQueryDialog
@@ -43,6 +44,11 @@ ITEM_TYPE_USER_OBJECT = 'userObject'
 # Model树第二层的节点类型
 ITEM_TYPE_PROVIDER = 'provider'
 
+#获取元素详情的4个参数
+SKIP_PROP = 'skip-prop'
+WITH_CHILDREN = 'with-children'
+WITH_BINDING_DATA = 'with-binding-data'
+WITH_POSITION = 'with-position'
 
 class MainWindow(BaseWindow):
     def __init__(self):
@@ -73,6 +79,8 @@ class MainWindow(BaseWindow):
         fileMenu.addAction(settingAction)
         fileMenu.addAction(showLogAction)
 
+        settingAction.triggered.connect(self.openSettingWindow)
+
         editMenu = menuBar.addMenu('Edit')
         findAction = QAction(IconTool.buildQIcon('find.png'), 'Find', self)
         findAction.setShortcut('Ctrl+F')
@@ -81,6 +89,10 @@ class MainWindow(BaseWindow):
         helpMenu = menuBar.addMenu('Help')
         aboutAction = QAction(IconTool.buildQIcon('about.png'), 'About', self)
         helpMenu.addAction(aboutAction)
+
+    def openSettingWindow(self):
+        self.tableInfoModel = SettingWindow()
+        self.tableInfoModel.show()
 
     def initLayout(self):
         # ----------------------------left layout---------------------------- #
@@ -155,10 +167,20 @@ class MainWindow(BaseWindow):
         self.searchHolder.setLayout(layout)
         self.searchHolder.layout().setContentsMargins(6, 6, 6, 0)
 
-        middleContainer.stackedWidget = QStackedWidget()
+
+
+        self.tabContentWidget = QWidget()
         self.browser = QWebEngineView()
-        self.showXulDebugData(XulDebugServerHelper.HOST + 'list-pages')
-        middleContainer.stackedWidget.addWidget(self.browser)
+        layout = QVBoxLayout()
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.addWidget(self.initQCheckBoxUI())
+        layout.addWidget(self.browser)
+        self.tabContentWidget.setLayout(layout)
+
+        middleContainer.stackedWidget = QStackedWidget()
+        self.url = XulDebugServerHelper.HOST + 'list-pages'
+        self.showXulDebugData(self.url)
+        middleContainer.stackedWidget.addWidget(self.tabContentWidget)
         middleContainer.stackedWidget.addWidget(QLabel('tab2 content'))
 
         self.tabBar.currentChanged.connect(lambda: middleContainer.stackedWidget.setCurrentIndex(
@@ -179,6 +201,12 @@ class MainWindow(BaseWindow):
         layout = QVBoxLayout()
         layout.setContentsMargins(0, 0, 0, 0)
         layout.addWidget(self.propertyEditor)
+        btn = QPushButton()
+        btn.setText('更新xul布局')
+        btn.setFixedSize(150,40)
+
+        btn.clicked.connect(self.updatePage)
+        layout.addWidget(btn)
         rightContainer.setLayout(layout)
 
         # ----------------------------entire layout---------------------------- #
@@ -201,6 +229,92 @@ class MainWindow(BaseWindow):
         self.mainSplitter.setStretchFactor(1, 0)
         self.mainSplitter.setStretchFactor(2,1)
         self.setCentralWidget(self.mainSplitter)
+        #默认隐藏掉复选框
+        self.groupBox.setHidden(True)
+
+    def initQCheckBoxUI(self):
+        self.groupBox = QGroupBox()
+        self.skipPropCheckBox = QCheckBox('skip-prop', self)
+        self.skipPropCheckBox.setChecked(False)
+        self.skipPropCheckBox.stateChanged.connect(self.clickCheckBox)
+
+        self.withChildrenCheckBox = QCheckBox('with-children', self)
+        self.withChildrenCheckBox.setChecked(False)
+        self.withChildrenCheckBox.stateChanged.connect(self.clickCheckBox)
+
+        self.withBindingDataCheckBox = QCheckBox('with-binding-data', self)
+        self.withBindingDataCheckBox.setChecked(False)
+        self.withBindingDataCheckBox.stateChanged.connect(self.clickCheckBox)
+
+        self.withPositionCheckBox = QCheckBox('with-position', self)
+        self.withPositionCheckBox.setChecked(False)
+        self.withPositionCheckBox.stateChanged.connect(self.clickCheckBox)
+
+        checkGrouplayout = QHBoxLayout()
+        checkGrouplayout.addWidget(self.skipPropCheckBox)
+        checkGrouplayout.setSpacing(10)
+        checkGrouplayout.addWidget(self.withChildrenCheckBox)
+        checkGrouplayout.setSpacing(10)
+        checkGrouplayout.addWidget(self.withBindingDataCheckBox)
+        checkGrouplayout.setSpacing(10)
+        checkGrouplayout.addWidget(self.withPositionCheckBox)
+        checkGrouplayout.addStretch(10)
+        self.groupBox.setLayout(checkGrouplayout)
+        return self.groupBox
+
+    def clickCheckBox(self):
+        if self.skipPropCheckBox.isChecked():
+            self.selectCheckBoxInfo(SKIP_PROP)
+        else:
+            self.cancelCheckBoxInfo(SKIP_PROP)
+
+        if self.withChildrenCheckBox.isChecked():
+            self.selectCheckBoxInfo(WITH_CHILDREN)
+        else:
+            self.cancelCheckBoxInfo(WITH_CHILDREN)
+
+        if self.withBindingDataCheckBox.isChecked():
+            self.selectCheckBoxInfo(WITH_BINDING_DATA)
+        else:
+            self.cancelCheckBoxInfo(WITH_BINDING_DATA)
+
+        if self.withPositionCheckBox.isChecked():
+            self.selectCheckBoxInfo(WITH_POSITION)
+        else:
+            self.cancelCheckBoxInfo(WITH_POSITION)
+
+    def selectCheckBoxInfo(self,str):
+        if None != self.url:
+            checkedStr = str + '=' + 'true'
+            unCheckedStr = str + '=' + 'false'
+            if self.url.find('?') == -1:
+                self.url += '?'
+                self.url += checkedStr
+            else:
+                if self.url.find(str) == -1:
+                    self.url += '&'
+                    self.url += checkedStr
+                elif self.url.find(unCheckedStr) != -1:
+                    self.url=self.url.replace(unCheckedStr,checkedStr)
+            self.showXulDebugData(self.url)
+
+    def cancelCheckBoxInfo(self,str):
+        if None != self.url:
+            checkedStr = str + '=' + 'true'
+            if self.url.find(checkedStr) >= -1:
+                split = self.url.split(checkedStr)
+                self.url=''.join(split)
+                self.url = self.url.replace('&&','&')
+                self.url = self.url.replace('?&', '?')
+                if self.url.endswith('?'):
+                    self.url = self.url[:-1]
+                if self.url.endswith('&'):
+                    self.url = self.url[:-1]
+                self.showXulDebugData(self.url)
+
+
+    def updatePage(self):
+        print('update!!!!')
 
     @pyqtSlot(QPoint)
     def openContextMenu(self, point):
@@ -227,20 +341,31 @@ class MainWindow(BaseWindow):
 
         if item.type == ITEM_TYPE_PAGE_ROOT:  # 树第一层,page节点
             self.buildPageItem()
-            self.showXulDebugData(XulDebugServerHelper.HOST + 'list-pages')
+            self.url = XulDebugServerHelper.HOST + 'list-pages'
+            self.showXulDebugData(self.url)
         elif item.type == ITEM_TYPE_USER_OBJECT_ROOT:  # 树第一层,userObject节点
             self.buildUserObjectItem()
-            self.showXulDebugData(XulDebugServerHelper.HOST + 'list-user-objects')
+            self.url = XulDebugServerHelper.HOST + 'list-user-objects'
+            self.showXulDebugData(self.url)
         elif item.type == ITEM_TYPE_PLUGIN_ROOT:  # 树第一层,plugin节点
             pass
         elif item.type == ITEM_TYPE_PAGE:  # 树第二层,page下的子节点
             pageId = item.id
-            self.showXulDebugData(XulDebugServerHelper.HOST + 'get-layout/' + pageId)
+            self.url = XulDebugServerHelper.HOST + 'get-layout/' + pageId
+            self.clickCheckBox()
+            self.showXulDebugData(self.url)
         elif item.type == ITEM_TYPE_USER_OBJECT:  # 树第二层,userObject下的子节点
             objectId = item.id
-            self.showXulDebugData(XulDebugServerHelper.HOST + 'get-user-object/' + objectId)
+            self.url = XulDebugServerHelper.HOST + 'get-user-object/' + objectId
+            self.showXulDebugData(self.url)
         elif item.type == ITEM_TYPE_PROVIDER:  # 树第三层,userObject下的DataService下的子节点
             pass
+
+        #判断是否显示复选框
+        if item.type == ITEM_TYPE_PAGE:
+            self.groupBox.setHidden(False)
+        else:
+            self.groupBox.setHidden(True)
         self.fillPropertyEditor(item.data)
 
     def buildPageItem(self):

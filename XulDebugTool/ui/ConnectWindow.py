@@ -52,7 +52,7 @@ class ConnectWindow(BaseWindow):
         self.setFixedSize(460, 150)
 
         self.ipLabel = QLabel(self)
-        self.ipLabel.setPixmap(IconTool.buildQPixmap('ip_icon.png'))
+        self.ipLabel.setPixmap(IconTool.buildQPixmap('ip.png'))
         self.ipLabel.move(40, 28)
 
         self.helpLabel = QLabel(self)
@@ -61,7 +61,7 @@ class ConnectWindow(BaseWindow):
         self.helpLabel.setToolTip('''格式: ip[:adb port][:xul port]
         default adb port is 5555
         default xul port is 55550
-        ps: 192.168.200.2:5555:55550''')
+        EX: 192.168.200.2:5555:55550''')
 
         self.ipComboBox = QComboBox(self)
         self.ipComboBox.move(80, 30)
@@ -103,17 +103,16 @@ class ConnectWindow(BaseWindow):
 
     def ComboBoxItem(self, pos, ip_src):
         qWidget = QWidget()
-        delede_button = QPushButton()
-        delede_button.setStyleSheet("background:transparent;")
-        icon = QIcon(IconTool.buildQIcon('delete.png'))
-        delede_button.setIcon(icon)
-        delede_button.clicked.connect(lambda :self.onDeleteComBoxItem(pos, ip_src))
-        main_layout = QHBoxLayout()
-        main_layout.addStretch()
-        main_layout.addWidget(delede_button)
-        main_layout.setContentsMargins(0,0,0,0)
-        main_layout.setSpacing(5)
-        qWidget.setLayout(main_layout)
+        deledeButton = QPushButton()
+        deledeButton.setStyleSheet("background:transparent;")
+        deledeButton.setIcon(QIcon(IconTool.buildQIcon('delete.png')))
+        deledeButton.clicked.connect(lambda :self.onDeleteComBoxItem(pos, ip_src))
+        boxLayout = QHBoxLayout()
+        boxLayout.addStretch()
+        boxLayout.addWidget(deledeButton)
+        boxLayout.setContentsMargins(0,0,0,0)
+        boxLayout.setSpacing(5)
+        qWidget.setLayout(boxLayout)
         return qWidget
 
     def onDeleteComBoxItem(self, pos, text):
