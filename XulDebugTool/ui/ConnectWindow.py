@@ -52,7 +52,7 @@ class ConnectWindow(BaseWindow):
         self.setFixedSize(460, 150)
 
         self.ipLabel = QLabel(self)
-        self.ipLabel.setPixmap(IconTool.buildQPixmap('ip_icon.png'))
+        self.ipLabel.setPixmap(IconTool.buildQPixmap('ip.png'))
         self.ipLabel.move(40, 28)
 
         self.helpLabel = QLabel(self)
