@@ -200,12 +200,6 @@ class MainWindow(BaseWindow):
         layout = QVBoxLayout()
         layout.setContentsMargins(0, 0, 0, 0)
         layout.addWidget(self.propertyEditor)
-        btn = QPushButton()
-        btn.setText('更新xul布局')
-        btn.setFixedSize(150,40)
-
-        btn.clicked.connect(self.updatePage)
-        layout.addWidget(btn)
         rightContainer.setLayout(layout)
 
         # ----------------------------entire layout---------------------------- #
@@ -311,9 +305,6 @@ class MainWindow(BaseWindow):
                     self.url = self.url[:-1]
                 self.showXulDebugData(self.url)
 
-
-    def updatePage(self):
-        print('update!!!!')
 
     @pyqtSlot(QPoint)
     def openContextMenu(self, point):
