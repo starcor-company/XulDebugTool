@@ -17,6 +17,7 @@ from PyQt5.QtWebEngineWidgets import QWebEngineView
 from PyQt5.QtWidgets import *
 
 from XulDebugTool.ui.BaseWindow import BaseWindow
+from XulDebugTool.ui.SettingWindow import SettingWindow
 from XulDebugTool.ui.widget.BaseDialog import BaseDialog
 from XulDebugTool.ui.widget.ConsoleView import ConsoleWindow
 from XulDebugTool.ui.widget.PropertyEditor import PropertyEditor
@@ -77,6 +78,8 @@ class MainWindow(BaseWindow):
         fileMenu.addAction(settingAction)
         fileMenu.addAction(showLogAction)
 
+        settingAction.triggered.connect(self.openSettingWindow)
+
         editMenu = menuBar.addMenu('Edit')
         findAction = QAction(IconTool.buildQIcon('find.png'), 'Find', self)
         findAction.setShortcut('Ctrl+F')
@@ -85,6 +88,10 @@ class MainWindow(BaseWindow):
         helpMenu = menuBar.addMenu('Help')
         aboutAction = QAction(IconTool.buildQIcon('about.png'), 'About', self)
         helpMenu.addAction(aboutAction)
+
+    def openSettingWindow(self):
+        self.tableInfoModel = SettingWindow()
+        self.tableInfoModel.show()
 
     def initLayout(self):
         # ----------------------------left layout---------------------------- #
@@ -193,6 +200,12 @@ class MainWindow(BaseWindow):
         layout = QVBoxLayout()
         layout.setContentsMargins(0, 0, 0, 0)
         layout.addWidget(self.propertyEditor)
+        btn = QPushButton()
+        btn.setText('更新xul布局')
+        btn.setFixedSize(150,40)
+
+        btn.clicked.connect(self.updatePage)
+        layout.addWidget(btn)
         rightContainer.setLayout(layout)
 
         # ----------------------------entire layout---------------------------- #
@@ -298,6 +311,9 @@ class MainWindow(BaseWindow):
                     self.url = self.url[:-1]
                 self.showXulDebugData(self.url)
 
+
+    def updatePage(self):
+        print('update!!!!')
 
     @pyqtSlot(QPoint)
     def openContextMenu(self, point):
