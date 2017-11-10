@@ -19,6 +19,6 @@ class WebShareObject(QWidget):
         return '100'
 
     def _setStrValue(self, str):
-        print('页面收到的参数:%s' % str)
+        print('receive %s' % str)
 
     strValue = pyqtProperty(str, fget=_getStrValue, fset=_setStrValue)

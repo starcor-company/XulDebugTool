@@ -4,12 +4,26 @@ window.onload = function () {
         window.bridge = channel.objects.bridge
     });
 
-    var bObj = document.getElementsByClassName("html-attribute-value");
+    var bObj = document.getElementsByClassName("html-attribute");
     for (var i = 0, item; item = bObj[i]; i++) {
-        item.onclick = objclick;
+        if (item.children[0].innerText == "id") {
+            item.onclick = objclick;
+        }
     }
 
     function objclick() {
-        window.bridge.strValue = this.innerText
+        var id = this.children[1].innerText
+        var xml = document.getElementById("webkit-xml-viewer-source-xml").innerHTML
+        window.bridge.strValue = JSON.stringify({"Id":id,"xml":xml});
     }
+
+    // function findParentByClass(node,clazzName) {
+    //     var parentNode = node.parentNode;
+    //     while (parentNode){
+    //         if(parentNode.getAttribute("class") == clazzName){
+    //             return parentNode;
+    //         }
+    //         parentNode = parentNode.parentNode;
+    //     }
+    // }
 };

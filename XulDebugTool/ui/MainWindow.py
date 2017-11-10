@@ -10,6 +10,7 @@ author: Kenshin
 last edited: 2017.10.23
 """
 import os
+
 import pyperclip
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
@@ -26,8 +27,8 @@ from XulDebugTool.ui.widget.PropertyEditor import PropertyEditor
 from XulDebugTool.ui.widget.SearchBarQLineEdit import SearchBarQLineEdit
 from XulDebugTool.utils.IconTool import IconTool
 from XulDebugTool.utils.Utils import Utils
-from XulDebugTool.utils.WebShareObject import WebShareObject
 from XulDebugTool.utils.XulDebugServerHelper import XulDebugServerHelper
+from XulDebugTool.webprocess.WebShareObject import WebShareObject
 
 ROOT_ITEM_PAGE = 'Page'
 ROOT_ITEM_USER_OBJECT = 'User-Object'
