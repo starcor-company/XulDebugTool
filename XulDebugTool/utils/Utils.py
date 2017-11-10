@@ -4,6 +4,7 @@
 
 import json
 import xmltodict
+from PyQt5.QtWebEngineWidgets import QWebEngineScript
 
 
 class Utils(object):
@@ -16,3 +17,12 @@ class Utils(object):
             return json.loads(str)
         else:
             return ''
+    @staticmethod
+    def scriptCreator(path, name, page):
+        script = QWebEngineScript()
+        f = open(path, 'r')
+        script.setSourceCode(f.read())
+        script.setInjectionPoint(QWebEngineScript.DocumentReady)
+        script.setName(name)
+        script.setWorldId(QWebEngineScript.MainWorld)
+        page.scripts().insert(script)
