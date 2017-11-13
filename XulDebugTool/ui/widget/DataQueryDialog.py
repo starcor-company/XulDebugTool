@@ -6,8 +6,9 @@ from PyQt5.QtCore import pyqtSlot
 from XulDebugTool.ui.widget.BaseDialog import BaseDialog
 from XulDebugTool.utils.XulDebugServerHelper import XulDebugServerHelper
 
-# 查询的model应该从项目支持的mode获取, 但是因为各个项目的provider写的不标准,统一固定这些方式,不是所有的provider都支持这5种
-MODES = ['query', 'pull', 'insert', 'delete', 'update']
+# 查询的model应该从项目支持的mode获取, 但是因为各个项目的provider写的不标准,统一固定这些方式,不是所有的provider都支持这6种
+MODES = {'query': 'query-data', 'pull': 'pull-data', 'insert': 'insert-data',
+         'delete': 'delete-data', 'update': 'update-data', 'invoke': 'invoke-data'}
 
 
 class DataQueryDialog(BaseDialog):
@@ -74,16 +75,16 @@ class DataQueryDialog(BaseDialog):
 
         # 查询的mode应该从项目支持的mode获取
         # 但是因为各个项目的provider写的不标准
-        # 所以这里统一固定这些方式,不是所有的provider都支持这5种
+        # 所以这里统一固定这些方式,不是所有的provider都支持这6种
         # self.modes = self.data['ds']['@mode'].split('|')
         self.modes = MODES
-        for model in self.modes:
+        for model in self.modes.keys():
             self.modeComboBox.addItem(model)
-        self.url = XulDebugServerHelper.HOST + self.modeComboBox.currentText() + '/' + self.providerId + '?'
+        self.url = XulDebugServerHelper.HOST + MODES[self.modeComboBox.currentText().lower()] + '/' + self.providerId + '?'
         self.requestLineEdit.setText(self.url)
 
     def onModeChanged(self):
-        self.url = XulDebugServerHelper.HOST + self.modeComboBox.currentText() \
+        self.url = XulDebugServerHelper.HOST + MODES[self.modeComboBox.currentText().lower()] \
                    + '/' + self.providerId + '?' + self.getQueryParam()
         self.requestLineEdit.setText(self.url)
 
