@@ -239,7 +239,7 @@ class MainWindow(BaseWindow):
                                                 'QTabBar::tab:selected{background:lightgray}'))
 
         self.rightSiderTabWidget.addTab(self.propertyEditor,'property')
-        self.rightSiderTabWidget.addTab(self.qtextEdit,'collection')
+        self.rightSiderTabWidget.addTab(self.qtextEdit,'favorite')
 
         self.rightSiderTabBar.tabBarClicked.connect(self.rightSiderClick)
 
