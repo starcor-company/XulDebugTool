@@ -6,14 +6,21 @@ from PyQt5.QtCore import pyqtSlot
 from XulDebugTool.ui.widget.BaseDialog import BaseDialog
 from XulDebugTool.utils.XulDebugServerHelper import XulDebugServerHelper
 
+# 查询的model应该从项目支持的mode获取, 但是因为各个项目的provider写的不标准,统一固定这些方式,不是所有的provider都支持这5种
+MODES = ['query', 'pull', 'insert', 'delete', 'update']
+
 
 class DataQueryDialog(BaseDialog):
-    def __init__(self):
-        super().__init__('Data Query')
-        self.providerId = ''
-        self.modes = []
-        self.initWindow()
+    def __init__(self, data):
+        self.data = data
+        self.providerId = self.data['@name']
         self.url = ''
+        self.modes = []
+        self.currentRowCount = 0
+        self.providerName = self.data['ds']['@providerClass']
+
+        super().__init__(self.providerName)
+        self.initWindow()
 
     def initWindow(self):
         super().initWindow()
@@ -31,11 +38,11 @@ class DataQueryDialog(BaseDialog):
 
         self.modeComboBox = QtWidgets.QComboBox(self)
         self.modeComboBox.move(187, 44)
-        self.modeComboBox.resize(130, 24)
+        self.modeComboBox.resize(150, 24)
         self.modeComboBox.setEditable(False)
         self.modeComboBox.setCurrentText('query')
         self.modeComboBox.setMaxVisibleItems(5)
-        # self.modeComboBox.setFrame(True)
+        self.modeComboBox.currentTextChanged.connect(self.onModeChanged)
 
         self.execButton = QtWidgets.QPushButton(self)
         self.execButton.move(350, 15)
@@ -57,6 +64,7 @@ class DataQueryDialog(BaseDialog):
         self.tableView.verticalHeader().setVisible(False)
         self.tableView.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
 
+        # fill data
         # 初始化查询条件表, 一行,两列
         for i in range(self.tableView.rowCount()):
             for j in range(self.tableView.columnCount()):
@@ -64,7 +72,20 @@ class DataQueryDialog(BaseDialog):
                 self.tableView.setItem(i, j, newItem)
         self.tableView.cellChanged.connect(self.onCellChanged)
 
-        self.currentRowCount = 0
+        # 查询的mode应该从项目支持的mode获取
+        # 但是因为各个项目的provider写的不标准
+        # 所以这里统一固定这些方式,不是所有的provider都支持这5种
+        # self.modes = self.data['ds']['@mode'].split('|')
+        self.modes = MODES
+        for model in self.modes:
+            self.modeComboBox.addItem(model)
+        self.url = XulDebugServerHelper.HOST + self.modeComboBox.currentText() + '/' + self.providerId + '?'
+        self.requestLineEdit.setText(self.url)
+
+    def onModeChanged(self):
+        self.url = XulDebugServerHelper.HOST + self.modeComboBox.currentText() \
+                   + '/' + self.providerId + '?' + self.getQueryParam()
+        self.requestLineEdit.setText(self.url)
 
     def onCellChanged(self):
         # 当单元格变化的时候检测需不需要新增一行
@@ -86,8 +107,12 @@ class DataQueryDialog(BaseDialog):
                     self.tableView.resize(300, 24 * (self.currentRowCount + 2))
                 else:
                     self.tableView.resize(322, 24 * 7)
+        url = self.url + self.getQueryParam()
+        self.requestLineEdit.setText(url)
 
-        # 获取所有行的数据,组成查询条件
+    def getQueryParam(self):
+        # 获取所有查询条件,并组装成查询参数
+        param = ''
         queryClause = {}
         for i in range(self.tableView.rowCount()):
             for j in range(self.tableView.columnCount()):
@@ -99,11 +124,9 @@ class DataQueryDialog(BaseDialog):
                         isClause = item.text()
             if whereClause and isClause:
                 queryClause[whereClause] = isClause
-        param = ''
         for k, v in queryClause.items():
             param += (k + '=' + v + '&')
-        url = self.url + param
-        self.requestLineEdit.setText(url)
+        return param
 
     def setData(self, data):
         self.modes = data['ds']['@mode'].split('|')
