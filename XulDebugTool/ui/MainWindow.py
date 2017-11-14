@@ -493,6 +493,6 @@ class MainWindow(BaseWindow):
 
     def showQueryDialog(self, data):
         print('show query dialog: ', data)
-        self.dialog = DataQueryDialog()
-        self.dialog.setData(data)
+        self.dialog = DataQueryDialog(data)
+        self.dialog.finishSignal.connect(lambda url: self.browser.load(QUrl(url)))
         self.dialog.show()
