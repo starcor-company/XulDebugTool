@@ -1,7 +1,7 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-from PyQt5 import QtCore, QtGui, QtWidgets
-from PyQt5.QtCore import pyqtSlot
+from PyQt5 import QtCore, QtWidgets
+from PyQt5.QtCore import pyqtSignal
 
 from XulDebugTool.ui.widget.BaseDialog import BaseDialog
 from XulDebugTool.utils.XulDebugServerHelper import XulDebugServerHelper
@@ -12,6 +12,8 @@ MODES = {'query': 'query-data', 'pull': 'pull-data', 'insert': 'insert-data',
 
 
 class DataQueryDialog(BaseDialog):
+    finishSignal = pyqtSignal(str)
+
     def __init__(self, data):
         self.data = data
         self.providerId = self.data['@name']
@@ -45,10 +47,11 @@ class DataQueryDialog(BaseDialog):
         self.modeComboBox.setMaxVisibleItems(5)
         self.modeComboBox.currentTextChanged.connect(self.onModeChanged)
 
-        self.execButton = QtWidgets.QPushButton(self)
-        self.execButton.move(350, 15)
-        self.execButton.resize(90, 24)
-        self.execButton.setText('Request')
+        self.requestButton = QtWidgets.QPushButton(self)
+        self.requestButton.move(350, 15)
+        self.requestButton.resize(90, 24)
+        self.requestButton.setText('Request')
+        self.requestButton.clicked.connect(self.onBtnClicked)
 
         self.tableView = QtWidgets.QTableWidget(1, 2, self)
         self.tableView.move(36, 80)
@@ -85,7 +88,7 @@ class DataQueryDialog(BaseDialog):
 
     def onModeChanged(self):
         self.url = XulDebugServerHelper.HOST + MODES[self.modeComboBox.currentText().lower()] \
-                   + '/' + self.providerId + '?' + self.getQueryParam()
+                   + '/' + self.providerId + '?' + self.__getQueryParam()
         self.requestLineEdit.setText(self.url)
 
     def onCellChanged(self):
@@ -108,10 +111,17 @@ class DataQueryDialog(BaseDialog):
                     self.tableView.resize(300, 24 * (self.currentRowCount + 2))
                 else:
                     self.tableView.resize(322, 24 * 7)
-        url = self.url + self.getQueryParam()
+        url = self.url + self.__getQueryParam()
         self.requestLineEdit.setText(url)
 
-    def getQueryParam(self):
+    def onBtnClicked(self):
+        self.url = XulDebugServerHelper.HOST + MODES[self.modeComboBox.currentText().lower()] \
+                   + '/' + self.providerId + '?' + self.__getQueryParam()
+        print('data query url: ' + self.url)
+        self.finishSignal.emit(self.url)
+        self.close()
+
+    def __getQueryParam(self):
         # 获取所有查询条件,并组装成查询参数
         param = ''
         queryClause = {}
