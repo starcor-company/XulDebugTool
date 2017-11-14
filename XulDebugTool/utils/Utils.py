@@ -5,7 +5,7 @@
 import json
 import xmltodict
 from PyQt5.QtWebEngineWidgets import QWebEngineScript
-
+from lxml import etree
 
 class Utils(object):
     @staticmethod
@@ -26,3 +26,15 @@ class Utils(object):
         script.setName(name)
         script.setWorldId(QWebEngineScript.MainWorld)
         page.scripts().insert(script)
+    @staticmethod
+    def findNodeById(str):
+        dict = json.loads(str)
+        id = dict['Id']
+        xml = dict['xml']
+        root = etree.fromstring(xml)
+        # print(etree.tostring(root, pretty_print=True).decode('utf-8'))
+        try:
+            list = root.xpath("//*[@id=%s]" % id)
+        except Exception as e:
+            print(e)
+        return list
