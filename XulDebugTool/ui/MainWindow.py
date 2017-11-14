@@ -116,6 +116,7 @@ class MainWindow(BaseWindow):
         self.treeView.setEditTriggers(QAbstractItemView.NoEditTriggers)
         self.treeView.setContextMenuPolicy(Qt.CustomContextMenu)
         self.treeView.customContextMenuRequested.connect(self.openContextMenu)
+        self.treeView.doubleClicked.connect(self.onTreeItemDoubleClicked)
         self.treeView.clicked.connect(self.getDebugData)
 
         leftContainer = QWidget()
@@ -365,16 +366,17 @@ class MainWindow(BaseWindow):
             return
         item = self.treeModel.itemFromIndex(index)
         menu = QMenu()
-        copyAction = QAction(IconTool.buildQIcon('copy.png'), 'Copy', self,
-                             triggered=lambda: pyperclip.copy('%s' % index.data()))
-        copyAction.setShortcut('Ctrl+C')
 
-        menu.addAction(copyAction)
         if item.type == ITEM_TYPE_PROVIDER:
             queryAction = QAction(IconTool.buildQIcon('data.png'), 'Query Data...', self,
                                   triggered=lambda: self.showQueryDialog(item.data))
             queryAction.setShortcut('Alt+Q')
             menu.addAction(queryAction)
+
+        copyAction = QAction(IconTool.buildQIcon('copy.png'), 'Copy', self,
+                             triggered=lambda: pyperclip.copy('%s' % index.data()))
+        copyAction.setShortcut('Ctrl+C')
+        menu.addAction(copyAction)
         menu.exec_(self.treeView.viewport().mapToGlobal(point))
 
     @pyqtSlot(QModelIndex)
@@ -403,12 +405,14 @@ class MainWindow(BaseWindow):
         elif item.type == ITEM_TYPE_PROVIDER:  # 树第三层,userObject下的DataService下的子节点
             pass
 
-        #判断是否显示复选框
-        if item.type == ITEM_TYPE_PAGE:
-            self.groupBox.setHidden(False)
-        else:
-            self.groupBox.setHidden(True)
+        self.groupBox.setHidden(item.type != ITEM_TYPE_PAGE)
         self.fillPropertyEditor(item.data)
+
+    @pyqtSlot(QModelIndex)
+    def onTreeItemDoubleClicked(self, index):
+        item = self.treeModel.itemFromIndex(index)
+        if item.type == ITEM_TYPE_PROVIDER:
+            self.showQueryDialog(item.data)
 
     def buildPageItem(self):
         self.pageItem.removeRows(0, self.pageItem.rowCount())
@@ -494,5 +498,9 @@ class MainWindow(BaseWindow):
     def showQueryDialog(self, data):
         print('show query dialog: ', data)
         self.dialog = DataQueryDialog(data)
-        self.dialog.finishSignal.connect(lambda url: self.browser.load(QUrl(url)))
+        self.dialog.finishSignal.connect(self.onGetQueryUrl)
         self.dialog.show()
+
+    def onGetQueryUrl(self, url):
+        self.browser.load(QUrl(url))
+        self.statusBar().showMessage(url)
