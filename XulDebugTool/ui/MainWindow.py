@@ -25,9 +25,11 @@ from XulDebugTool.ui.widget.ConsoleView import ConsoleWindow
 from XulDebugTool.ui.widget.DataQueryDialog import DataQueryDialog
 from XulDebugTool.ui.widget.PropertyEditor import PropertyEditor
 from XulDebugTool.ui.widget.SearchBarQLineEdit import SearchBarQLineEdit
+from XulDebugTool.ui.widget.UpdateElement import UpdateElement
 from XulDebugTool.utils.IconTool import IconTool
 from XulDebugTool.utils.Utils import Utils
 from XulDebugTool.utils.XulDebugServerHelper import XulDebugServerHelper
+from XulDebugTool.webprocess.WebDataHandler import WebDataHandler
 from XulDebugTool.webprocess.WebShareObject import WebShareObject
 
 ROOT_ITEM_PAGE = 'Page'
@@ -82,7 +84,7 @@ class MainWindow(BaseWindow):
         fileMenu.addAction(settingAction)
         fileMenu.addAction(showLogAction)
 
-        settingAction.triggered.connect(self.openSettingWindow)
+        # settingAction.triggered.connect(self.openSettingWindow)
 
         editMenu = menuBar.addMenu('Edit')
         findAction = QAction(IconTool.buildQIcon('find.png'), 'Find', self)
@@ -93,9 +95,9 @@ class MainWindow(BaseWindow):
         aboutAction = QAction(IconTool.buildQIcon('about.png'), 'About', self)
         helpMenu.addAction(aboutAction)
 
-    def openSettingWindow(self):
-        self.tableInfoModel = SettingWindow()
-        self.tableInfoModel.show()
+    # def openSettingWindow(self):
+    #     self.tableInfoModel = SettingWindow()
+    #     self.tableInfoModel.show()
 
     def initLayout(self):
         # ----------------------------left layout---------------------------- #
@@ -244,6 +246,9 @@ class MainWindow(BaseWindow):
 
         self.rightSiderTabBar.tabBarClicked.connect(self.rightSiderClick)
 
+        self.inputWidget = UpdateElement()
+        self.rightSiderTabWidget.addTab(self.inputWidget, 'update')
+        self.inputWidget.updateSignal.connect(lambda str: self.addUpdate)
         # ----------------------------entire layout---------------------------- #
 
         self.contentSplitter = QSplitter(Qt.Horizontal)
@@ -266,6 +271,9 @@ class MainWindow(BaseWindow):
         self.setCentralWidget(self.mainSplitter)
         #默认隐藏掉复选框
         self.groupBox.setHidden(True)
+
+    def addUpdate(self):
+        print('update ......')
 
     def initQCheckBoxUI(self):
         self.groupBox = QGroupBox()
