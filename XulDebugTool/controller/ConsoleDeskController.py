@@ -11,11 +11,8 @@ from XulDebugTool.utils.DateFormat import LogFormatTool
 class ConsoleController(object):
 
     @classmethod
-    def windowPrintInfo(self, loggername, mode, msg=None):
-        if msg is not None:
-            windowStr = LogFormatTool.buildStandardTime() + " - " + loggername + " - " + mode + " - " + msg
-        else:
-            windowStr = LogFormatTool.buildStandardTime() + " - " + loggername + " - " + mode
-        print(windowStr)
+    def windowPrintInfo(self, loggername, mode, msg):
+        windowStr = LogFormatTool.buildStandardTime() + " - " + loggername + " - " + mode + " - "
+        print(windowStr, msg)
         return
 

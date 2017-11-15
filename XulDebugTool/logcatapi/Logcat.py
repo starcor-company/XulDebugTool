@@ -34,39 +34,34 @@ class STCLogger():
         self.logger.removeHandler(self.handler)
         return
 
-    def error(self, msg):
-        self.logger.error(msg)
-        ConsoleController.windowPrintInfo(self.loggername, "ERROR", msg)
+    def e(self, *args):
+        self.logger.error(args)
+        ConsoleController.windowPrintInfo(self.loggername, "ERROR", args)
         self.removeHandler()
         return
 
-    def warning(self, msg):
-        self.logger.warning(msg)
-        ConsoleController.windowPrintInfo(self.loggername,"WARNING", msg)
+
+    def w(self, *args):
+        self.logger.warning(args)
+        ConsoleController.windowPrintInfo(self.loggername,"WARNING", args)
         self.removeHandler()
         return
 
-    def info(self, msg):
-        self.logger.info(msg)
-        ConsoleController.windowPrintInfo(self.loggername, "INFO", msg)
+    def i(self, *args):
+        self.logger.info(args)
+        ConsoleController.windowPrintInfo(self.loggername, "INFO", args)
         self.removeHandler()
         return
 
-    def request(self, url, msg=None):
-        self.logger.critical(msg)
-        ConsoleController.windowPrintInfo(self.loggername, "REQUEST URL:" + url, msg)
+    def d(self, *args):
+        self.logger.debug(args)
+        ConsoleController.windowPrintInfo(self.loggername,"DEBUG", args)
         self.removeHandler()
         return
 
-    def response(self, url, msg=None):
-        self.logger.debug(msg)
-        ConsoleController.windowPrintInfo(self.loggername, "RESPONSE URL:" + url, msg)
-        self.removeHandler()
-        return
-
-    def adb(self, cmd, msg=None):
-        self.logger.debug(msg)
-        ConsoleController.windowPrintInfo(self.loggername, "ADB:" + cmd, msg)
+    def c(self, *args):
+        self.logger.critical(args)
+        ConsoleController.windowPrintInfo(self.loggername, "CRITICAL", args)
         self.removeHandler()
         return
 
