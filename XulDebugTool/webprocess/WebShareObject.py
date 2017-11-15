@@ -7,8 +7,11 @@ author: Allen
 last edited: 2017.11.7
 
 """
+
 from PyQt5.QtCore import pyqtProperty
-from PyQt5.QtWidgets import QWidget, QMessageBox
+from PyQt5.QtWidgets import QWidget
+
+from XulDebugTool.webprocess.WebDataHandler import WebDataHandler
 
 
 class WebShareObject(QWidget):
@@ -19,6 +22,6 @@ class WebShareObject(QWidget):
         return '100'
 
     def _setStrValue(self, str):
-        print('receive %s' % str)
+        WebDataHandler().readData(str)
 
     strValue = pyqtProperty(str, fget=_getStrValue, fset=_setStrValue)
