@@ -14,7 +14,7 @@ window.onload = function () {
     function objclick() {
         var id = this.children[1].innerText
         var xml = document.getElementById("webkit-xml-viewer-source-xml").innerHTML
-        window.bridge.strValue = JSON.stringify({"Id":id,"xml":xml});
+        window.bridge.strValue = JSON.stringify({"action":"click","Id":id,"xml":xml});
     }
 
     // function findParentByClass(node,clazzName) {
