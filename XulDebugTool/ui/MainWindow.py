@@ -134,14 +134,6 @@ class MainWindow(BaseWindow):
 
         # ----------------------------middle layout---------------------------- #
         middleContainer = QWidget()
-        middleContainer.toggleSidebarsButton = QPushButton()
-        middleContainer.toggleSidebarsButton.setToolTip('Hide / show the sidebars')
-        middleContainer.toggleSidebarsButton.setIcon(IconTool.buildQIcon('toggle_sidebars.png'))
-        middleContainer.toggleSidebarsButton.setStyleSheet('QPushButton {\
-            width: 22px;\
-            height: 22px;\
-            padding: 5px; }')
-        # middleContainer.toggle_sidebars_button.clicked.connect(self.toggle_sidebars)
 
         middleContainer.searchBar = SearchBarQLineEdit(self)
         middleContainer.searchBar.setPlaceholderText('Search')
@@ -173,7 +165,6 @@ class MainWindow(BaseWindow):
         layout.addWidget(self.pathBar)
         layout.addSpacerItem(QSpacerItem(0, 0, QSizePolicy.Expanding))
         layout.addWidget(middleContainer.searchBar)
-        layout.addWidget(middleContainer.toggleSidebarsButton)
         layout.setStretchFactor(middleContainer.searchBar, 1)
         self.searchHolder.setLayout(layout)
         self.searchHolder.layout().setContentsMargins(6, 6, 6, 0)
