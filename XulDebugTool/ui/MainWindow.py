@@ -17,10 +17,9 @@ from PyQt5.QtGui import *
 from PyQt5.QtWebChannel import QWebChannel
 from PyQt5.QtWebEngineWidgets import QWebEngineView, QWebEngineScript
 from PyQt5.QtWidgets import *
+import json
 
 from XulDebugTool.ui.BaseWindow import BaseWindow
-from XulDebugTool.ui.SettingWindow import SettingWindow
-from XulDebugTool.ui.widget.BaseDialog import BaseDialog
 from XulDebugTool.ui.widget.ConsoleView import ConsoleWindow
 from XulDebugTool.ui.widget.DataQueryDialog import DataQueryDialog
 from XulDebugTool.ui.widget.PropertyEditor import PropertyEditor
@@ -29,7 +28,6 @@ from XulDebugTool.ui.widget.UpdateElement import UpdateElement
 from XulDebugTool.utils.IconTool import IconTool
 from XulDebugTool.utils.Utils import Utils
 from XulDebugTool.utils.XulDebugServerHelper import XulDebugServerHelper
-from XulDebugTool.webprocess.WebDataHandler import WebDataHandler
 from XulDebugTool.webprocess.WebShareObject import WebShareObject
 
 ROOT_ITEM_PAGE = 'Page'
@@ -102,9 +100,6 @@ class MainWindow(BaseWindow):
         self.con = ConnectWindow()
         self.close()
 
-    def openSettingWindow(self):
-        self.tableInfoModel = SettingWindow()
-        self.tableInfoModel.show()
     # def openSettingWindow(self):
     #     self.tableInfoModel = SettingWindow()
     #     self.tableInfoModel.show()
@@ -183,8 +178,6 @@ class MainWindow(BaseWindow):
         self.searchHolder.setLayout(layout)
         self.searchHolder.layout().setContentsMargins(6, 6, 6, 0)
 
-
-
         self.tabContentWidget = QWidget()
         self.browser = QWebEngineView()
 
@@ -192,6 +185,7 @@ class MainWindow(BaseWindow):
         self.webObject = WebShareObject()
         self.channel.registerObject('bridge', self.webObject)
         self.browser.page().setWebChannel(self.channel)
+        self.webObject.jsCallback.connect(lambda value:self.addUpdate(value))
 
         qwebchannel_js = QFile(':/qtwebchannel/qwebchannel.js')
         if not qwebchannel_js.open(QIODevice.ReadOnly):
@@ -210,9 +204,6 @@ class MainWindow(BaseWindow):
 
         Utils.scriptCreator(os.path.join('..', 'resources', 'js', 'event.js'),'event.js',self.browser.page())
         self.browser.page().setWebChannel(self.channel)
-
-
-
 
         layout = QVBoxLayout()
         layout.setContentsMargins(0, 0, 0, 0)
@@ -257,8 +248,7 @@ class MainWindow(BaseWindow):
         self.rightSiderTabBar.tabBarClicked.connect(self.rightSiderClick)
 
         self.inputWidget = UpdateElement()
-        self.rightSiderTabWidget.addTab(self.inputWidget, 'update')
-        self.inputWidget.updateSignal.connect(lambda str: self.addUpdate)
+        self.rightSiderTabWidget.addTab(self.inputWidget, IconTool.buildQIcon('update.png'), 'update')
         # ----------------------------entire layout---------------------------- #
 
         self.contentSplitter = QSplitter(Qt.Horizontal)
@@ -282,8 +272,10 @@ class MainWindow(BaseWindow):
         #默认隐藏掉复选框
         self.groupBox.setHidden(True)
 
-    def addUpdate(self):
-        print('update ......')
+    def addUpdate(self, value=None):
+        self.inputWidget.initData(value)
+        self.inputWidget.updateAttrUI()
+        self.inputWidget.updateStyleUI()
 
     def initQCheckBoxUI(self):
         self.groupBox = QGroupBox()

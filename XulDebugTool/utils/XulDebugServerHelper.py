@@ -84,21 +84,11 @@ class XulDebugServerHelper(object):
 
     @staticmethod
     def updateUrl(type, id, key, value):
-        global setType
-        if type == 'set_attr':
-            setType = XulDebugServerHelper.__SET_ATTR
-        elif type == 'set_style':
-            setType = XulDebugServerHelper.__SET_STYLE
-        elif type == 'add_class':
-            setType = XulDebugServerHelper.__ADD_CLASS
-        elif type == 'remove_class':
-            setType = XulDebugServerHelper.__REMOVE_CLASS
-
         if XulDebugServerHelper.HOST == '':
             raise ValueError('Host is empty!')
         else:
             try:
-                url = XulDebugServerHelper.HOST + setType + '/' + id + '/' + key + '/' + value
+                url = XulDebugServerHelper.HOST + type + '/' + id + '/' + key + '/' + value
                 http = urllib3.PoolManager()
                 r = http.request('GET', url)
             except Exception as e:
