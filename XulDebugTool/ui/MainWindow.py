@@ -9,21 +9,26 @@ XulDebugTool
 author: Kenshin
 last edited: 2017.10.23
 """
+import os
 
 import pyperclip
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
-from PyQt5.QtWebEngineWidgets import QWebEngineView
+from PyQt5.QtWebChannel import QWebChannel
+from PyQt5.QtWebEngineWidgets import QWebEngineView, QWebEngineScript
 from PyQt5.QtWidgets import *
 
 from XulDebugTool.ui.BaseWindow import BaseWindow
+from XulDebugTool.ui.SettingWindow import SettingWindow
 from XulDebugTool.ui.widget.BaseDialog import BaseDialog
 from XulDebugTool.ui.widget.ButtomConsoleWindow import ButtomWindow
+from XulDebugTool.ui.widget.DataQueryDialog import DataQueryDialog
 from XulDebugTool.ui.widget.PropertyEditor import PropertyEditor
 from XulDebugTool.ui.widget.SearchBarQLineEdit import SearchBarQLineEdit
 from XulDebugTool.utils.IconTool import IconTool
 from XulDebugTool.utils.Utils import Utils
 from XulDebugTool.utils.XulDebugServerHelper import XulDebugServerHelper
+from XulDebugTool.webprocess.WebShareObject import WebShareObject
 
 ROOT_ITEM_PAGE = 'Page'
 ROOT_ITEM_USER_OBJECT = 'User-Object'
@@ -70,12 +75,15 @@ class MainWindow(BaseWindow):
         fileMenu = menuBar.addMenu('File')
         disConnectAction = QAction(IconTool.buildQIcon('disconnect.png'), 'Disconnect', self)
         disConnectAction.setShortcut('Ctrl+D')
+        disConnectAction.triggered.connect(self.restartProgram)
         settingAction = QAction(IconTool.buildQIcon('setting.png'), 'Setting...', self)
         settingAction.setShortcut('Ctrl+Shift+S')
         showLogAction = QAction('Show Log', self)
         fileMenu.addAction(disConnectAction)
         fileMenu.addAction(settingAction)
         fileMenu.addAction(showLogAction)
+
+        settingAction.triggered.connect(self.openSettingWindow)
 
         editMenu = menuBar.addMenu('Edit')
         findAction = QAction(IconTool.buildQIcon('find.png'), 'Find', self)
@@ -85,6 +93,16 @@ class MainWindow(BaseWindow):
         helpMenu = menuBar.addMenu('Help')
         aboutAction = QAction(IconTool.buildQIcon('about.png'), 'About', self)
         helpMenu.addAction(aboutAction)
+
+    def restartProgram(self):
+        from XulDebugTool.ui.ConnectWindow import ConnectWindow #不应该在这里导入，但是放在前面会有问题
+        print("新建连接页面")
+        self.con = ConnectWindow()
+        self.close()
+
+    def openSettingWindow(self):
+        self.tableInfoModel = SettingWindow()
+        self.tableInfoModel.show()
 
     def initLayout(self):
         # ----------------------------left layout---------------------------- #
@@ -105,6 +123,7 @@ class MainWindow(BaseWindow):
         self.treeView.setEditTriggers(QAbstractItemView.NoEditTriggers)
         self.treeView.setContextMenuPolicy(Qt.CustomContextMenu)
         self.treeView.customContextMenuRequested.connect(self.openContextMenu)
+        self.treeView.doubleClicked.connect(self.onTreeItemDoubleClicked)
         self.treeView.clicked.connect(self.getDebugData)
 
         leftContainer = QWidget()
@@ -163,6 +182,33 @@ class MainWindow(BaseWindow):
 
         self.tabContentWidget = QWidget()
         self.browser = QWebEngineView()
+
+        self.channel = QWebChannel()
+        self.webObject = WebShareObject()
+        self.channel.registerObject('bridge', self.webObject)
+        self.browser.page().setWebChannel(self.channel)
+
+        qwebchannel_js = QFile(':/qtwebchannel/qwebchannel.js')
+        if not qwebchannel_js.open(QIODevice.ReadOnly):
+            raise SystemExit(
+                'Failed to load qwebchannel.js with error: %s' %
+                qwebchannel_js.errorString())
+        qwebchannel_js = bytes(qwebchannel_js.readAll()).decode('utf-8')
+
+        script = QWebEngineScript()
+        script.setSourceCode(qwebchannel_js)
+        script.setInjectionPoint(QWebEngineScript.DocumentCreation)
+        script.setName('qtwebchannel.js')
+        script.setWorldId(QWebEngineScript.MainWorld)
+        script.setRunsOnSubFrames(True)
+        self.browser.page().scripts().insert(script)
+
+        Utils.scriptCreator(os.path.join('..', 'resources', 'js', 'event.js'),'event.js',self.browser.page())
+        self.browser.page().setWebChannel(self.channel)
+
+
+
+
         layout = QVBoxLayout()
         layout.setContentsMargins(0, 0, 0, 0)
         layout.addWidget(self.initQCheckBoxUI())
@@ -186,14 +232,24 @@ class MainWindow(BaseWindow):
         middleContainer.setLayout(layout)
 
         # ----------------------------right layout---------------------------- #
+        self.rightSiderClickInfo = 'property'
+
+        self.rightSiderTabWidget = QTabWidget()
+        self.rightSiderTabBar = QTabBar()
+        self.rightSiderTabWidget.setTabBar(self.rightSiderTabBar)
+        self.rightSiderTabWidget.setTabPosition(QTabWidget.East)
+
+        self.qtextEdit = QTextEdit()
 
         self.propertyEditor = PropertyEditor(['Key', 'Value'])
 
-        rightContainer = QWidget()
-        layout = QVBoxLayout()
-        layout.setContentsMargins(0, 0, 0, 0)
-        layout.addWidget(self.propertyEditor)
-        rightContainer.setLayout(layout)
+        self.rightSiderTabWidget.setStyleSheet(('QTab::tab{height:60px;width:20px;color:black;padding:0px}'
+                                                'QTabBar::tab:selected{background:lightgray}'))
+
+        self.rightSiderTabWidget.addTab(self.propertyEditor,'property')
+        self.rightSiderTabWidget.addTab(self.qtextEdit,'favorite')
+
+        self.rightSiderTabBar.tabBarClicked.connect(self.rightSiderClick)
 
         # ----------------------------entire layout---------------------------- #
 
@@ -202,7 +258,7 @@ class MainWindow(BaseWindow):
 
         self.contentSplitter.addWidget(leftContainer)
         self.contentSplitter.addWidget(middleContainer)
-        self.contentSplitter.addWidget(rightContainer)
+        self.contentSplitter.addWidget(self.rightSiderTabWidget)
         self.contentSplitter.setStretchFactor(0, 0)
         self.contentSplitter.setStretchFactor(1, 6)
         self.contentSplitter.setStretchFactor(2, 6)
@@ -298,6 +354,17 @@ class MainWindow(BaseWindow):
                     self.url = self.url[:-1]
                 self.showXulDebugData(self.url)
 
+    def rightSiderClick(self,index):
+        #两次单击同一个tabBar时显示隐藏内容区域
+        if self.rightSiderTabBar.tabText(index) == self.rightSiderClickInfo:
+            if self.rightSiderTabWidget.width() == 20:
+                self.rightSiderTabWidget.setMaximumWidth(800)
+            else:
+                self.rightSiderTabWidget.setFixedWidth(20)
+        else:
+            if self.rightSiderTabWidget.width() == 20:
+                self.rightSiderTabWidget.setMaximumWidth(800)
+        self.rightSiderClickInfo = self.rightSiderTabBar.tabText(index)
 
     @pyqtSlot(QPoint)
     def openContextMenu(self, point):
@@ -306,16 +373,17 @@ class MainWindow(BaseWindow):
             return
         item = self.treeModel.itemFromIndex(index)
         menu = QMenu()
-        copyAction = QAction(IconTool.buildQIcon('copy.png'), 'Copy', self,
-                             triggered=lambda: pyperclip.copy('%s' % index.data()))
-        copyAction.setShortcut('Ctrl+C')
 
-        menu.addAction(copyAction)
         if item.type == ITEM_TYPE_PROVIDER:
             queryAction = QAction(IconTool.buildQIcon('data.png'), 'Query Data...', self,
                                   triggered=lambda: self.showQueryDialog(item.data))
             queryAction.setShortcut('Alt+Q')
             menu.addAction(queryAction)
+
+        copyAction = QAction(IconTool.buildQIcon('copy.png'), 'Copy', self,
+                             triggered=lambda: pyperclip.copy('%s' % index.data()))
+        copyAction.setShortcut('Ctrl+C')
+        menu.addAction(copyAction)
         menu.exec_(self.treeView.viewport().mapToGlobal(point))
 
     @pyqtSlot(QModelIndex)
@@ -344,12 +412,14 @@ class MainWindow(BaseWindow):
         elif item.type == ITEM_TYPE_PROVIDER:  # 树第三层,userObject下的DataService下的子节点
             pass
 
-        #判断是否显示复选框
-        if item.type == ITEM_TYPE_PAGE:
-            self.groupBox.setHidden(False)
-        else:
-            self.groupBox.setHidden(True)
+        self.groupBox.setHidden(item.type != ITEM_TYPE_PAGE)
         self.fillPropertyEditor(item.data)
+
+    @pyqtSlot(QModelIndex)
+    def onTreeItemDoubleClicked(self, index):
+        item = self.treeModel.itemFromIndex(index)
+        if item.type == ITEM_TYPE_PROVIDER:
+            self.showQueryDialog(item.data)
 
     def buildPageItem(self):
         self.pageItem.removeRows(0, self.pageItem.rowCount())
@@ -432,9 +502,12 @@ class MainWindow(BaseWindow):
         else:
             setattr(self.qObject, k, v)
 
-    def showQueryDialog(self, param):
-        print('show query dialog: ', param)
-        self.dialog = BaseDialog()
-        self.dialog.initWindow()
-        self.dialog.setWindowModality(Qt.ApplicationModal)
+    def showQueryDialog(self, data):
+        print('show query dialog: ', data)
+        self.dialog = DataQueryDialog(data)
+        self.dialog.finishSignal.connect(self.onGetQueryUrl)
         self.dialog.show()
+
+    def onGetQueryUrl(self, url):
+        self.browser.load(QUrl(url))
+        self.statusBar().showMessage(url)
