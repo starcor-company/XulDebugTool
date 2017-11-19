@@ -21,7 +21,7 @@ from PyQt5.QtWidgets import *
 from XulDebugTool.ui.BaseWindow import BaseWindow
 from XulDebugTool.ui.SettingWindow import SettingWindow
 from XulDebugTool.ui.widget.BaseDialog import BaseDialog
-from XulDebugTool.ui.widget.ConsoleView import ConsoleWindow
+from XulDebugTool.ui.widget.ButtomConsoleWindow import ButtomWindow
 from XulDebugTool.ui.widget.DataQueryDialog import DataQueryDialog
 from XulDebugTool.ui.widget.PropertyEditor import PropertyEditor
 from XulDebugTool.ui.widget.SearchBarQLineEdit import SearchBarQLineEdit
@@ -62,7 +62,7 @@ class MainWindow(BaseWindow):
         self.show()
 
     def initConsole(self):
-        self.consoleView = ConsoleWindow()
+        self.consoleWindow = ButtomWindow()
 
     def initUI(self):
         self.resize(1400, 800)
@@ -267,7 +267,7 @@ class MainWindow(BaseWindow):
         self.mainSplitter.setHandleWidth(0)
 
         self.mainSplitter.addWidget(self.contentSplitter)
-        self.mainSplitter.addWidget(self.consoleView)
+        self.mainSplitter.addWidget(self.consoleWindow)
         self.mainSplitter.setStretchFactor(1, 0)
         self.mainSplitter.setStretchFactor(2,1)
         self.setCentralWidget(self.mainSplitter)
