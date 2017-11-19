@@ -11,16 +11,17 @@ author: Kenshin
 last edited: 2017.10.14
 """
 
+import sqlite3
+
 from PyQt5.QtCore import pyqtSlot, Qt, QTimer
 from PyQt5.QtGui import QIcon
 from PyQt5.QtWidgets import QPushButton, QLabel, QTextEdit, QComboBox, QHBoxLayout, QListWidget, QWidget
 
 from XulDebugTool.ui.BaseWindow import BaseWindow
 from XulDebugTool.ui.MainWindow import MainWindow, QListWidgetItem
-from XulDebugTool.utils.IconTool import IconTool
 from XulDebugTool.utils.CmdExecutor import CmdExecutor
+from XulDebugTool.utils.IconTool import IconTool
 from XulDebugTool.utils.XulDebugServerHelper import XulDebugServerHelper
-import sqlite3
 
 
 class ConnectWindow(BaseWindow):
