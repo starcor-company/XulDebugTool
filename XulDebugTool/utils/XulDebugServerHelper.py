@@ -10,6 +10,10 @@ class XulDebugServerHelper(object):
     __GET_LAYOUT = 'get-layout'
     __LIST_USER_OBJECTS = 'list-user-objects'
     __GET_USER_OBJECT = 'get-user-object'
+    __SET_ATTR = 'set-attr'
+    __SET_STYLE = 'set-style'
+    __ADD_CLASS = 'add-class'
+    __REMOVE_CLASS = 'remove-class'
 
     @staticmethod
     def listPages():
@@ -71,6 +75,20 @@ class XulDebugServerHelper(object):
         else:
             try:
                 url = XulDebugServerHelper.HOST + XulDebugServerHelper.__GET_USER_OBJECT + '/' + objectId
+                http = urllib3.PoolManager()
+                r = http.request('GET', url)
+            except Exception as e:
+                print(e)
+                return
+            return r
+
+    @staticmethod
+    def updateUrl(type, id, key, value):
+        if XulDebugServerHelper.HOST == '':
+            raise ValueError('Host is empty!')
+        else:
+            try:
+                url = XulDebugServerHelper.HOST + type + '/' + id + '/' + key + '/' + value
                 http = urllib3.PoolManager()
                 r = http.request('GET', url)
             except Exception as e:
