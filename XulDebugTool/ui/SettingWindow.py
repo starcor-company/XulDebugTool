@@ -8,6 +8,7 @@ from PyQt5.QtWidgets import *
 
 from XulDebugTool.ui.BaseWindow import BaseWindow
 
+
 class SettingWindow(BaseWindow):
     def __init__(self):
         super().__init__()

@@ -10,7 +10,7 @@ import time
 class LogFormatTool(object):
 
     @classmethod
-    def buildStardardTime(self):
+    def buildStandardTime(self):
         ct = time.time()
         local_time = time.localtime(ct)
         data_head = time.strftime("%Y-%m-%d %H:%M:%S", local_time)
