@@ -5,6 +5,7 @@ import sys
 from PyQt5.QtWidgets import QTabWidget, QTabBar, QApplication
 
 from XulDebugTool.ui.widget.ConsoleView import ConsoleWindow
+from XulDebugTool.utils.IconTool import IconTool
 
 
 class ButtomWindow(QTabWidget):
@@ -19,7 +20,7 @@ class ButtomWindow(QTabWidget):
         self.tabBar.tabBarClicked.connect(self.status)
         self.tabBar.setExpanding(False)
         self.setTabBar(self.tabBar)
-        self.addTab(self.consoleView, "terminal")
+        self.addTab(self.consoleView,IconTool.buildQIcon('terminal.png'), "terminal")
         self.consoleView.setVisible(False)
         self.setFixedHeight(30)
         self.setTabPosition(QTabWidget.South)
