@@ -245,8 +245,8 @@ class MainWindow(BaseWindow):
         self.rightSiderTabWidget.setStyleSheet(('QTab::tab{height:60px;width:20px;color:black;padding:0px}'
                                                 'QTabBar::tab:selected{background:lightgray}'))
 
-        self.rightSiderTabWidget.addTab(self.propertyEditor,'property')
-        self.rightSiderTabWidget.addTab(self.qtextEdit,'favorite')
+        self.rightSiderTabWidget.addTab(self.propertyEditor,IconTool.buildQIcon('property.png'),'property')
+        self.rightSiderTabWidget.addTab(self.qtextEdit,IconTool.buildQIcon('favorites.png'),'favorites')
 
         self.rightSiderTabBar.tabBarClicked.connect(self.rightSiderClick)
 
@@ -363,12 +363,12 @@ class MainWindow(BaseWindow):
     def rightSiderClick(self,index):
         #两次单击同一个tabBar时显示隐藏内容区域
         if self.rightSiderTabBar.tabText(index) == self.rightSiderClickInfo:
-            if self.rightSiderTabWidget.width() == 20:
+            if self.rightSiderTabWidget.width() == 32:
                 self.rightSiderTabWidget.setMaximumWidth(800)
             else:
-                self.rightSiderTabWidget.setFixedWidth(20)
+                self.rightSiderTabWidget.setFixedWidth(32)
         else:
-            if self.rightSiderTabWidget.width() == 20:
+            if self.rightSiderTabWidget.width() == 32:
                 self.rightSiderTabWidget.setMaximumWidth(800)
         self.rightSiderClickInfo = self.rightSiderTabBar.tabText(index)
 
