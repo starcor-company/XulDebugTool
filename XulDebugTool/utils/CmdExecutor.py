@@ -1,7 +1,7 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
-from PyQt5.QtCore import QThread, pyqtSignal
+from PyQt5.QtCore import QThread, pyqtSignal, QTimer
 
 
 class CmdExecutor(QThread):
@@ -10,9 +10,12 @@ class CmdExecutor(QThread):
 
     def __init__(self, parent=None):
         super(CmdExecutor, self).__init__(parent)
+        self.initConnectTimer()
 
     def exec(self, cmd):
         self.cmd = cmd
+        self.__intConnectTime = 0
+        self.connectTime.start(1000)
         self.start()
 
     def run(self):
@@ -23,4 +26,19 @@ class CmdExecutor(QThread):
             l.append(line.decode('utf-8'))
         # p.stdout.close()
         # p.wait()
+        if self.isInterruptionRequested():
+            return
         self.finishSignal.emit(l)
+        self.connectTime.stop()
+
+    def initConnectTimer(self):
+        self.connectTime = QTimer()
+        self.connectTime.timeout.connect(self.onCmdExectuedTimeout)
+
+    def onCmdExectuedTimeout(self):
+        if self.__intConnectTime >= 20:
+            self.requestInterruption()
+            self.connectTime.stop()
+            self.finishSignal.emit(['connect timeout'])
+        else:
+            self.__intConnectTime = self.__intConnectTime + 1
