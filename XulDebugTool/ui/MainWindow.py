@@ -17,16 +17,11 @@ from PyQt5.QtGui import *
 from PyQt5.QtWebChannel import QWebChannel
 from PyQt5.QtWebEngineWidgets import QWebEngineView, QWebEngineScript
 from PyQt5.QtWidgets import *
-import json
 
 from XulDebugTool.ui.BaseWindow import BaseWindow
-from XulDebugTool.ui.widget.ConsoleView import ConsoleWindow
-from XulDebugTool.ui.SettingWindow import SettingWindow
-from XulDebugTool.ui.widget.BaseDialog import BaseDialog
 from XulDebugTool.ui.widget.ButtomConsoleWindow import ButtomWindow
 from XulDebugTool.ui.widget.DataQueryDialog import DataQueryDialog
 from XulDebugTool.ui.widget.PropertyEditor import PropertyEditor
-from XulDebugTool.ui.widget.SearchBarQLineEdit import SearchBarQLineEdit
 from XulDebugTool.ui.widget.UpdateElement import UpdateElement
 from XulDebugTool.utils.IconTool import IconTool
 from XulDebugTool.utils.Utils import Utils
@@ -137,20 +132,6 @@ class MainWindow(BaseWindow):
 
         # ----------------------------middle layout---------------------------- #
         middleContainer = QWidget()
-        middleContainer.toggleSidebarsButton = QPushButton()
-        middleContainer.toggleSidebarsButton.setToolTip('Hide / show the sidebars')
-        middleContainer.toggleSidebarsButton.setIcon(IconTool.buildQIcon('toggle_sidebars.png'))
-        middleContainer.toggleSidebarsButton.setStyleSheet('QPushButton {\
-            width: 22px;\
-            height: 22px;\
-            padding: 5px; }')
-        # middleContainer.toggle_sidebars_button.clicked.connect(self.toggle_sidebars)
-
-        middleContainer.searchBar = SearchBarQLineEdit(self)
-        middleContainer.searchBar.setPlaceholderText('Search')
-        middleContainer.searchBar.setMaximumWidth(300)
-        middleContainer.searchBar.setMaximumHeight(32)
-        middleContainer.searchBar.setSizePolicy(QSizePolicy.Maximum, QSizePolicy.Minimum)
 
         # search shall start not before the user completed typing
         # filter_delay = DelayedExecutionTimer(self)
@@ -161,7 +142,7 @@ class MainWindow(BaseWindow):
         self.tabBar.setUsesScrollButtons(False)
         self.tabBar.setDrawBase(False)
         self.tabBar.addTab('tab1')
-        self.tabBar.addTab('tab2')
+        # self.tabBar.addTab('tab2')
 
         self.pathBar = QWidget()
         layout = QHBoxLayout()
@@ -175,9 +156,6 @@ class MainWindow(BaseWindow):
         layout.addWidget(self.tabBar)
         layout.addWidget(self.pathBar)
         layout.addSpacerItem(QSpacerItem(0, 0, QSizePolicy.Expanding))
-        layout.addWidget(middleContainer.searchBar)
-        layout.addWidget(middleContainer.toggleSidebarsButton)
-        layout.setStretchFactor(middleContainer.searchBar, 1)
         self.searchHolder.setLayout(layout)
         self.searchHolder.layout().setContentsMargins(6, 6, 6, 0)
 
