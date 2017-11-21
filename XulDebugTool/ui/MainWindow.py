@@ -228,21 +228,17 @@ class MainWindow(BaseWindow):
         self.rightSiderTabBar = QTabBar()
         self.rightSiderTabWidget.setTabBar(self.rightSiderTabBar)
         self.rightSiderTabWidget.setTabPosition(QTabWidget.East)
-
+        self.rightSiderTabWidget.setStyleSheet(('QTab::tab{height:60px;width:20px;color:black;padding:0px}'
+                                                'QTabBar::tab:selected{background:lightgray}'))
         self.qtextEdit = QTextEdit()
 
         self.propertyEditor = PropertyEditor(['Key', 'Value'])
+        self.inputWidget = UpdateElement()
+        self.rightSiderTabWidget.addTab(self.inputWidget,IconTool.buildQIcon('property.png'),'property')
 
-        self.rightSiderTabWidget.setStyleSheet(('QTab::tab{height:60px;width:20px;color:black;padding:0px}'
-                                                'QTabBar::tab:selected{background:lightgray}'))
-
-        self.rightSiderTabWidget.addTab(self.propertyEditor,'property')
-        self.rightSiderTabWidget.addTab(self.qtextEdit,'favorite')
-
+        self.rightSiderTabWidget.addTab(self.qtextEdit,IconTool.buildQIcon('favorites.png'),'favorites')
         self.rightSiderTabBar.tabBarClicked.connect(self.rightSiderClick)
 
-        self.inputWidget = UpdateElement()
-        self.rightSiderTabWidget.addTab(self.inputWidget, IconTool.buildQIcon('update.png'), 'update')
         # ----------------------------entire layout---------------------------- #
 
         self.contentSplitter = QSplitter(Qt.Horizontal)
@@ -354,12 +350,12 @@ class MainWindow(BaseWindow):
     def rightSiderClick(self,index):
         #两次单击同一个tabBar时显示隐藏内容区域
         if self.rightSiderTabBar.tabText(index) == self.rightSiderClickInfo:
-            if self.rightSiderTabWidget.width() == 20:
+            if self.rightSiderTabWidget.width() == 32:
                 self.rightSiderTabWidget.setMaximumWidth(800)
             else:
-                self.rightSiderTabWidget.setFixedWidth(20)
+                self.rightSiderTabWidget.setFixedWidth(32)
         else:
-            if self.rightSiderTabWidget.width() == 20:
+            if self.rightSiderTabWidget.width() == 32:
                 self.rightSiderTabWidget.setMaximumWidth(800)
         self.rightSiderClickInfo = self.rightSiderTabBar.tabText(index)
 
@@ -463,7 +459,15 @@ class MainWindow(BaseWindow):
                         r = XulDebugServerHelper.getUserObject(o['@id'])
                         if r:
                             dataServiceNodes = Utils.xml2json(r.data, 'object')
-                            for j, provider in enumerate(dataServiceNodes['object']['provider']):
+                            if isinstance(dataServiceNodes['object']['provider'], list):
+                                for j, provider in enumerate(dataServiceNodes['object']['provider']):
+                                    dsRow = QStandardItem(provider['ds']['@providerClass'])
+                                    dsRow.id = provider['@name']
+                                    dsRow.data = provider
+                                    dsRow.type = ITEM_TYPE_PROVIDER
+                                    row.appendRow(dsRow)
+                            else:
+                                provider = dataServiceNodes['object']['provider']
                                 dsRow = QStandardItem(provider['ds']['@providerClass'])
                                 dsRow.id = provider['@name']
                                 dsRow.data = provider
