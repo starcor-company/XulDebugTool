@@ -17,12 +17,8 @@ from PyQt5.QtGui import *
 from PyQt5.QtWebChannel import QWebChannel
 from PyQt5.QtWebEngineWidgets import QWebEngineView, QWebEngineScript
 from PyQt5.QtWidgets import *
-import json
 
 from XulDebugTool.ui.BaseWindow import BaseWindow
-from XulDebugTool.ui.widget.ConsoleView import ConsoleWindow
-from XulDebugTool.ui.SettingWindow import SettingWindow
-from XulDebugTool.ui.widget.BaseDialog import BaseDialog
 from XulDebugTool.ui.widget.ButtomConsoleWindow import ButtomWindow
 from XulDebugTool.ui.widget.DataQueryDialog import DataQueryDialog
 from XulDebugTool.ui.widget.PropertyEditor import PropertyEditor
@@ -245,8 +241,8 @@ class MainWindow(BaseWindow):
         self.rightSiderTabWidget.setStyleSheet(('QTab::tab{height:60px;width:20px;color:black;padding:0px}'
                                                 'QTabBar::tab:selected{background:lightgray}'))
 
-        self.rightSiderTabWidget.addTab(self.propertyEditor,'property')
-        self.rightSiderTabWidget.addTab(self.qtextEdit,'favorite')
+        self.rightSiderTabWidget.addTab(self.propertyEditor,IconTool.buildQIcon('property.png'),'property')
+        self.rightSiderTabWidget.addTab(self.qtextEdit,IconTool.buildQIcon('favorites.png'),'favorites')
 
         self.rightSiderTabBar.tabBarClicked.connect(self.rightSiderClick)
 
@@ -363,12 +359,12 @@ class MainWindow(BaseWindow):
     def rightSiderClick(self,index):
         #两次单击同一个tabBar时显示隐藏内容区域
         if self.rightSiderTabBar.tabText(index) == self.rightSiderClickInfo:
-            if self.rightSiderTabWidget.width() == 20:
+            if self.rightSiderTabWidget.width() == 32:
                 self.rightSiderTabWidget.setMaximumWidth(800)
             else:
-                self.rightSiderTabWidget.setFixedWidth(20)
+                self.rightSiderTabWidget.setFixedWidth(32)
         else:
-            if self.rightSiderTabWidget.width() == 20:
+            if self.rightSiderTabWidget.width() == 32:
                 self.rightSiderTabWidget.setMaximumWidth(800)
         self.rightSiderClickInfo = self.rightSiderTabBar.tabText(index)
 
