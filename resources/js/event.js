@@ -8,6 +8,8 @@ window.onload = function () {
     for (var i = 0, item; item = bObj[i]; i++) {
         if (item.children[0].innerText == "id") {
             item.onclick = objclick;
+            item.style.textDecoration = "underline";
+            item.style.cursor = "pointer";
         }
     }
 
