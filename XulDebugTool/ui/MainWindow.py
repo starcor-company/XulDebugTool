@@ -472,7 +472,15 @@ class MainWindow(BaseWindow):
                         r = XulDebugServerHelper.getUserObject(o['@id'])
                         if r:
                             dataServiceNodes = Utils.xml2json(r.data, 'object')
-                            for j, provider in enumerate(dataServiceNodes['object']['provider']):
+                            if isinstance(dataServiceNodes['object']['provider'], list):
+                                for j, provider in enumerate(dataServiceNodes['object']['provider']):
+                                    dsRow = QStandardItem(provider['ds']['@providerClass'])
+                                    dsRow.id = provider['@name']
+                                    dsRow.data = provider
+                                    dsRow.type = ITEM_TYPE_PROVIDER
+                                    row.appendRow(dsRow)
+                            else:
+                                provider = dataServiceNodes['object']['provider']
                                 dsRow = QStandardItem(provider['ds']['@providerClass'])
                                 dsRow.id = provider['@name']
                                 dsRow.data = provider
