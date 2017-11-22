@@ -21,6 +21,7 @@ from PyQt5.QtWidgets import *
 from XulDebugTool.ui.BaseWindow import BaseWindow
 from XulDebugTool.ui.widget.ButtomConsoleWindow import ButtomWindow
 from XulDebugTool.ui.widget.DataQueryDialog import DataQueryDialog
+from XulDebugTool.ui.widget.FavoriteTreeView import FavoriteTreeView
 from XulDebugTool.ui.widget.PropertyEditor import PropertyEditor
 from XulDebugTool.ui.widget.UpdateElement import UpdateElement
 from XulDebugTool.utils.IconTool import IconTool
@@ -220,18 +221,21 @@ class MainWindow(BaseWindow):
         self.rightSiderTabBar = QTabBar()
         self.rightSiderTabWidget.setTabBar(self.rightSiderTabBar)
         self.rightSiderTabWidget.setTabPosition(QTabWidget.East)
+
+        self.favoriteTreeView = FavoriteTreeView(self)
         self.rightSiderTabWidget.setStyleSheet(
             ('QTab::tab{height:60px;width:20px;color:black;padding:0px}'
              'QTabBar::tab:selected{background:lightgray}'))
-        self.qtextEdit = QTextEdit()
 
         self.propertyEditor = PropertyEditor(['Key', 'Value'])
         self.inputWidget = UpdateElement()
-        self.rightSiderTabWidget.addTab(self.inputWidget, IconTool.buildQIcon('property.png'),
-                                        'property')
+        self.rightSiderTabWidget.addTab(self.inputWidget, IconTool.buildQIcon('property.png'),'property')
 
-        self.rightSiderTabWidget.addTab(self.qtextEdit, IconTool.buildQIcon('favorites.png'),
-                                        'favorites')
+        self.rightSiderTabWidget.setStyleSheet(('QTab::tab{height:60px;width:20px;color:black;padding:0px}'
+                                                'QTabBar::tab:selected{background:lightgray}'))
+
+        self.rightSiderTabWidget.addTab(self.propertyEditor,IconTool.buildQIcon('property.png'),'property')
+        self.rightSiderTabWidget.addTab(self.favoriteTreeView,IconTool.buildQIcon('favorites.png'),'favorites')
         self.rightSiderTabBar.tabBarClicked.connect(self.rightSiderClick)
 
         # ----------------------------entire layout---------------------------- #
@@ -530,6 +534,7 @@ class MainWindow(BaseWindow):
         self.dialog.show()
 
     def onGetQueryUrl(self, url):
+        self.favoriteTreeView.updateTree()
         self.browser.load(QUrl(url))
         self.statusBar().showMessage(url)
 
