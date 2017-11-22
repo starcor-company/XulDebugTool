@@ -25,6 +25,7 @@ from XulDebugTool.ui.SettingWindow import SettingWindow
 from XulDebugTool.ui.widget.BaseDialog import BaseDialog
 from XulDebugTool.ui.widget.ButtomConsoleWindow import ButtomWindow
 from XulDebugTool.ui.widget.DataQueryDialog import DataQueryDialog
+from XulDebugTool.ui.widget.FavoriteTreeView import FavoriteTreeView
 from XulDebugTool.ui.widget.PropertyEditor import PropertyEditor
 from XulDebugTool.ui.widget.SearchBarQLineEdit import SearchBarQLineEdit
 from XulDebugTool.ui.widget.UpdateElement import UpdateElement
@@ -238,7 +239,8 @@ class MainWindow(BaseWindow):
         self.rightSiderTabWidget.setTabBar(self.rightSiderTabBar)
         self.rightSiderTabWidget.setTabPosition(QTabWidget.East)
 
-        self.qtextEdit = QTextEdit()
+        self.favoriteTreeView = FavoriteTreeView(self)
+
 
         self.propertyEditor = PropertyEditor(['Key', 'Value'])
 
@@ -246,7 +248,7 @@ class MainWindow(BaseWindow):
                                                 'QTabBar::tab:selected{background:lightgray}'))
 
         self.rightSiderTabWidget.addTab(self.propertyEditor,IconTool.buildQIcon('property.png'),'property')
-        self.rightSiderTabWidget.addTab(self.qtextEdit,IconTool.buildQIcon('favorites.png'),'favorites')
+        self.rightSiderTabWidget.addTab(self.favoriteTreeView,IconTool.buildQIcon('favorites.png'),'favorites')
 
         self.rightSiderTabBar.tabBarClicked.connect(self.rightSiderClick)
 
@@ -515,5 +517,6 @@ class MainWindow(BaseWindow):
         self.dialog.show()
 
     def onGetQueryUrl(self, url):
+        self.favoriteTreeView.updateTree()
         self.browser.load(QUrl(url))
         self.statusBar().showMessage(url)

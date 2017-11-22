@@ -4,6 +4,7 @@ from PyQt5 import QtCore, QtWidgets
 from PyQt5.QtCore import pyqtSignal
 
 from XulDebugTool.ui.widget.BaseDialog import BaseDialog
+from XulDebugTool.ui.widget.model.FavoriteDB import FavoriteDB
 from XulDebugTool.utils.XulDebugServerHelper import XulDebugServerHelper
 
 # 查询的model应该从项目支持的mode获取, 但是因为各个项目的provider写的不标准,统一固定这些方式,不是所有的provider都支持这6种
@@ -15,15 +16,27 @@ class DataQueryDialog(BaseDialog):
     finishSignal = pyqtSignal(str)
 
     def __init__(self, data):
-        self.data = data
-        self.providerId = self.data['@name']
-        self.url = ''
         self.modes = []
         self.currentRowCount = 0
-        self.providerName = self.data['ds']['@providerClass']
-
-        super().__init__(self.providerName)
-        self.initWindow()
+        if isinstance(data,dict):
+            self.data = data
+            self.providerId = self.data['@name']
+            self.url = ''
+            self.providerName = self.data['ds']['@providerClass']
+            super().__init__(self.providerName)
+            self.initWindow()
+            self.url = XulDebugServerHelper.HOST + MODES[
+                self.modeComboBox.currentText().lower()] + '/' + self.providerId + '?'
+            self.requestLineEdit.setText(self.url)
+        else:
+            self.data  = data
+            self.providerId = ((data.url.rsplit('/',1))[1].split('?',1))[0]
+            self.providerName = data.name
+            self.url = data.url
+            super().__init__(self.providerName)
+            self.initWindow()
+            self.requestLineEdit.setText(self.url)
+        self.favoriteDB = FavoriteDB()
 
     def initWindow(self):
         super().initWindow()
@@ -43,7 +56,16 @@ class DataQueryDialog(BaseDialog):
         self.modeComboBox.move(187, 44)
         self.modeComboBox.resize(150, 24)
         self.modeComboBox.setEditable(False)
-        self.modeComboBox.setCurrentText('query')
+
+        # 查询的mode应该从项目支持的mode获取
+        # 但是因为各个项目的provider写的不标准
+        # 所以这里统一固定这些方式,不是所有的provider都支持这6种
+        # self.modes = self.data['ds']['@mode'].split('|')
+        self.modes = MODES
+        for model in self.modes.keys():
+            self.modeComboBox.addItem(model)
+
+        self.parseUrl2Mode(self.url)
         self.modeComboBox.setMaxVisibleItems(5)
         self.modeComboBox.currentTextChanged.connect(self.onModeChanged)
 
@@ -53,9 +75,18 @@ class DataQueryDialog(BaseDialog):
         self.requestButton.setText('Request')
         self.requestButton.clicked.connect(self.onBtnClicked)
 
-        self.tableView = QtWidgets.QTableWidget(1, 2, self)
+        self.initTableView(self.url)
+
+    def initTableView(self,url):
+        row = 1;
+        entrys = []
+        if url != '' and url != None:
+            entrys=url.rsplit('/',1)[1].split('?',1)[1].split('&')
+            row = len(entrys)+1
+
+        self.tableView = QtWidgets.QTableWidget(row,2,self)
         self.tableView.move(36, 80)
-        self.tableView.resize(300, 24 * 2)
+        self.tableView.resize(300, 24 * (row+1))
         self.tableView.setColumnWidth(0, 150)
         self.tableView.setColumnWidth(1, 150)
         self.tableView.horizontalHeader().setFixedHeight(24)
@@ -68,23 +99,28 @@ class DataQueryDialog(BaseDialog):
         self.tableView.verticalHeader().setVisible(False)
         self.tableView.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
 
+        for i, entry in enumerate(entrys):
+            if entry != [] and entry != None:
+                querylist = entry.split('=')
+                self.tableView.setItem(i, 0, QtWidgets.QTableWidgetItem(querylist[0]))
+                self.tableView.setItem(i, 1, QtWidgets.QTableWidgetItem(querylist[1]))
+
         # fill data
-        # 初始化查询条件表, 一行,两列
-        for i in range(self.tableView.rowCount()):
-            for j in range(self.tableView.columnCount()):
-                newItem = QtWidgets.QTableWidgetItem('')
-                self.tableView.setItem(i, j, newItem)
+        # 初始化查询条件表,预留一行空数据
+        for j in range(self.tableView.columnCount()):
+            newItem = QtWidgets.QTableWidgetItem('')
+            self.tableView.setItem(self.tableView.rowCount()-1, j, newItem)
+
         self.tableView.cellChanged.connect(self.onCellChanged)
 
-        # 查询的mode应该从项目支持的mode获取
-        # 但是因为各个项目的provider写的不标准
-        # 所以这里统一固定这些方式,不是所有的provider都支持这6种
-        # self.modes = self.data['ds']['@mode'].split('|')
-        self.modes = MODES
-        for model in self.modes.keys():
-            self.modeComboBox.addItem(model)
-        self.url = XulDebugServerHelper.HOST + MODES[self.modeComboBox.currentText().lower()] + '/' + self.providerId + '?'
-        self.requestLineEdit.setText(self.url)
+
+    def parseUrl2Mode(self,url):
+        if url != '' and url != None:
+            mode = url.rsplit('/', 2)[1].split('-')[0]
+            self.modeComboBox.setCurrentText(mode)
+        else:
+            self.modeComboBox.setCurrentText('query')
+
 
     def onModeChanged(self):
         self.url = XulDebugServerHelper.HOST + MODES[self.modeComboBox.currentText().lower()] \
@@ -118,8 +154,24 @@ class DataQueryDialog(BaseDialog):
         self.url = XulDebugServerHelper.HOST + MODES[self.modeComboBox.currentText().lower()] \
                    + '/' + self.providerId + '?' + self.__getQueryParam()
         print('data query url: ' + self.url)
+        self.treeViewDataRefresh()
         self.finishSignal.emit(self.url)
         self.close()
+
+    def treeViewDataRefresh(self):
+        if isinstance(self.data, dict):
+            self.favoriteDB.insertFavorite(self.providerName, self.url, 0)
+            return
+
+        if self.data.type:
+            if self.data.type == 'favorites_type':
+                self.favoriteDB.updateFavorites(self.data.id, favorite=0)
+                self.favoriteDB.insertFavorite(self.providerName, self.url, 1)
+            elif self.data.type == 'history_type':
+                self.favoriteDB.insertFavorite(self.providerName, self.url, 0)
+
+
+
 
     def __getQueryParam(self):
         # 获取所有查询条件,并组装成查询参数
@@ -137,6 +189,7 @@ class DataQueryDialog(BaseDialog):
                 queryClause[whereClause] = isClause
         for k, v in queryClause.items():
             param += (k + '=' + v + '&')
+        param = param.rsplit('&',1)[0]
         return param
 
     def setData(self, data):
@@ -146,3 +199,8 @@ class DataQueryDialog(BaseDialog):
         self.providerId = data['@name']
         self.url = XulDebugServerHelper.HOST + self.modeComboBox.currentText() + '/' + self.providerId + '?'
         self.requestLineEdit.setText(self.url)
+
+
+
+
+
