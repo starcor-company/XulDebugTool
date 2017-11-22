@@ -1,8 +1,5 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-import json
-
-from XulDebugTool.utils.Utils import Utils
 
 
 class WebDataHandler:
