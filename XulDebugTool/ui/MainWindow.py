@@ -233,21 +233,17 @@ class MainWindow(BaseWindow):
         self.rightSiderTabBar = QTabBar()
         self.rightSiderTabWidget.setTabBar(self.rightSiderTabBar)
         self.rightSiderTabWidget.setTabPosition(QTabWidget.East)
-
+        self.rightSiderTabWidget.setStyleSheet(('QTab::tab{height:60px;width:20px;color:black;padding:0px}'
+                                                'QTabBar::tab:selected{background:lightgray}'))
         self.qtextEdit = QTextEdit()
 
         self.propertyEditor = PropertyEditor(['Key', 'Value'])
+        self.inputWidget = UpdateElement()
+        self.rightSiderTabWidget.addTab(self.inputWidget,IconTool.buildQIcon('property.png'),'property')
 
-        self.rightSiderTabWidget.setStyleSheet(('QTab::tab{height:60px;width:20px;color:black;padding:0px}'
-                                                'QTabBar::tab:selected{background:lightgray}'))
-
-        self.rightSiderTabWidget.addTab(self.propertyEditor,IconTool.buildQIcon('property.png'),'property')
         self.rightSiderTabWidget.addTab(self.qtextEdit,IconTool.buildQIcon('favorites.png'),'favorites')
-
         self.rightSiderTabBar.tabBarClicked.connect(self.rightSiderClick)
 
-        self.inputWidget = UpdateElement()
-        self.rightSiderTabWidget.addTab(self.inputWidget, IconTool.buildQIcon('update.png'), 'update')
         # ----------------------------entire layout---------------------------- #
 
         self.contentSplitter = QSplitter(Qt.Horizontal)
@@ -468,7 +464,15 @@ class MainWindow(BaseWindow):
                         r = XulDebugServerHelper.getUserObject(o['@id'])
                         if r:
                             dataServiceNodes = Utils.xml2json(r.data, 'object')
-                            for j, provider in enumerate(dataServiceNodes['object']['provider']):
+                            if isinstance(dataServiceNodes['object']['provider'], list):
+                                for j, provider in enumerate(dataServiceNodes['object']['provider']):
+                                    dsRow = QStandardItem(provider['ds']['@providerClass'])
+                                    dsRow.id = provider['@name']
+                                    dsRow.data = provider
+                                    dsRow.type = ITEM_TYPE_PROVIDER
+                                    row.appendRow(dsRow)
+                            else:
+                                provider = dataServiceNodes['object']['provider']
                                 dsRow = QStandardItem(provider['ds']['@providerClass'])
                                 dsRow.id = provider['@name']
                                 dsRow.data = provider

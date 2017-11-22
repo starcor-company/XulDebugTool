@@ -7,6 +7,7 @@ from PyQt5.QtCore import QThread, pyqtSignal, QTimer
 class CmdExecutor(QThread):
 
     finishSignal = pyqtSignal(list)
+    _lastCallback = None
 
     def __init__(self, parent=None):
         super(CmdExecutor, self).__init__(parent)
@@ -42,3 +43,10 @@ class CmdExecutor(QThread):
             self.finishSignal.emit(['connect timeout'])
         else:
             self.__intConnectTime = self.__intConnectTime + 1
+
+
+    def setFinishCallback(self, callback):
+        if self._lastCallback is not None:
+            self.finishSignal.disconnect(self._lastCallback)
+        self.finishSignal.connect(callback)
+        self._lastCallback = callback
