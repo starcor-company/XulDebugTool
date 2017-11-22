@@ -73,26 +73,30 @@ class MainWindow(BaseWindow):
     def initMenuBar(self):
         menuBar = self.menuBar()
         fileMenu = menuBar.addMenu('File')
-        disConnectAction = QAction(IconTool.buildQIcon('disconnect.png'), 'Disconnect', self)
+        disConnectAction = QAction(IconTool.buildQIcon('disconnect.png'), '&Disconnect', self)
         disConnectAction.setShortcut('Ctrl+D')
+        disConnectAction.setShortcutContext(Qt.ApplicationShortcut)
         disConnectAction.triggered.connect(self.restartProgram)
-        settingAction = QAction(IconTool.buildQIcon('setting.png'), 'Setting...', self)
+        settingAction = QAction(IconTool.buildQIcon('setting.png'), '&Setting...', self)
         settingAction.setShortcut('Ctrl+Shift+S')
+        settingAction.setShortcutContext(Qt.ApplicationShortcut)
+        settingAction.triggered.connect(lambda :print('11111'))
         showLogAction = QAction('Show Log', self)
         fileMenu.addAction(disConnectAction)
-        fileMenu.addAction(settingAction)
-        fileMenu.addAction(showLogAction)
+        # fileMenu.addAction(settingAction)
+        # fileMenu.addAction(showLogAction)
 
         # settingAction.triggered.connect(self.openSettingWindow)
 
         editMenu = menuBar.addMenu('Edit')
-        findAction = QAction(IconTool.buildQIcon('find.png'), 'Find', self)
+        findAction = QAction(IconTool.buildQIcon('find.png'), '&Find', self)
         findAction.setShortcut('Ctrl+F')
+        # findAction.setShortcutContext(Qt.ApplicationShortcut)
         findAction.triggered.connect(lambda: self.searchWidget.show())
         editMenu.addAction(findAction)
 
         helpMenu = menuBar.addMenu('Help')
-        aboutAction = QAction(IconTool.buildQIcon('about.png'), 'About', self)
+        aboutAction = QAction(IconTool.buildQIcon('about.png'), '&About', self)
         helpMenu.addAction(aboutAction)
 
     def restartProgram(self):
@@ -390,14 +394,14 @@ class MainWindow(BaseWindow):
         menu = QMenu()
 
         if item.type == ITEM_TYPE_PROVIDER:
-            queryAction = QAction(IconTool.buildQIcon('data.png'), 'Query Data...', self,
+            queryAction = QAction(IconTool.buildQIcon('data.png'), '&Query Data...', self,
                                   triggered=lambda: self.showQueryDialog(item.data))
             queryAction.setShortcut('Alt+Q')
             menu.addAction(queryAction)
 
-        copyAction = QAction(IconTool.buildQIcon('copy.png'), 'Copy', self,
+        copyAction = QAction(IconTool.buildQIcon('copy.png'), '&Copy', self,
                              triggered=lambda: pyperclip.copy('%s' % index.data()))
-        copyAction.setShortcut('Ctrl+C')
+        copyAction.setShortcut(QKeySequence.Copy)
         menu.addAction(copyAction)
         menu.exec_(self.treeView.viewport().mapToGlobal(point))
 
