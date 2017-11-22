@@ -80,7 +80,7 @@ class MainWindow(BaseWindow):
         settingAction = QAction(IconTool.buildQIcon('setting.png'), '&Setting...', self)
         settingAction.setShortcut('Ctrl+Shift+S')
         settingAction.setShortcutContext(Qt.ApplicationShortcut)
-        settingAction.triggered.connect(lambda :print('11111'))
+        settingAction.triggered.connect(lambda: print('11111'))
         showLogAction = QAction('Show Log', self)
         fileMenu.addAction(disConnectAction)
         # fileMenu.addAction(settingAction)
@@ -233,13 +233,13 @@ class MainWindow(BaseWindow):
 
         # self.propertyEditor = PropertyEditor(['Key', 'Value'])
         self.inputWidget = UpdateElement()
-        self.rightSiderTabWidget.addTab(self.inputWidget, IconTool.buildQIcon('property.png'),'property')
+        self.rightSiderTabWidget.addTab(self.inputWidget, IconTool.buildQIcon('property.png'), 'property')
 
         self.rightSiderTabWidget.setStyleSheet(('QTab::tab{height:60px;width:20px;color:black;padding:0px}'
                                                 'QTabBar::tab:selected{background:lightgray}'))
 
         # self.rightSiderTabWidget.addTab(self.propertyEditor,IconTool.buildQIcon('property.png'),'property')
-        self.rightSiderTabWidget.addTab(self.favoriteTreeView,IconTool.buildQIcon('favorites.png'),'favorites')
+        self.rightSiderTabWidget.addTab(self.favoriteTreeView, IconTool.buildQIcon('favorites.png'), 'favorites')
         self.rightSiderTabBar.tabBarClicked.connect(self.rightSiderClick)
 
         # ----------------------------entire layout---------------------------- #
@@ -316,10 +316,11 @@ class MainWindow(BaseWindow):
         self.matchCase.setChecked(False)
         self.matchCase.stateChanged.connect(self.matchCaseChange)
         searchPageLayout.addWidget(self.matchCase)
-        self.word = QCheckBox("Word")
-        self.word.setChecked(False)
-        self.word.stateChanged.connect(self.wordChange)
-        searchPageLayout.addWidget(self.word)
+        self.matchTips = QLabel("Match tips")
+        searchPageLayout.addWidget(self.matchTips)
+        self.searchClose = QPushButton("✘")
+        self.searchClose.clicked.connect(lambda :self.searchWidget.hide())
+        searchPageLayout.addWidget(self.searchClose)
         self.searchWidget.setLayout(searchPageLayout)
         return self.searchWidget
 
@@ -545,27 +546,33 @@ class MainWindow(BaseWindow):
     def searchPage(self, text):
         check = self.matchCase.isChecked()
         if check:
-            self.browser.findText(text, QWebEnginePage.FindFlags(2))
+            self.browser.findText(text, QWebEnginePage.FindFlags(2), lambda result: self.changeMatchTip(result))
         else:
-            self.browser.findText(text)
+            self.browser.findText(text, QWebEnginePage.FindFlags(2),lambda result: self.changeMatchTip(result))
 
     def previousBtnClick(self, text):
         check = self.matchCase.isChecked()
         if check:
-            self.browser.findText(text, QWebEnginePage.FindFlags(1) | QWebEnginePage.FindFlags(2))
+            self.browser.findText(text, QWebEnginePage.FindFlags(1) | QWebEnginePage.FindFlags(2),
+                                  lambda result: self.changeMatchTip(result))
         else:
-            self.browser.findText(text, QWebEnginePage.FindFlags(1))
+            self.browser.findText(text, QWebEnginePage.FindFlags(1), lambda result: self.changeMatchTip(result))
 
     def nextBtnClick(self, text):
         check = self.matchCase.isChecked()
         if check:
-            self.browser.findText(text, QWebEnginePage.FindFlags(0) | QWebEnginePage.FindFlags(2))
+            self.browser.findText(text, QWebEnginePage.FindFlags(0) | QWebEnginePage.FindFlags(2),
+                                  lambda result: self.changeMatchTip(result))
         else:
-            self.browser.findText(text, QWebEnginePage.FindFlags(0))
+            self.browser.findText(text, QWebEnginePage.FindFlags(0), lambda result: self.changeMatchTip(result))
 
     def matchCaseChange(self):
         self.browser.findText("")
         self.searchPage(self.searchLineEdit.text())
 
-    def wordChange(self):
-        pass
+    def changeMatchTip(self, result):
+        print(result)
+        if result:
+            self.matchTips.setText("Find matches")
+        else:
+            self.matchTips.setText("No matches")
