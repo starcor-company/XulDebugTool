@@ -11,8 +11,6 @@ author: Kenshin
 last edited: 2017.10.14
 """
 
-import sqlite3
-
 from PyQt5.QtCore import pyqtSlot, Qt, QTimer
 from PyQt5.QtGui import QIcon
 from PyQt5.QtWidgets import QPushButton, QLabel, QTextEdit, QComboBox, QHBoxLayout, QListWidget, QWidget
@@ -23,13 +21,16 @@ from XulDebugTool.utils.CmdExecutor import CmdExecutor
 from XulDebugTool.utils.IconTool import IconTool
 from XulDebugTool.utils.XulDebugServerHelper import XulDebugServerHelper
 
+import sqlite3
+import re
+
 
 class ConnectWindow(BaseWindow):
     def __init__(self):
         super().__init__()
         # 命令行执行器
         self.cmdExecutor = CmdExecutor()
-        self.cmdExecutor.finishSignal.connect(self.onCmdExectued)
+        self.cmdExecutor.setFinishCallback(self.onCmdExectued)
 
         # 连接动画需要的timer, 1秒触发一次
         self.timer = QTimer()
@@ -81,7 +82,7 @@ class ConnectWindow(BaseWindow):
             ipListItem = QListWidgetItem(ipListWidget)
             ipListWidget.setItemWidget(ipListItem, item)
 
-        #combobox绘制子项完成，再向子项添加内容
+        # combobox绘制子项完成，再向子项添加内容
         for pos, device in enumerate(self.getDevicesFromDB()):
             self.ipComboBox.setItemText(pos, device[0])
 
@@ -107,11 +108,11 @@ class ConnectWindow(BaseWindow):
         deledeButton = QPushButton()
         deledeButton.setStyleSheet("background:transparent;")
         deledeButton.setIcon(QIcon(IconTool.buildQIcon('delete.png')))
-        deledeButton.clicked.connect(lambda :self.onDeleteComBoxItem(pos, ip_src))
+        deledeButton.clicked.connect(lambda: self.onDeleteComBoxItem(pos, ip_src))
         boxLayout = QHBoxLayout()
         boxLayout.addStretch()
         boxLayout.addWidget(deledeButton)
-        boxLayout.setContentsMargins(0,0,0,0)
+        boxLayout.setContentsMargins(0, 0, 0, 0)
         boxLayout.setSpacing(5)
         qWidget.setLayout(boxLayout)
         return qWidget
@@ -133,29 +134,77 @@ class ConnectWindow(BaseWindow):
     @pyqtSlot()
     def onConnectClick(self):
         comboBoxText = self.ipComboBox.currentText()
-        self.ip = comboBoxText.split(':')[0]
-        if self.ip == '':
+        devicePattern = re.compile(r"(.+?)(?:(?::(\d+)?)?(?::(\d+)))?$")
+        m = devicePattern.match(comboBoxText)
+
+        self.adbHost = m.group(1)
+        self.adbPort = m.group(2)
+        self.xulPort = m.group(3)
+
+        if self.xulPort is None:
+            self.xulPort = "55550"
+
+        if self.adbPort is None:
+            self.adbPort = ""
+
+        if self.adbHost is None or self.adbHost == '':
             self.detailEdit.append('ip非法,请输出正确的ip地址,格式:')
             self.detailEdit.append('ip[:adb port][:xul port]')
             self.detailEdit.append('default adb port:5555')
             self.detailEdit.append('default xul port:55550')
             return
-        try:
-            self.adbPort = comboBoxText.split(':')[1]
-        except IndexError:
-            self.adbPort = '5555'
-        try:
-            self.xulPort = comboBoxText.split(':')[2]
-        except IndexError:
-            self.xulPort = '55550'
 
-        XulDebugServerHelper.HOST = 'http://' + self.ip + ':' + self.xulPort + '/api/'
-        self.timer.start(500)
-        self.currentCmd = 'adb connect ' + self.ip + ':' + self.adbPort
-        self.detailEdit.append('# ' + self.currentCmd)
-        self.connectButton.setEnabled(False)
-        self.detailEdit.append('connecting...')
-        self.cmdExecutor.exec(self.currentCmd)
+        def onForwardFinished(result):
+            self.ip = "localhost"
+            XulDebugServerHelper.HOST = \
+                'http://' + self.ip + ':' + self.xulPort + '/api/'
+            if XulDebugServerHelper.isXulDebugServerAlive():
+                # 存入该设备到历史记录
+                self.addDeviceToDB()
+                self.startMainWindow()
+            self.timer.stop()
+            self.connectButton.setEnabled(True)
+            self.connectButton.setText('connect')
+            self.connectButton.setStyleSheet("QPushButton{text-align : middle;}")
+
+        def makeForward(result):
+            self.currentCmd = ("adb -s {0} forward tcp:{1} tcp:{2}".format(
+                self.adbHost, self.xulPort, self.xulPort))
+            self.detailEdit.append('# ' + self.currentCmd)
+            self.detailEdit.append('create new forward port...')
+            self.cmdExecutor.setFinishCallback(onForwardFinished)
+            self.cmdExecutor.exec(self.currentCmd)
+
+        def onDeviceListed(result):
+            m = [r.split("\t", 2)[0] for r in result if r.split("\t", 2)[0] == self.adbHost]
+            if (self.adbPort is None or self.adbPort == '') and \
+                    self.adbHost in m:
+                # host connected via USB
+                self.currentCmd = "adb forward --remove-all"
+                self.connectButton.setEnabled(False)
+                self.detailEdit.append('# ' + self.currentCmd)
+                self.detailEdit.append('remove all forward ports...')
+                self.cmdExecutor.setFinishCallback(makeForward)
+                self.cmdExecutor.exec(self.currentCmd)
+            else:
+                self.ip = self.adbHost
+                XulDebugServerHelper.HOST = \
+                    'http://' + self.ip + ':' + self.xulPort + '/api/'
+                self.timer.start(500)
+                if self.adbPort is None or self.adbPort == "":
+                    self.currentCmd = 'adb connect ' + self.ip
+                else:
+                    self.currentCmd = 'adb connect ' + self.ip + ':' + self.adbPort
+                self.connectButton.setEnabled(False)
+                self.detailEdit.append('# ' + self.currentCmd)
+                self.detailEdit.append('connecting...')
+                self.cmdExecutor.setFinishCallback(self.onCmdExectued)
+                self.cmdExecutor.exec(self.currentCmd)
+
+        self.cmdExecutor.setFinishCallback(onDeviceListed)
+        self.cmdExecutor.exec("adb devices")
+        self.detailEdit.append('start adb services...')
+        return
 
     def onCmdExectued(self, result):
         for r in result:
@@ -214,7 +263,7 @@ class ConnectWindow(BaseWindow):
         return result
 
     def addDeviceToDB(self):
-        device = self.ip + ':' + self.adbPort + ':' + self.xulPort
+        device = self.adbHost + ':' + self.adbPort + ':' + self.xulPort
         self.detailEdit.append('# add ' + device + ' to db.')
         print('add ' + device + ' to db.')
         try:

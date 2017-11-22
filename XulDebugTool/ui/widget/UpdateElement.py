@@ -10,13 +10,15 @@ from PyQt5.QtGui import QColor
 from PyQt5.QtWidgets import *
 
 from XulDebugTool.utils.Utils import Utils
-
-# 数据的整理，需要把数据填充至内显示
 from XulDebugTool.utils.XulDebugServerHelper import XulDebugServerHelper
 
+# 数据的整理，需要把数据填充至内显示
 ITEM_ATTR = {}
 ITEM_STYLE = {}
 
+limegreen = QColor(120,205,50)
+navajowhite = QColor(255,222,173)
+mistyrose = QColor(255,228,225)
 
 class UpdateElement(QTreeWidget):
     def __init__(self, parent=None):
@@ -31,17 +33,17 @@ class UpdateElement(QTreeWidget):
 
         self.inputAttr = QTreeWidgetItem()
         self.inputAttr.setText(0, 'Attr')
-        self.inputAttr.setBackground(0, QColor(127, 255, 212))
-        self.inputAttr.setBackground(1, QColor(127, 255, 212))
+        self.inputAttr.setBackground(0, limegreen)
+        self.inputAttr.setBackground(1, limegreen)
         self.inputAttr.setSelected(True)
         self.inputStyle = QTreeWidgetItem()
         self.inputStyle.setText(0, 'Style')
-        self.inputStyle.setBackground(0, QColor(150, 255, 200))
-        self.inputStyle.setBackground(1, QColor(150, 255, 200))
+        self.inputStyle.setBackground(0, limegreen)
+        self.inputStyle.setBackground(1, limegreen)
         self.inputClass = QTreeWidgetItem()
         self.inputClass.setText(0, 'Class')
-        self.inputClass.setBackground(0, QColor(180, 255, 180))
-        self.inputClass.setBackground(1, QColor(180, 255, 180))
+        self.inputClass.setBackground(0, limegreen)
+        self.inputClass.setBackground(1, limegreen)
         self.inputWidget.insertTopLevelItem(0, self.inputAttr)
         self.inputWidget.insertTopLevelItem(1, self.inputStyle)
         self.inputWidget.insertTopLevelItem(2, self.inputClass)
@@ -61,26 +63,37 @@ class UpdateElement(QTreeWidget):
     def updateAttrUI(self):
         if self.sameFlag == True:
             return
+        pos = 0
         for key, value in ITEM_ATTR.items():
-            item = QTreeWidgetItem()
-            item.setText(0, key)
-            item.setText(1, value)
-            item.setFlags(Qt.ItemIsEnabled | Qt.ItemIsSelectable | Qt.ItemIsEditable | Qt.ItemIsUserCheckable)
+            item = self.getQTreeWidgetItem(pos, key, value)
             self.inputAttr.addChild(item)
+            pos += 1
 
         self.inputWidget.itemChanged.connect(lambda: self.updateUrl('set-attr', ITEM_ATTR))
 
     def updateStyleUI(self):
         if self.sameFlag == True:
             return
+        pos = 0
         for key, value in ITEM_STYLE.items():
-            item = QTreeWidgetItem()
-            item.setText(0, key)
-            item.setText(1, value)
-            item.setFlags(Qt.ItemIsEnabled | Qt.ItemIsSelectable | Qt.ItemIsEditable | Qt.ItemIsUserCheckable)
+            item = self.getQTreeWidgetItem(pos, key, value)
             self.inputStyle.addChild(item)
+            pos += 1
 
-        self.inputWidget.itemChanged.connect(lambda: self.updateUrl('set-attr', ITEM_STYLE))
+        self.inputWidget.itemChanged.connect(lambda: self.updateUrl('set-style', ITEM_STYLE))
+
+    def getQTreeWidgetItem(self,pos,key,value):
+        item = QTreeWidgetItem()
+        item.setText(0, key)
+        item.setText(1, value)
+        if pos % 2 == 1:
+            item.setBackground(0, navajowhite)
+            item.setBackground(1, navajowhite)
+        else:
+            item.setBackground(0, mistyrose)
+            item.setBackground(1, mistyrose)
+        item.setFlags(Qt.ItemIsEnabled | Qt.ItemIsSelectable | Qt.ItemIsEditable | Qt.ItemIsUserCheckable)
+        return item
 
     def initData(self, data):
         dict = json.loads(data)

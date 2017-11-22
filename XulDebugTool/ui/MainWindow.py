@@ -15,19 +15,14 @@ import pyperclip
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 from PyQt5.QtWebChannel import QWebChannel
-from PyQt5.QtWebEngineWidgets import QWebEngineView, QWebEngineScript
+from PyQt5.QtWebEngineWidgets import QWebEngineView, QWebEngineScript, QWebEnginePage
 from PyQt5.QtWidgets import *
-import json
 
 from XulDebugTool.ui.BaseWindow import BaseWindow
-from XulDebugTool.ui.widget.ConsoleView import ConsoleWindow
-from XulDebugTool.ui.SettingWindow import SettingWindow
-from XulDebugTool.ui.widget.BaseDialog import BaseDialog
 from XulDebugTool.ui.widget.ButtomConsoleWindow import ButtomWindow
 from XulDebugTool.ui.widget.DataQueryDialog import DataQueryDialog
 from XulDebugTool.ui.widget.FavoriteTreeView import FavoriteTreeView
 from XulDebugTool.ui.widget.PropertyEditor import PropertyEditor
-from XulDebugTool.ui.widget.SearchBarQLineEdit import SearchBarQLineEdit
 from XulDebugTool.ui.widget.UpdateElement import UpdateElement
 from XulDebugTool.utils.IconTool import IconTool
 from XulDebugTool.utils.Utils import Utils
@@ -51,11 +46,12 @@ ITEM_TYPE_USER_OBJECT = 'userObject'
 # Model树第二层的节点类型
 ITEM_TYPE_PROVIDER = 'provider'
 
-#获取元素详情的4个参数
+# 获取元素详情的4个参数
 SKIP_PROP = 'skip-prop'
 WITH_CHILDREN = 'with-children'
 WITH_BINDING_DATA = 'with-binding-data'
 WITH_POSITION = 'with-position'
+
 
 class MainWindow(BaseWindow):
     def __init__(self):
@@ -92,6 +88,7 @@ class MainWindow(BaseWindow):
         editMenu = menuBar.addMenu('Edit')
         findAction = QAction(IconTool.buildQIcon('find.png'), 'Find', self)
         findAction.setShortcut('Ctrl+F')
+        findAction.triggered.connect(lambda: self.searchWidget.show())
         editMenu.addAction(findAction)
 
         helpMenu = menuBar.addMenu('Help')
@@ -99,7 +96,7 @@ class MainWindow(BaseWindow):
         helpMenu.addAction(aboutAction)
 
     def restartProgram(self):
-        from XulDebugTool.ui.ConnectWindow import ConnectWindow #不应该在这里导入，但是放在前面会有问题
+        from XulDebugTool.ui.ConnectWindow import ConnectWindow  # 不应该在这里导入，但是放在前面会有问题
         print("新建连接页面")
         self.con = ConnectWindow()
         self.close()
@@ -138,20 +135,6 @@ class MainWindow(BaseWindow):
 
         # ----------------------------middle layout---------------------------- #
         middleContainer = QWidget()
-        middleContainer.toggleSidebarsButton = QPushButton()
-        middleContainer.toggleSidebarsButton.setToolTip('Hide / show the sidebars')
-        middleContainer.toggleSidebarsButton.setIcon(IconTool.buildQIcon('toggle_sidebars.png'))
-        middleContainer.toggleSidebarsButton.setStyleSheet('QPushButton {\
-            width: 22px;\
-            height: 22px;\
-            padding: 5px; }')
-        # middleContainer.toggle_sidebars_button.clicked.connect(self.toggle_sidebars)
-
-        middleContainer.searchBar = SearchBarQLineEdit(self)
-        middleContainer.searchBar.setPlaceholderText('Search')
-        middleContainer.searchBar.setMaximumWidth(300)
-        middleContainer.searchBar.setMaximumHeight(32)
-        middleContainer.searchBar.setSizePolicy(QSizePolicy.Maximum, QSizePolicy.Minimum)
 
         # search shall start not before the user completed typing
         # filter_delay = DelayedExecutionTimer(self)
@@ -162,7 +145,7 @@ class MainWindow(BaseWindow):
         self.tabBar.setUsesScrollButtons(False)
         self.tabBar.setDrawBase(False)
         self.tabBar.addTab('tab1')
-        self.tabBar.addTab('tab2')
+        # self.tabBar.addTab('tab2')
 
         self.pathBar = QWidget()
         layout = QHBoxLayout()
@@ -176,9 +159,6 @@ class MainWindow(BaseWindow):
         layout.addWidget(self.tabBar)
         layout.addWidget(self.pathBar)
         layout.addSpacerItem(QSpacerItem(0, 0, QSizePolicy.Expanding))
-        layout.addWidget(middleContainer.searchBar)
-        layout.addWidget(middleContainer.toggleSidebarsButton)
-        layout.setStretchFactor(middleContainer.searchBar, 1)
         self.searchHolder.setLayout(layout)
         self.searchHolder.layout().setContentsMargins(6, 6, 6, 0)
 
@@ -189,7 +169,7 @@ class MainWindow(BaseWindow):
         self.webObject = WebShareObject()
         self.channel.registerObject('bridge', self.webObject)
         self.browser.page().setWebChannel(self.channel)
-        self.webObject.jsCallback.connect(lambda value:self.addUpdate(value))
+        self.webObject.jsCallback.connect(lambda value: self.addUpdate(value))
 
         qwebchannel_js = QFile(':/qtwebchannel/qwebchannel.js')
         if not qwebchannel_js.open(QIODevice.ReadOnly):
@@ -206,14 +186,17 @@ class MainWindow(BaseWindow):
         script.setRunsOnSubFrames(True)
         self.browser.page().scripts().insert(script)
 
-        Utils.scriptCreator(os.path.join('..', 'resources', 'js', 'event.js'),'event.js',self.browser.page())
+        Utils.scriptCreator(os.path.join('..', 'resources', 'js', 'event.js'), 'event.js',
+                            self.browser.page())
         self.browser.page().setWebChannel(self.channel)
 
         layout = QVBoxLayout()
         layout.setContentsMargins(0, 0, 0, 0)
         layout.addWidget(self.initQCheckBoxUI())
+        layout.addWidget(self.initSearchView())
         layout.addWidget(self.browser)
         self.tabContentWidget.setLayout(layout)
+        self.searchWidget.hide()
 
         middleContainer.stackedWidget = QStackedWidget()
         self.url = XulDebugServerHelper.HOST + 'list-pages'
@@ -240,20 +223,21 @@ class MainWindow(BaseWindow):
         self.rightSiderTabWidget.setTabPosition(QTabWidget.East)
 
         self.favoriteTreeView = FavoriteTreeView(self)
-
+        self.rightSiderTabWidget.setStyleSheet(
+            ('QTab::tab{height:60px;width:20px;color:black;padding:0px}'
+             'QTabBar::tab:selected{background:lightgray}'))
 
         self.propertyEditor = PropertyEditor(['Key', 'Value'])
+        self.inputWidget = UpdateElement()
+        self.rightSiderTabWidget.addTab(self.inputWidget, IconTool.buildQIcon('property.png'),'property')
 
         self.rightSiderTabWidget.setStyleSheet(('QTab::tab{height:60px;width:20px;color:black;padding:0px}'
                                                 'QTabBar::tab:selected{background:lightgray}'))
 
         self.rightSiderTabWidget.addTab(self.propertyEditor,IconTool.buildQIcon('property.png'),'property')
         self.rightSiderTabWidget.addTab(self.favoriteTreeView,IconTool.buildQIcon('favorites.png'),'favorites')
-
         self.rightSiderTabBar.tabBarClicked.connect(self.rightSiderClick)
 
-        self.inputWidget = UpdateElement()
-        self.rightSiderTabWidget.addTab(self.inputWidget, IconTool.buildQIcon('update.png'), 'update')
         # ----------------------------entire layout---------------------------- #
 
         self.contentSplitter = QSplitter(Qt.Horizontal)
@@ -272,9 +256,9 @@ class MainWindow(BaseWindow):
         self.mainSplitter.addWidget(self.contentSplitter)
         self.mainSplitter.addWidget(self.consoleWindow)
         self.mainSplitter.setStretchFactor(1, 0)
-        self.mainSplitter.setStretchFactor(2,1)
+        self.mainSplitter.setStretchFactor(2, 1)
         self.setCentralWidget(self.mainSplitter)
-        #默认隐藏掉复选框
+        # 默认隐藏掉复选框
         self.groupBox.setHidden(True)
 
     def addUpdate(self, value=None):
@@ -312,6 +296,29 @@ class MainWindow(BaseWindow):
         self.groupBox.setLayout(checkGrouplayout)
         return self.groupBox
 
+    def initSearchView(self):
+        self.searchWidget = QWidget()
+        searchPageLayout = QHBoxLayout()
+        self.searchLineEdit = QLineEdit()
+        searchPageLayout.addWidget(self.searchLineEdit)
+        self.searchLineEdit.textChanged.connect(self.searchPage)
+        self.previousBtn = QPushButton("↑")
+        searchPageLayout.addWidget(self.previousBtn)
+        self.previousBtn.clicked.connect(lambda: self.previousBtnClick(self.searchLineEdit.text()))
+        self.nextBtn = QPushButton("↓")
+        self.nextBtn.clicked.connect(lambda: self.nextBtnClick(self.searchLineEdit.text()))
+        searchPageLayout.addWidget(self.nextBtn)
+        self.matchCase = QCheckBox("MatchCases")
+        self.matchCase.setChecked(False)
+        self.matchCase.stateChanged.connect(self.matchCaseChange)
+        searchPageLayout.addWidget(self.matchCase)
+        self.word = QCheckBox("Word")
+        self.word.setChecked(False)
+        self.word.stateChanged.connect(self.wordChange)
+        searchPageLayout.addWidget(self.word)
+        self.searchWidget.setLayout(searchPageLayout)
+        return self.searchWidget
+
     def clickCheckBox(self):
         if self.skipPropCheckBox.isChecked():
             self.selectCheckBoxInfo(SKIP_PROP)
@@ -333,7 +340,7 @@ class MainWindow(BaseWindow):
         else:
             self.cancelCheckBoxInfo(WITH_POSITION)
 
-    def selectCheckBoxInfo(self,str):
+    def selectCheckBoxInfo(self, str):
         if None != self.url:
             checkedStr = str + '=' + 'true'
             unCheckedStr = str + '=' + 'false'
@@ -345,16 +352,16 @@ class MainWindow(BaseWindow):
                     self.url += '&'
                     self.url += checkedStr
                 elif self.url.find(unCheckedStr) != -1:
-                    self.url=self.url.replace(unCheckedStr,checkedStr)
+                    self.url = self.url.replace(unCheckedStr, checkedStr)
             self.showXulDebugData(self.url)
 
-    def cancelCheckBoxInfo(self,str):
+    def cancelCheckBoxInfo(self, str):
         if None != self.url:
             checkedStr = str + '=' + 'true'
             if self.url.find(checkedStr) >= -1:
                 split = self.url.split(checkedStr)
-                self.url=''.join(split)
-                self.url = self.url.replace('&&','&')
+                self.url = ''.join(split)
+                self.url = self.url.replace('&&', '&')
                 self.url = self.url.replace('?&', '?')
                 if self.url.endswith('?'):
                     self.url = self.url[:-1]
@@ -362,8 +369,8 @@ class MainWindow(BaseWindow):
                     self.url = self.url[:-1]
                 self.showXulDebugData(self.url)
 
-    def rightSiderClick(self,index):
-        #两次单击同一个tabBar时显示隐藏内容区域
+    def rightSiderClick(self, index):
+        # 两次单击同一个tabBar时显示隐藏内容区域
         if self.rightSiderTabBar.tabText(index) == self.rightSiderClickInfo:
             if self.rightSiderTabWidget.width() == 32:
                 self.rightSiderTabWidget.setMaximumWidth(800)
@@ -474,7 +481,16 @@ class MainWindow(BaseWindow):
                         r = XulDebugServerHelper.getUserObject(o['@id'])
                         if r:
                             dataServiceNodes = Utils.xml2json(r.data, 'object')
-                            for j, provider in enumerate(dataServiceNodes['object']['provider']):
+                            if isinstance(dataServiceNodes['object']['provider'], list):
+                                for j, provider in enumerate(
+                                        dataServiceNodes['object']['provider']):
+                                    dsRow = QStandardItem(provider['ds']['@providerClass'])
+                                    dsRow.id = provider['@name']
+                                    dsRow.data = provider
+                                    dsRow.type = ITEM_TYPE_PROVIDER
+                                    row.appendRow(dsRow)
+                            else:
+                                provider = dataServiceNodes['object']['provider']
                                 dsRow = QStandardItem(provider['ds']['@providerClass'])
                                 dsRow.id = provider['@name']
                                 dsRow.data = provider
@@ -488,7 +504,8 @@ class MainWindow(BaseWindow):
                 # 没有只有一个userObject的情况, 暂不处理
                 pass
         if self.userobjectItem.rowCount() > 0:
-            self.userobjectItem.setText('%s(%s)' % (ROOT_ITEM_USER_OBJECT, self.userobjectItem.rowCount()))
+            self.userobjectItem.setText(
+                '%s(%s)' % (ROOT_ITEM_USER_OBJECT, self.userobjectItem.rowCount()))
 
     def showXulDebugData(self, url):
         self.browser.load(QUrl(url))
@@ -520,3 +537,31 @@ class MainWindow(BaseWindow):
         self.favoriteTreeView.updateTree()
         self.browser.load(QUrl(url))
         self.statusBar().showMessage(url)
+
+    def searchPage(self, text):
+        check = self.matchCase.isChecked()
+        if check:
+            self.browser.findText(text, QWebEnginePage.FindFlags(2))
+        else:
+            self.browser.findText(text)
+
+    def previousBtnClick(self, text):
+        check = self.matchCase.isChecked()
+        if check:
+            self.browser.findText(text, QWebEnginePage.FindFlags(1) | QWebEnginePage.FindFlags(2))
+        else:
+            self.browser.findText(text, QWebEnginePage.FindFlags(1))
+
+    def nextBtnClick(self, text):
+        check = self.matchCase.isChecked()
+        if check:
+            self.browser.findText(text, QWebEnginePage.FindFlags(0) | QWebEnginePage.FindFlags(2))
+        else:
+            self.browser.findText(text, QWebEnginePage.FindFlags(0))
+
+    def matchCaseChange(self):
+        self.browser.findText("")
+        self.searchPage(self.searchLineEdit.text())
+
+    def wordChange(self):
+        pass
