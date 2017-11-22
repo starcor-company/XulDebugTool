@@ -231,14 +231,14 @@ class MainWindow(BaseWindow):
             ('QTab::tab{height:60px;width:20px;color:black;padding:0px}'
              'QTabBar::tab:selected{background:lightgray}'))
 
-        self.propertyEditor = PropertyEditor(['Key', 'Value'])
+        # self.propertyEditor = PropertyEditor(['Key', 'Value'])
         self.inputWidget = UpdateElement()
         self.rightSiderTabWidget.addTab(self.inputWidget, IconTool.buildQIcon('property.png'),'property')
 
         self.rightSiderTabWidget.setStyleSheet(('QTab::tab{height:60px;width:20px;color:black;padding:0px}'
                                                 'QTabBar::tab:selected{background:lightgray}'))
 
-        self.rightSiderTabWidget.addTab(self.propertyEditor,IconTool.buildQIcon('property.png'),'property')
+        # self.rightSiderTabWidget.addTab(self.propertyEditor,IconTool.buildQIcon('property.png'),'property')
         self.rightSiderTabWidget.addTab(self.favoriteTreeView,IconTool.buildQIcon('favorites.png'),'favorites')
         self.rightSiderTabBar.tabBarClicked.connect(self.rightSiderClick)
 
@@ -432,7 +432,7 @@ class MainWindow(BaseWindow):
             pass
 
         self.groupBox.setHidden(item.type != ITEM_TYPE_PAGE)
-        self.fillPropertyEditor(item.data)
+        # self.fillPropertyEditor(item.data)
 
     @pyqtSlot(QModelIndex)
     def onTreeItemDoubleClicked(self, index):
@@ -515,13 +515,13 @@ class MainWindow(BaseWindow):
         self.browser.load(QUrl(url))
         self.statusBar().showMessage(url)
 
-    def fillPropertyEditor(self, data):
-        self.propertyEditor.clearProperty()
-        self.qObject = QObject()
-        if isinstance(data, dict):
-            for k, v in data.items():
-                self.convertProperty(k, v)
-        self.propertyEditor.addProperty(self.qObject)
+    # def fillPropertyEditor(self, data):
+    #     self.propertyEditor.clearProperty()
+    #     self.qObject = QObject()
+    #     if isinstance(data, dict):
+    #         for k, v in data.items():
+    #             self.convertProperty(k, v)
+    #     self.propertyEditor.addProperty(self.qObject)
 
     def convertProperty(self, k, v):
         """递归的将多层属性字典转成单层的."""
