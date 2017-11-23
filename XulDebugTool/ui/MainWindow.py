@@ -22,8 +22,7 @@ from XulDebugTool.ui.BaseWindow import BaseWindow
 from XulDebugTool.ui.widget.ButtomConsoleWindow import ButtomWindow
 from XulDebugTool.ui.widget.DataQueryDialog import DataQueryDialog
 from XulDebugTool.ui.widget.FavoriteTreeView import FavoriteTreeView
-from XulDebugTool.ui.widget.PropertyEditor import PropertyEditor
-from XulDebugTool.ui.widget.UpdateElement import UpdateElement
+from XulDebugTool.ui.widget.UpdateProperty import UpdateProperty
 from XulDebugTool.utils.IconTool import IconTool
 from XulDebugTool.utils.Utils import Utils
 from XulDebugTool.utils.XulDebugServerHelper import XulDebugServerHelper
@@ -232,7 +231,7 @@ class MainWindow(BaseWindow):
              'QTabBar::tab:selected{background:lightgray}'))
 
         # self.propertyEditor = PropertyEditor(['Key', 'Value'])
-        self.inputWidget = UpdateElement()
+        self.inputWidget = UpdateProperty()
         self.rightSiderTabWidget.addTab(self.inputWidget, IconTool.buildQIcon('property.png'), 'property')
 
         self.rightSiderTabWidget.setStyleSheet(('QTab::tab{height:60px;width:20px;color:black;padding:0px}'
