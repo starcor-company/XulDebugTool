@@ -81,8 +81,10 @@ class DataQueryDialog(BaseDialog):
         row = 1;
         entrys = []
         if url != '' and url != None:
-            entrys=url.rsplit('/',1)[1].split('?',1)[1].split('&')
-            row = len(entrys)+1
+            entrys=url.split('?',1)[1].split('&')
+            for element in entrys:
+                if element != '' and element != None:
+                    row += 1
 
         self.tableView = QtWidgets.QTableWidget(row,2,self)
         self.tableView.move(36, 80)
@@ -100,7 +102,7 @@ class DataQueryDialog(BaseDialog):
         self.tableView.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
 
         for i, entry in enumerate(entrys):
-            if entry != [] and entry != None:
+            if entry != '' and entry != None:
                 querylist = entry.split('=')
                 self.tableView.setItem(i, 0, QtWidgets.QTableWidgetItem(querylist[0]))
                 self.tableView.setItem(i, 1, QtWidgets.QTableWidgetItem(querylist[1]))
