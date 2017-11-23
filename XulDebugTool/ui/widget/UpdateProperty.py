@@ -18,6 +18,24 @@ ITEM_ATTR = {}
 ITEM_STYLE = {}
 
 ITEM_TAG = ['area', 'item', 'layout']
+ATTR_AREA = ["x", "y", "height", "width", "align", "max-layers", "enabled", "animation", "animation-speed",
+             "animation-type", "animation-duration", "animation-mode", "switching-mode", "animation-sizing",
+             "animation-moving", "direction", "loop", "lock-focus", "component", "text", "multi-line", "auto-wrap",
+             "marquee", "ellipsis", "indicator", "indicator.style", "indicator.align", "indicator.gap",
+             "indicator.left", "indicator.right", "indicator.top", "indicator.bottom", "scrollbar", "auto-scroll",
+             "incremental", "arrangement", "minimum-item", "cache-pages", "checked-class", "group"]
+
+STYLE_AREA = ["font-face", "font-size", "font-color", "font-weight", "font-scale-x", "font-shadow",
+              "font-align", "font-style-underline", "font-style-strike", "font-style-italic",
+              "font-resample", "font-render", "start-indent", "end-indent", "do-not-match-text",
+              "background-image", "background-color", "border", "margin", "margin-left", "margin-right",
+              "margin-bottom", "margin-top", "padding", "padding-left", "padding-right", "padding-bottom",
+              "padding-top", "display", "z-index", "scale", "animation-scale", "position", "border-dash-pattern",
+              "fix-half-char", "animation-text-change", "preferred-focus-padding", "hint-text-color", "line-height",
+              "clip-children", "clip-focus", "layout-mode", "opacity", "translate", "translate-x", "translate-y",
+              "rotate", "quiver", "quiver-mode", "rotate-x", "rotate-y", "rotate-z", "rotate-center", "rotate-center-x",
+              "rotate-center-y", "rotate-center-z", "lighting-color-filter", "round-rect", "max-width", "max-height",
+              "min-width", "min-height", "preload", "keep-focus-visible"]
 
 item_color = QColor(255, 255, 255)
 property_color_one = QColor(255, 255, 255)
@@ -80,14 +98,14 @@ class UpdateProperty(QTreeWidget):
             return
         if type == 'set-attr':
             for key, value in ITEM_ATTR.items():
-                if key == str(item.text(0)):
+                if key == str(item.text(0)) or str(item.text(0)) not in ATTR_AREA:
                     item.setText(0, '')
                     item.setText(1, '')
                     return
             ITEM_ATTR.setdefault(str(item.text(0)), str(item.text(1)))
         elif type == 'set-style':
             for key, value in ITEM_STYLE.items():
-                if key == str(item.text(0)):
+                if key == str(item.text(0)) or str(item.text(0)) not in STYLE_AREA:
                     item.setText(0, '')
                     item.setText(1, '')
                     return
