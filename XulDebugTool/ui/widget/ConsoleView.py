@@ -37,8 +37,8 @@ class ConsoleWindow(QMainWindow):
         layout_top = QHBoxLayout()
         layout_top.setAlignment(Qt.AlignRight)
         layout_top.setSpacing(20)
-        layout_top.addWidget(self.combo)
-        layout_top.addWidget(self.searchButton)
+        # layout_top.addWidget(self.combo)
+        # layout_top.addWidget(self.searchButton)
 
         self.functionTabWiget = QWidget()
         self.functionTabWiget.setAutoFillBackground(True)
@@ -49,10 +49,25 @@ class ConsoleWindow(QMainWindow):
         self.clearButton = QPushButton(self)
         icon = QIcon(IconTool.buildQIcon('clear.png'))
         self.clearButton.setIcon(icon)
-        self.clearButton.setStyleSheet("background:transparent;")
+        self.clearButton.setFixedWidth(26)
+        self.clearButton.setFixedHeight(26)
         self.clearButton.clicked.connect(self.clear)
         self.clearButton.setToolTip("Clear the logcat")
-        self.clearButton.move(20,10)
+        self.setStyleSheet('''
+            QPushButton{
+                border: none;
+                background-color: #0000 ;
+            }
+            
+            QPushButton:hover {
+            border: 1px solid #C0C0C0;
+            background-color: yellow;
+            border-style: inset;
+            border-radius:2px;
+            background-color:#C0C0C0;  
+            border-style: solid;
+            }
+            ''')
 
         layout_left = QVBoxLayout()
         layout_left.setAlignment(Qt.AlignLeft | Qt.AlignTop)
@@ -61,7 +76,7 @@ class ConsoleWindow(QMainWindow):
         self.leftWiget = QWidget()
         self.leftWiget.setAutoFillBackground(True)
         self.leftWiget.setLayout(layout_left)
-        self.leftWiget.setFixedWidth(30)
+        self.leftWiget.setFixedWidth(40)
 
         # 右
         self.textEdit = QTextBrowser()

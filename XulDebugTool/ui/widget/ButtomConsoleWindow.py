@@ -20,15 +20,15 @@ class ButtomWindow(QTabWidget):
         self.tabBar.tabBarClicked.connect(self.status)
         self.tabBar.setExpanding(False)
         self.setTabBar(self.tabBar)
-        self.addTab(self.consoleView,IconTool.buildQIcon('terminal.png'), "terminal")
+        self.addTab(self.consoleView,IconTool.buildQIcon('logcat.png'), "Logcat")
         self.consoleView.setVisible(False)
         self.setFixedHeight(30)
         self.setTabPosition(QTabWidget.South)
-        self.setStyleSheet(("QTabBar::tab {border: none; height: 30px; width:70px;color:black; padding: 0px;}"
+        self.setStyleSheet(("QTabBar::tab {border: none; height: 30px; width:70px;color:black; padding-left: 5px;}"
                             "QTabBar::tab:selected { border: none;background: lightgray; } "))
 
     def status(self):
-      if self.tabBar.tabText(self.tabBar.currentIndex()) == 'terminal':
+      if self.tabBar.tabText(self.tabBar.currentIndex()) == 'Logcat':
         if self.consoleView.isVisible():
           self.consoleView.setVisible(False)
           self.preHeight = self.width()
