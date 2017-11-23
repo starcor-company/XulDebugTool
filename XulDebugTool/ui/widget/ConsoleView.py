@@ -42,7 +42,7 @@ class ConsoleWindow(QMainWindow):
 
         self.functionTabWiget = QWidget()
         self.functionTabWiget.setAutoFillBackground(True)
-        self.functionTabWiget.setFixedHeight(40)
+        self.functionTabWiget.setFixedHeight(20)
         self.functionTabWiget.setLayout(layout_top)
 
         # 左
@@ -69,13 +69,13 @@ class ConsoleWindow(QMainWindow):
             }
             ''')
 
-        layout_left = QVBoxLayout()
-        layout_left.setAlignment(Qt.AlignLeft | Qt.AlignTop)
-        layout_left.setSpacing(1)
-        layout_left.addWidget(self.clearButton)
+        self.layoutLeft = QVBoxLayout()
+        self.layoutLeft.setAlignment(Qt.AlignLeft | Qt.AlignTop)
+        self.layoutLeft.setSpacing(1)
+        self.layoutLeft.addWidget(self.clearButton)
         self.leftWiget = QWidget()
         self.leftWiget.setAutoFillBackground(True)
-        self.leftWiget.setLayout(layout_left)
+        self.leftWiget.setLayout(self.layoutLeft)
         self.leftWiget.setFixedWidth(40)
 
         # 右
@@ -83,22 +83,20 @@ class ConsoleWindow(QMainWindow):
         self.textEdit.setOpenLinks(True)
         self.textEdit.setOpenExternalLinks(True)
         self.textEdit.setReadOnly(True)
+
+        self.rightWiget = QWidget()
+        self.rightWiget.setAutoFillBackground(True)
+        self.rightWiget.setFixedWidth(15)
+
         self.messageSplitter = QSplitter(Qt.Horizontal)
         self.messageSplitter.addWidget(self.leftWiget)
         self.messageSplitter.addWidget(self.textEdit)
-        self.messageSplitter.setHandleWidth(0)
+        self.messageSplitter.addWidget(self.rightWiget)
 
         self.mainSplitter = QSplitter(Qt.Vertical)
         self.mainSplitter.addWidget(self.functionTabWiget)
         self.mainSplitter.addWidget(self.messageSplitter)
-        self.mainSplitter.setHandleWidth(0)
         self.setCentralWidget(self.mainSplitter)
-
-        self.mainSplitter.setStretchFactor(0, 1)
-        self.mainSplitter.setStretchFactor(1, 20)
-
-        self.messageSplitter.setStretchFactor(0, 1)
-        self.messageSplitter.setStretchFactor(1, 40)
 
         # 重定向输出
         sys.stdout = ConsoleEmittor(textWritten=self.normalOutputWritten)
