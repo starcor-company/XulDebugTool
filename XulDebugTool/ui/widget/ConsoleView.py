@@ -49,8 +49,8 @@ class ConsoleWindow(QMainWindow):
         self.clearButton = QPushButton(self)
         icon = QIcon(IconTool.buildQIcon('clear.png'))
         self.clearButton.setIcon(icon)
-        self.clearButton.setFixedWidth(26)
-        self.clearButton.setFixedHeight(26)
+        self.clearButton.setFixedWidth(18)
+        self.clearButton.setFixedHeight(20)
         self.clearButton.clicked.connect(self.clear)
         self.clearButton.setToolTip("Clear the logcat")
         self.setStyleSheet('''
@@ -70,13 +70,14 @@ class ConsoleWindow(QMainWindow):
             ''')
 
         self.layoutLeft = QVBoxLayout()
-        self.layoutLeft.setAlignment(Qt.AlignLeft | Qt.AlignTop)
+        self.layoutLeft.setAlignment(Qt.AlignTop)
         self.layoutLeft.setSpacing(1)
         self.layoutLeft.addWidget(self.clearButton)
+        self.layoutLeft.setContentsMargins(4, 0, 0, 0)
         self.leftWiget = QWidget()
         self.leftWiget.setAutoFillBackground(True)
         self.leftWiget.setLayout(self.layoutLeft)
-        self.leftWiget.setFixedWidth(40)
+        self.leftWiget.setFixedWidth(22)
 
         # 右
         self.textEdit = QTextBrowser()
