@@ -39,7 +39,7 @@ class FavoriteTreeView(QTreeView):
 
     def buildFavoritesTree(self):
         self.favorites.removeRows(0,self.favorites.rowCount())
-        rows = self.favoriteDB.selectFavorites("favorite = 1")
+        rows = self.favoriteDB.selectFavorites("favorite = 1 order by name asc")
         for i,row in enumerate(rows):
             providerItem = QStandardItem(row[1] + "   " + row[3])
             providerItem.type = ITEM_TYPE_FAVORITES
@@ -73,8 +73,13 @@ class FavoriteTreeView(QTreeView):
     @pyqtSlot(QModelIndex)
     def onTreeItemDoubleClicked(self, index):
         item = self.treeModel.itemFromIndex(index)
-        if item.type == ITEM_TYPE_FAVORITES or item.type == ITEM_TYPE_HISTORY:
-            self.showQueryDialog(item)
+        if item.type == ITEM_TYPE_FAVORITES :
+            self.favoriteDB.updateFavorites(item.id, favorite=0)
+            self.favoriteDB.insertFavorite(item.name, item.url, 1)
+            self.mainWindow.onGetQueryUrl(item.url)
+        elif item.type == ITEM_TYPE_HISTORY:
+            self.favoriteDB.insertFavorite(item.name, item.url, 0)
+            self.mainWindow.onGetQueryUrl(item.url)
 
     @pyqtSlot(QPoint)
     def openContextMenu(self, point):

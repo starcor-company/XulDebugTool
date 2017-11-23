@@ -41,7 +41,7 @@ class FavoriteDB(QObject):
     def selectFavorites(self,sentence = ''):
         conn = sqlite3.connect('XulDebugTool.db');
         if sentence != '' and sentence != None:
-            cursor = conn.execute("select * from favorite where "+ sentence +" order by id desc" )
+            cursor = conn.execute("select * from favorite where "+ sentence)
         else:
             cursor = conn.execute("select * from favorite order by id desc")
         result = cursor.fetchall()
