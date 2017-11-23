@@ -218,27 +218,23 @@ class MainWindow(BaseWindow):
         middleContainer.setLayout(layout)
 
         # ----------------------------right layout---------------------------- #
-        self.rightSiderClickInfo = 'property'
+        self.rightSiderClickInfo = 'Property'
 
         self.rightSiderTabWidget = QTabWidget()
         self.rightSiderTabBar = QTabBar()
         self.rightSiderTabWidget.setTabBar(self.rightSiderTabBar)
         self.rightSiderTabWidget.setTabPosition(QTabWidget.East)
-
         self.favoriteTreeView = FavoriteTreeView(self)
-        self.rightSiderTabWidget.setStyleSheet(
-            ('QTab::tab{height:60px;width:20px;color:black;padding:0px}'
-             'QTabBar::tab:selected{background:lightgray}'))
 
         # self.propertyEditor = PropertyEditor(['Key', 'Value'])
         self.inputWidget = UpdateProperty()
-        self.rightSiderTabWidget.addTab(self.inputWidget, IconTool.buildQIcon('property.png'), 'property')
+        self.rightSiderTabWidget.addTab(self.inputWidget, IconTool.buildQIcon('property.png'), 'Property')
 
-        self.rightSiderTabWidget.setStyleSheet(('QTab::tab{height:60px;width:20px;color:black;padding:0px}'
+        self.rightSiderTabWidget.setStyleSheet(('QTab::tab{height:60px;width:32px;color:black;padding:0px}'
                                                 'QTabBar::tab:selected{background:lightgray}'))
 
         # self.rightSiderTabWidget.addTab(self.propertyEditor,IconTool.buildQIcon('property.png'),'property')
-        self.rightSiderTabWidget.addTab(self.favoriteTreeView, IconTool.buildQIcon('favorites.png'), 'favorites')
+        self.rightSiderTabWidget.addTab(self.favoriteTreeView, IconTool.buildQIcon('favorites.png'), 'Favorites')
         self.rightSiderTabBar.tabBarClicked.connect(self.rightSiderClick)
 
         # ----------------------------entire layout---------------------------- #
@@ -303,9 +299,9 @@ class MainWindow(BaseWindow):
         self.searchWidget = QWidget()
         self.searchWidget.setStyleSheet(".QWidget{border:1px solid rgb(220, 220, 220)}")
         searchPageLayout = QHBoxLayout()
-        self.searchIcon = QAction()
+        self.searchIcon = QAction(self)
         self.searchIcon.setIcon(IconTool.buildQIcon('find.png'))
-        self.searchDelIcon = QAction()
+        self.searchDelIcon = QAction(self)
         self.searchDelIcon.setIcon(IconTool.buildQIcon('del.png'))
         self.searchLineEdit = QLineEdit()
         self.searchLineEdit.addAction(self.searchIcon, QLineEdit.LeadingPosition)
@@ -397,12 +393,14 @@ class MainWindow(BaseWindow):
         # 两次单击同一个tabBar时显示隐藏内容区域
         if self.rightSiderTabBar.tabText(index) == self.rightSiderClickInfo:
             if self.rightSiderTabWidget.width() == 32:
-                self.rightSiderTabWidget.setMaximumWidth(800)
+                self.rightSiderTabWidget.setMaximumWidth(1800)
+                self.rightSiderTabWidget.setMinimumWidth(32)
             else:
                 self.rightSiderTabWidget.setFixedWidth(32)
         else:
             if self.rightSiderTabWidget.width() == 32:
-                self.rightSiderTabWidget.setMaximumWidth(800)
+                self.rightSiderTabWidget.setMaximumWidth(1800)
+                self.rightSiderTabWidget.setMinimumWidth(32)
         self.rightSiderClickInfo = self.rightSiderTabBar.tabText(index)
 
     @pyqtSlot(QPoint)
