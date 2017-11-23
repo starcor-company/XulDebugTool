@@ -305,11 +305,16 @@ class MainWindow(BaseWindow):
         searchPageLayout = QHBoxLayout()
         self.searchIcon = QAction()
         self.searchIcon.setIcon(IconTool.buildQIcon('find.png'))
+        self.searchDelIcon = QAction()
+        self.searchDelIcon.setIcon(IconTool.buildQIcon('del.png'))
         self.searchLineEdit = QLineEdit()
         self.searchLineEdit.addAction(self.searchIcon, QLineEdit.LeadingPosition)
+        self.searchLineEdit.addAction(self.searchDelIcon, QLineEdit.TrailingPosition)
+        self.searchDelIcon.setVisible(False)
         self.searchLineEdit.setStyleSheet("border:2px groove gray;border-radius:10px;padding:2px 4px")
         searchPageLayout.addWidget(self.searchLineEdit)
         self.searchLineEdit.textChanged.connect(self.searchPage)
+        self.searchDelIcon.triggered.connect(self.searchDelClick)
         self.previousBtn = QPushButton()
         self.previousBtn.setStyleSheet("background:transparent;")
         self.previousBtn.setIcon(IconTool.buildQIcon('up.png'))
@@ -322,7 +327,7 @@ class MainWindow(BaseWindow):
         self.nextBtn.setFixedSize(15, 20)
         self.nextBtn.clicked.connect(lambda: self.nextBtnClick(self.searchLineEdit.text()))
         searchPageLayout.addWidget(self.nextBtn)
-        self.matchCase = QCheckBox("MatchCases")
+        self.matchCase = QCheckBox("Match Case")
         self.matchCase.setChecked(False)
         self.matchCase.stateChanged.connect(self.matchCaseChange)
         searchPageLayout.addWidget(self.matchCase)
@@ -332,7 +337,7 @@ class MainWindow(BaseWindow):
         self.searchClose = QPushButton("×")
         self.searchClose.setFixedWidth(10)
         self.searchClose.setStyleSheet("background:transparent;")
-        self.searchClose.clicked.connect(lambda: self.searchWidget.hide())
+        self.searchClose.clicked.connect(self.searchCloseClick)
         searchPageLayout.addWidget(self.matchTips)
         searchPageLayout.addWidget(self.searchClose)
         self.searchWidget.setLayout(searchPageLayout)
@@ -558,6 +563,10 @@ class MainWindow(BaseWindow):
         self.statusBar().showMessage(url)
 
     def searchPage(self, text):
+        if not text.strip():
+            self.searchDelIcon.setVisible(False)
+        else:
+            self.searchDelIcon.setVisible(True)
         check = self.matchCase.isChecked()
         if check:
             self.browser.findText(text, QWebEnginePage.FindFlags(2), lambda result: self.changeMatchTip(result))
@@ -589,3 +598,14 @@ class MainWindow(BaseWindow):
             self.matchTips.setText("Find matches")
         else:
             self.matchTips.setText("No matches")
+
+    def searchDelClick(self):
+        self.searchLineEdit.setText("")
+        self.browser.findText("")
+        self.matchTips.setText("")
+
+    def searchCloseClick(self):
+        self.searchLineEdit.setText("")
+        self.browser.findText("")
+        self.matchTips.setText("")
+        self.searchWidget.hide()
