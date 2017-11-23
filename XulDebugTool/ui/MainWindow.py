@@ -569,7 +569,7 @@ class MainWindow(BaseWindow):
         if check:
             self.browser.findText(text, QWebEnginePage.FindFlags(2), lambda result: self.changeMatchTip(result))
         else:
-            self.browser.findText(text, QWebEnginePage.FindFlags(2),lambda result: self.changeMatchTip(result))
+            self.browser.findText(text, QWebEnginePage.FindFlags(0), lambda result: self.changeMatchTip(result))
 
     def previousBtnClick(self, text):
         check = self.matchCase.isChecked()
@@ -582,7 +582,7 @@ class MainWindow(BaseWindow):
     def nextBtnClick(self, text):
         check = self.matchCase.isChecked()
         if check:
-            self.browser.findText(text, QWebEnginePage.FindFlags(0) | QWebEnginePage.FindFlags(2),
+            self.browser.findText(text, QWebEnginePage.FindFlags(2),
                                   lambda result: self.changeMatchTip(result))
         else:
             self.browser.findText(text, QWebEnginePage.FindFlags(0), lambda result: self.changeMatchTip(result))
