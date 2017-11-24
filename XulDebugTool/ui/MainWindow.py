@@ -90,8 +90,7 @@ class MainWindow(BaseWindow):
         editMenu = menuBar.addMenu('Edit')
         findAction = QAction(IconTool.buildQIcon('find.png'), '&Find', self)
         findAction.setShortcut('Ctrl+F')
-        # findAction.setShortcutContext(Qt.ApplicationShortcut)
-        findAction.triggered.connect(lambda: self.searchWidget.show())
+        findAction.triggered.connect(self.findActionClick)
         editMenu.addAction(findAction)
 
         helpMenu = menuBar.addMenu('Help')
@@ -147,7 +146,7 @@ class MainWindow(BaseWindow):
         self.tabBar = QTabBar()
         self.tabBar.setUsesScrollButtons(False)
         self.tabBar.setDrawBase(False)
-        self.tabBar.addTab('tab1')
+        # self.tabBar.addTab('tab1')
         # self.tabBar.addTab('tab2')
 
         self.pathBar = QWidget()
@@ -167,7 +166,7 @@ class MainWindow(BaseWindow):
 
         self.tabContentWidget = QWidget()
         self.browser = QWebEngineView()
-
+        self.browser.setZoomFactor(1.3)
         self.channel = QWebChannel()
         self.webObject = WebShareObject()
         self.channel.registerObject('bridge', self.webObject)
@@ -559,6 +558,11 @@ class MainWindow(BaseWindow):
         self.favoriteTreeView.updateTree()
         self.browser.load(QUrl(url))
         self.statusBar().showMessage(url)
+
+    def findActionClick(self):
+        self.searchWidget.show()
+        self.searchLineEdit.setFocus()
+        self.searchLineEdit.setText(self.browser.selectedText())
 
     def searchPage(self, text):
         if not text.strip():
