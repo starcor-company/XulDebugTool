@@ -4,6 +4,7 @@ from PyQt5.QtCore import Qt, pyqtSlot, QModelIndex, QPoint
 from PyQt5.QtGui import QStandardItemModel, QStandardItem
 from PyQt5.QtWidgets import QTreeView, QAbstractItemView, QMenu, QAction
 
+from XulDebugTool.logcatapi.Logcat import STCLogger
 from XulDebugTool.ui.widget.DataQueryDialog import DataQueryDialog
 from XulDebugTool.ui.widget.model.FavoriteDB import FavoriteDB
 from XulDebugTool.utils.IconTool import IconTool
@@ -36,7 +37,7 @@ class FavoriteTreeView(QTreeView):
             self.doubleClicked.connect(self.onTreeItemDoubleClicked)
             # self.clicked.connect(self.clickState)
         except Exception as e:
-            print(e)
+            STCLogger().e(e)
 
     def buildFavoritesTree(self):
         self.favorites.removeRows(0,self.favorites.rowCount())
@@ -134,27 +135,32 @@ class FavoriteTreeView(QTreeView):
         self.dialog = DataQueryDialog(item)
         self.dialog.finishSignal.connect(self.mainWindow.onGetQueryUrl)
         self.dialog.show()
+        STCLogger().i('show queryDataDialog' )
 
     def add2Favorites(self,item):
         if item.type == ITEM_TYPE_HISTORY:
             dateTime = time.strftime("%Y/%m/%d %H:%M:%S", time.localtime(time.time()))
             self.favoriteDB.insertFavorites(item.name,item.url,dateTime,item.id)
+            STCLogger.i('the history record add to DataBase of favorites :' + item.url)
             self.updateTree()
 
     def deleteFavorite(self,item):
         if item.type == ITEM_TYPE_FAVORITES:
             self.favoriteDB.deleteFavorites('and id = ' + str(item.id))
             self.favoriteDB.deleteHistory(' and id = '+ str(item.historyId))
+            STCLogger.i('this record delete from DataBase:' + item.url)
             self.updateTree()
 
     def deleteHistory(self,item):
         if item.type == ITEM_TYPE_HISTORY:
             self.favoriteDB.deleteHistory('and id = '+str(item.id))
+            STCLogger.i('this record delete from DataBase:' + item.url)
             self.updateTree()
 
     def remove2Favorites(self,item):
         if item.type == ITEM_TYPE_FAVORITES:
             self.favoriteDB.deleteFavorites('and id = '+str(item.id))
+            STCLogger.i('this record remove from DataBase of favorites:' + item.url)
             self.updateTree()
 
     def updateTree(self):
