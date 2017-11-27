@@ -1,5 +1,7 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
+import time
+
 from PyQt5 import QtCore, QtWidgets
 from PyQt5.QtCore import pyqtSignal
 
@@ -161,16 +163,26 @@ class DataQueryDialog(BaseDialog):
         self.close()
 
     def treeViewDataRefresh(self):
+        dateTime = time.strftime("%Y/%m/%d %H:%M:%S", time.localtime(time.time()))
+
+        #用左侧的model树来查询的时候
         if isinstance(self.data, dict):
-            self.favoriteDB.insertFavorite(self.providerName, self.url, 0)
+            self.favoriteDB.insertHistory(self.providerName,self.url,dateTime,0)
+            # STCLogger.d('dataQuery record is insert to DataBase ' + self.url)
             return
 
+        #用收藏功能里面的记录查询
         if self.data.type:
-            if self.data.type == 'favorites_type':
-                self.favoriteDB.updateFavorites(self.data.id, favorite=0)
-                self.favoriteDB.insertFavorite(self.providerName, self.url, 1)
+            if self.data.type == 'favorites_type':#更新收藏记录的时候要先更新历史记录，在更新收藏记录时将最新的历史记录和收藏记录关联起来
+
+                self.favoriteDB.insertHistory(self.providerName, self.url,dateTime, 1)
+                rows = self.favoriteDB.selectBySQL('select max(id) from '+ self.favoriteDB.TABLE_HISTORY)
+                for row in rows:
+                    historyMaxId = row[0]
+                self.favoriteDB.updateFavorites('and id = '+ str(self.data.id), name = self.providerName,url = self.url,date = dateTime,history_id = historyMaxId)
+                self.favoriteDB.updateHistory('and id = '+str(self.data.historyId), favorite = 0)
             elif self.data.type == 'history_type':
-                self.favoriteDB.insertFavorite(self.providerName, self.url, 0)
+                self.favoriteDB.insertHistory(self.providerName, self.url,dateTime, 0)
 
 
 

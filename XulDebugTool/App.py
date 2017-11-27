@@ -11,7 +11,9 @@ last edited: 2017.10.14
 """
 
 import sys
+
 from PyQt5.QtWidgets import QApplication
+
 from XulDebugTool.ui.ConnectWindow import ConnectWindow
 
 

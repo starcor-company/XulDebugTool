@@ -137,6 +137,13 @@ class ConnectWindow(BaseWindow):
         devicePattern = re.compile(r"(.+?)(?:(?::(\d+)?)?(?::(\d+)))?$")
         m = devicePattern.match(comboBoxText)
 
+        if m is None:
+            self.detailEdit.append('ip非法,请输出正确的ip地址,格式:')
+            self.detailEdit.append('ip[:adb port][:xul port]')
+            self.detailEdit.append('default adb port:5555')
+            self.detailEdit.append('default xul port:55550')
+            return
+
         self.adbHost = m.group(1)
         self.adbPort = m.group(2)
         self.xulPort = m.group(3)

@@ -18,12 +18,12 @@ from PyQt5.QtWebChannel import QWebChannel
 from PyQt5.QtWebEngineWidgets import QWebEngineView, QWebEngineScript, QWebEnginePage
 from PyQt5.QtWidgets import *
 
+from XulDebugTool.ui.AboutWindow import AboutWindow
 from XulDebugTool.ui.BaseWindow import BaseWindow
 from XulDebugTool.ui.widget.ButtomConsoleWindow import ButtomWindow
 from XulDebugTool.ui.widget.DataQueryDialog import DataQueryDialog
 from XulDebugTool.ui.widget.FavoriteTreeView import FavoriteTreeView
-from XulDebugTool.ui.widget.PropertyEditor import PropertyEditor
-from XulDebugTool.ui.widget.UpdateElement import UpdateElement
+from XulDebugTool.ui.widget.UpdateProperty import UpdateProperty
 from XulDebugTool.utils.IconTool import IconTool
 from XulDebugTool.utils.Utils import Utils
 from XulDebugTool.utils.XulDebugServerHelper import XulDebugServerHelper
@@ -91,18 +91,24 @@ class MainWindow(BaseWindow):
         editMenu = menuBar.addMenu('Edit')
         findAction = QAction(IconTool.buildQIcon('find.png'), '&Find', self)
         findAction.setShortcut('Ctrl+F')
-        # findAction.setShortcutContext(Qt.ApplicationShortcut)
-        findAction.triggered.connect(lambda: self.searchWidget.show())
+        findAction.triggered.connect(self.findActionClick)
         editMenu.addAction(findAction)
 
         helpMenu = menuBar.addMenu('Help')
         aboutAction = QAction(IconTool.buildQIcon('about.png'), '&About', self)
         helpMenu.addAction(aboutAction)
+        aboutAction.triggered.connect(self.openAboutWindow)
+
+    def openAboutWindow(self):
+        print('open about')
+        self.about = AboutWindow()
+        self.about.show()
 
     def restartProgram(self):
         from XulDebugTool.ui.ConnectWindow import ConnectWindow  # 不应该在这里导入，但是放在前面会有问题
         print("新建连接页面")
         self.con = ConnectWindow()
+        self.about.close()
         self.close()
 
     # def openSettingWindow(self):
@@ -148,7 +154,7 @@ class MainWindow(BaseWindow):
         self.tabBar = QTabBar()
         self.tabBar.setUsesScrollButtons(False)
         self.tabBar.setDrawBase(False)
-        self.tabBar.addTab('tab1')
+        # self.tabBar.addTab('tab1')
         # self.tabBar.addTab('tab2')
 
         self.pathBar = QWidget()
@@ -168,7 +174,7 @@ class MainWindow(BaseWindow):
 
         self.tabContentWidget = QWidget()
         self.browser = QWebEngineView()
-
+        self.browser.setZoomFactor(1.3)
         self.channel = QWebChannel()
         self.webObject = WebShareObject()
         self.channel.registerObject('bridge', self.webObject)
@@ -219,27 +225,23 @@ class MainWindow(BaseWindow):
         middleContainer.setLayout(layout)
 
         # ----------------------------right layout---------------------------- #
-        self.rightSiderClickInfo = 'property'
+        self.rightSiderClickInfo = 'Property'
 
         self.rightSiderTabWidget = QTabWidget()
         self.rightSiderTabBar = QTabBar()
         self.rightSiderTabWidget.setTabBar(self.rightSiderTabBar)
         self.rightSiderTabWidget.setTabPosition(QTabWidget.East)
-
         self.favoriteTreeView = FavoriteTreeView(self)
-        self.rightSiderTabWidget.setStyleSheet(
-            ('QTab::tab{height:60px;width:20px;color:black;padding:0px}'
-             'QTabBar::tab:selected{background:lightgray}'))
 
         # self.propertyEditor = PropertyEditor(['Key', 'Value'])
-        self.inputWidget = UpdateElement()
-        self.rightSiderTabWidget.addTab(self.inputWidget, IconTool.buildQIcon('property.png'), 'property')
+        self.inputWidget = UpdateProperty()
+        self.rightSiderTabWidget.addTab(self.inputWidget, IconTool.buildQIcon('property.png'), 'Property')
 
-        self.rightSiderTabWidget.setStyleSheet(('QTab::tab{height:60px;width:20px;color:black;padding:0px}'
+        self.rightSiderTabWidget.setStyleSheet(('QTab::tab{height:60px;width:32px;color:black;padding:0px}'
                                                 'QTabBar::tab:selected{background:lightgray}'))
 
         # self.rightSiderTabWidget.addTab(self.propertyEditor,IconTool.buildQIcon('property.png'),'property')
-        self.rightSiderTabWidget.addTab(self.favoriteTreeView, IconTool.buildQIcon('favorites.png'), 'favorites')
+        self.rightSiderTabWidget.addTab(self.favoriteTreeView, IconTool.buildQIcon('favorites.png'), 'Favorites')
         self.rightSiderTabBar.tabBarClicked.connect(self.rightSiderClick)
 
         # ----------------------------entire layout---------------------------- #
@@ -302,24 +304,44 @@ class MainWindow(BaseWindow):
 
     def initSearchView(self):
         self.searchWidget = QWidget()
+        self.searchWidget.setStyleSheet(".QWidget{border:1px solid rgb(220, 220, 220)}")
         searchPageLayout = QHBoxLayout()
+        self.searchIcon = QAction(self)
+        self.searchIcon.setIcon(IconTool.buildQIcon('find.png'))
+        self.searchDelIcon = QAction(self)
+        self.searchDelIcon.setIcon(IconTool.buildQIcon('del.png'))
         self.searchLineEdit = QLineEdit()
+        self.searchLineEdit.addAction(self.searchIcon, QLineEdit.LeadingPosition)
+        self.searchLineEdit.addAction(self.searchDelIcon, QLineEdit.TrailingPosition)
+        self.searchDelIcon.setVisible(False)
+        self.searchLineEdit.setStyleSheet("border:2px groove gray;border-radius:10px;padding:2px 4px")
         searchPageLayout.addWidget(self.searchLineEdit)
         self.searchLineEdit.textChanged.connect(self.searchPage)
-        self.previousBtn = QPushButton("↑")
+        self.searchDelIcon.triggered.connect(self.searchDelClick)
+        self.previousBtn = QPushButton()
+        self.previousBtn.setStyleSheet("background:transparent;")
+        self.previousBtn.setIcon(IconTool.buildQIcon('up.png'))
+        self.previousBtn.setFixedSize(15, 20)
         searchPageLayout.addWidget(self.previousBtn)
         self.previousBtn.clicked.connect(lambda: self.previousBtnClick(self.searchLineEdit.text()))
-        self.nextBtn = QPushButton("↓")
+        self.nextBtn = QPushButton()
+        self.nextBtn.setIcon(IconTool.buildQIcon('down.png'))
+        self.nextBtn.setStyleSheet("background:transparent;")
+        self.nextBtn.setFixedSize(15, 20)
         self.nextBtn.clicked.connect(lambda: self.nextBtnClick(self.searchLineEdit.text()))
         searchPageLayout.addWidget(self.nextBtn)
-        self.matchCase = QCheckBox("MatchCases")
+        self.matchCase = QCheckBox("Match Case")
         self.matchCase.setChecked(False)
         self.matchCase.stateChanged.connect(self.matchCaseChange)
         searchPageLayout.addWidget(self.matchCase)
-        self.matchTips = QLabel("Match tips")
+
+        self.matchTips = QLabel()
+        self.matchTips.setFixedWidth(100)
+        self.searchClose = QPushButton("×")
+        self.searchClose.setFixedWidth(10)
+        self.searchClose.setStyleSheet("background:transparent;")
+        self.searchClose.clicked.connect(self.searchCloseClick)
         searchPageLayout.addWidget(self.matchTips)
-        self.searchClose = QPushButton("✘")
-        self.searchClose.clicked.connect(lambda :self.searchWidget.hide())
         searchPageLayout.addWidget(self.searchClose)
         self.searchWidget.setLayout(searchPageLayout)
         return self.searchWidget
@@ -378,12 +400,14 @@ class MainWindow(BaseWindow):
         # 两次单击同一个tabBar时显示隐藏内容区域
         if self.rightSiderTabBar.tabText(index) == self.rightSiderClickInfo:
             if self.rightSiderTabWidget.width() == 32:
-                self.rightSiderTabWidget.setMaximumWidth(800)
+                self.rightSiderTabWidget.setMaximumWidth(1800)
+                self.rightSiderTabWidget.setMinimumWidth(32)
             else:
                 self.rightSiderTabWidget.setFixedWidth(32)
         else:
             if self.rightSiderTabWidget.width() == 32:
-                self.rightSiderTabWidget.setMaximumWidth(800)
+                self.rightSiderTabWidget.setMaximumWidth(1800)
+                self.rightSiderTabWidget.setMinimumWidth(32)
         self.rightSiderClickInfo = self.rightSiderTabBar.tabText(index)
 
     @pyqtSlot(QPoint)
@@ -543,12 +567,21 @@ class MainWindow(BaseWindow):
         self.browser.load(QUrl(url))
         self.statusBar().showMessage(url)
 
+    def findActionClick(self):
+        self.searchWidget.show()
+        self.searchLineEdit.setFocus()
+        self.searchLineEdit.setText(self.browser.selectedText())
+
     def searchPage(self, text):
+        if not text.strip():
+            self.searchDelIcon.setVisible(False)
+        else:
+            self.searchDelIcon.setVisible(True)
         check = self.matchCase.isChecked()
         if check:
             self.browser.findText(text, QWebEnginePage.FindFlags(2), lambda result: self.changeMatchTip(result))
         else:
-            self.browser.findText(text, QWebEnginePage.FindFlags(2),lambda result: self.changeMatchTip(result))
+            self.browser.findText(text, QWebEnginePage.FindFlags(0), lambda result: self.changeMatchTip(result))
 
     def previousBtnClick(self, text):
         check = self.matchCase.isChecked()
@@ -561,7 +594,7 @@ class MainWindow(BaseWindow):
     def nextBtnClick(self, text):
         check = self.matchCase.isChecked()
         if check:
-            self.browser.findText(text, QWebEnginePage.FindFlags(0) | QWebEnginePage.FindFlags(2),
+            self.browser.findText(text, QWebEnginePage.FindFlags(2),
                                   lambda result: self.changeMatchTip(result))
         else:
             self.browser.findText(text, QWebEnginePage.FindFlags(0), lambda result: self.changeMatchTip(result))
@@ -571,8 +604,18 @@ class MainWindow(BaseWindow):
         self.searchPage(self.searchLineEdit.text())
 
     def changeMatchTip(self, result):
-        print(result)
         if result:
             self.matchTips.setText("Find matches")
         else:
             self.matchTips.setText("No matches")
+
+    def searchDelClick(self):
+        self.searchLineEdit.setText("")
+        self.browser.findText("")
+        self.matchTips.setText("")
+
+    def searchCloseClick(self):
+        self.searchLineEdit.setText("")
+        self.browser.findText("")
+        self.matchTips.setText("")
+        self.searchWidget.hide()
