@@ -18,6 +18,7 @@ from PyQt5.QtWebChannel import QWebChannel
 from PyQt5.QtWebEngineWidgets import QWebEngineView, QWebEngineScript, QWebEnginePage
 from PyQt5.QtWidgets import *
 
+from XulDebugTool.ui.AboutWindow import AboutWindow
 from XulDebugTool.ui.BaseWindow import BaseWindow
 from XulDebugTool.ui.widget.ButtomConsoleWindow import ButtomWindow
 from XulDebugTool.ui.widget.DataQueryDialog import DataQueryDialog
@@ -96,11 +97,18 @@ class MainWindow(BaseWindow):
         helpMenu = menuBar.addMenu('Help')
         aboutAction = QAction(IconTool.buildQIcon('about.png'), '&About', self)
         helpMenu.addAction(aboutAction)
+        aboutAction.triggered.connect(self.openAboutWindow)
+
+    def openAboutWindow(self):
+        print('open about')
+        self.about = AboutWindow()
+        self.about.show()
 
     def restartProgram(self):
         from XulDebugTool.ui.ConnectWindow import ConnectWindow  # 不应该在这里导入，但是放在前面会有问题
         print("新建连接页面")
         self.con = ConnectWindow()
+        self.about.close()
         self.close()
 
     # def openSettingWindow(self):
