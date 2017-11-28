@@ -106,14 +106,11 @@ class MainWindow(BaseWindow):
 
     def restartProgram(self):
         from XulDebugTool.ui.ConnectWindow import ConnectWindow  # 不应该在这里导入，但是放在前面会有问题
-        # print(self.about)
-        # if self.aboutWindow is not None:
-        #     self.aboutWindow.close()
         try:
-            r = object.__getattribute__(self, "aboutWindow")
+            hasAbout = object.__getattribute__(self, "aboutWindow")
         except:
-            r = None
-        if r is not None:
+            hasAbout = None
+        if hasAbout is not None:
             self.aboutWindow.close()
         print("新建连接页面")
         self.con = ConnectWindow()
