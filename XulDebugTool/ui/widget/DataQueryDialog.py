@@ -5,6 +5,7 @@ import time
 from PyQt5 import QtCore, QtWidgets
 from PyQt5.QtCore import pyqtSignal
 
+from XulDebugTool.logcatapi.Logcat import STCLogger
 from XulDebugTool.ui.widget.BaseDialog import BaseDialog
 from XulDebugTool.ui.widget.model.FavoriteDB import FavoriteDB
 from XulDebugTool.utils.XulDebugServerHelper import XulDebugServerHelper

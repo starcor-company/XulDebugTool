@@ -142,26 +142,26 @@ class FavoriteTreeView(QTreeView):
         if item.type == ITEM_TYPE_HISTORY:
             dateTime = time.strftime("%Y/%m/%d %H:%M:%S", time.localtime(time.time()))
             self.favoriteDB.insertFavorites(item.name,item.url,dateTime,item.id)
-            STCLogger.i('the history record add to DataBase of favorites :' + item.url)
+            STCLogger().i('the history record add to DataBase of favorites :' + item.url)
             self.updateTree()
 
     def deleteFavorite(self,item):
         if item.type == ITEM_TYPE_FAVORITES:
             self.favoriteDB.deleteFavorites('and id = ' + str(item.id))
             self.favoriteDB.deleteHistory(' and id = '+ str(item.historyId))
-            STCLogger.i('this record delete from DataBase:' + item.url)
+            STCLogger().i('this record delete from DataBase:' + item.url)
             self.updateTree()
 
     def deleteHistory(self,item):
         if item.type == ITEM_TYPE_HISTORY:
             self.favoriteDB.deleteHistory('and id = '+str(item.id))
-            STCLogger.i('this record delete from DataBase:' + item.url)
+            STCLogger().i('this record delete from DataBase:' + item.url)
             self.updateTree()
 
     def remove2Favorites(self,item):
         if item.type == ITEM_TYPE_FAVORITES:
             self.favoriteDB.deleteFavorites('and id = '+str(item.id))
-            STCLogger.i('this record remove from DataBase of favorites:' + item.url)
+            STCLogger().i('this record remove from DataBase of favorites:' + item.url)
             self.updateTree()
 
     def updateTree(self):
