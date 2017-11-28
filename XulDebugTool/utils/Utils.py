@@ -7,6 +7,8 @@ import xmltodict
 from PyQt5.QtWebEngineWidgets import QWebEngineScript
 from lxml import etree
 
+from XulDebugTool.logcatapi.Logcat import STCLogger
+
 
 class Utils(object):
     @staticmethod
@@ -36,5 +38,5 @@ class Utils(object):
         try:
             list = root.xpath("//*[@id=%s]" % id)
         except Exception as e:
-            print(e)
+            STCLogger().e(e)
         return list[0]
