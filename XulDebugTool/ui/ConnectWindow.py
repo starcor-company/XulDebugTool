@@ -16,7 +16,7 @@ import sqlite3
 
 from PyQt5.QtCore import pyqtSlot, Qt, QTimer
 from PyQt5.QtGui import QIcon
-from PyQt5.QtWidgets import QPushButton, QLabel, QTextEdit, QComboBox, QHBoxLayout, QListWidget, QWidget
+from PyQt5.QtWidgets import QPushButton, QLabel, QTextEdit, QComboBox, QHBoxLayout, QListWidget, QWidget, QMessageBox
 
 from XulDebugTool.ui.BaseWindow import BaseWindow
 from XulDebugTool.ui.MainWindow import MainWindow, QListWidgetItem
@@ -217,6 +217,10 @@ class ConnectWindow(BaseWindow):
         for r in result:
             self.detailEdit.append(r)
             print(r)
+            if "cmdExectuedTimeout" in result:
+                self.resetConnectButton()
+                print("cmdExectuedTimeout")
+                return
         if self.currentCmd.startswith('adb connect'):
             self.checkDeviceStatus()
         elif self.currentCmd == 'adb devices':
@@ -228,10 +232,13 @@ class ConnectWindow(BaseWindow):
                         self.addDeviceToDB()
                         self.startMainWindow()
             # 重置connect button
-            self.timer.stop()
-            self.connectButton.setEnabled(True)
-            self.connectButton.setText('connect')
-            self.connectButton.setStyleSheet("QPushButton{text-align : middle;}")
+            self.resetConnectButton()
+
+    def resetConnectButton(self):
+        self.timer.stop()
+        self.connectButton.setEnabled(True)
+        self.connectButton.setText('connect')
+        self.connectButton.setStyleSheet("QPushButton{text-align : middle;}")
 
     def checkDeviceStatus(self):
         self.currentCmd = 'adb devices'

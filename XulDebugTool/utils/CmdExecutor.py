@@ -40,7 +40,7 @@ class CmdExecutor(QThread):
         if self.__intConnectTime >= 20:
             self.requestInterruption()
             self.connectTime.stop()
-            self.finishSignal.emit(['connect timeout'])
+            self.finishSignal.emit(['cmdExectuedTimeout'])
         else:
             self.__intConnectTime = self.__intConnectTime + 1
 
