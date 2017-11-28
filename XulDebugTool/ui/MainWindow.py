@@ -18,7 +18,7 @@ from PyQt5.QtWebChannel import QWebChannel
 from PyQt5.QtWebEngineWidgets import QWebEngineView, QWebEngineScript, QWebEnginePage
 from PyQt5.QtWidgets import *
 
-from XulDebugTool.logcatapi.Logcat import STCLogger
+from XulDebugTool.ui.AboutWindow import AboutWindow
 from XulDebugTool.ui.BaseWindow import BaseWindow
 from XulDebugTool.ui.widget.ButtomConsoleWindow import ButtomWindow
 from XulDebugTool.ui.widget.DataQueryDialog import DataQueryDialog
@@ -80,7 +80,7 @@ class MainWindow(BaseWindow):
         settingAction = QAction(IconTool.buildQIcon('setting.png'), '&Setting...', self)
         settingAction.setShortcut('Ctrl+Shift+S')
         settingAction.setShortcutContext(Qt.ApplicationShortcut)
-        settingAction.triggered.connect(lambda: STCLogger().d('setting'))
+        settingAction.triggered.connect(lambda: print('11111'))
         showLogAction = QAction('Show Log', self)
         fileMenu.addAction(disConnectAction)
         # fileMenu.addAction(settingAction)
@@ -97,10 +97,18 @@ class MainWindow(BaseWindow):
         helpMenu = menuBar.addMenu('Help')
         aboutAction = QAction(IconTool.buildQIcon('about.png'), '&About', self)
         helpMenu.addAction(aboutAction)
+        aboutAction.triggered.connect(self.openAboutWindow)
+
+    def openAboutWindow(self):
+        print('open about')
+        self.about = AboutWindow()
+        self.about.show()
 
     def restartProgram(self):
         from XulDebugTool.ui.ConnectWindow import ConnectWindow  # 不应该在这里导入，但是放在前面会有问题
+        print("新建连接页面")
         self.con = ConnectWindow()
+        self.about.close()
         self.close()
 
     # def openSettingWindow(self):
@@ -340,31 +348,23 @@ class MainWindow(BaseWindow):
 
     def clickCheckBox(self):
         if self.skipPropCheckBox.isChecked():
-            STCLogger().i('select skip-prop')
             self.selectCheckBoxInfo(SKIP_PROP)
         else:
-            STCLogger().i('cancel skip-prop')
             self.cancelCheckBoxInfo(SKIP_PROP)
 
         if self.withChildrenCheckBox.isChecked():
-            STCLogger().i('select with_children')
             self.selectCheckBoxInfo(WITH_CHILDREN)
         else:
-            STCLogger().i('cancel with_children')
             self.cancelCheckBoxInfo(WITH_CHILDREN)
 
         if self.withBindingDataCheckBox.isChecked():
-            STCLogger().i('select with_binding_data')
             self.selectCheckBoxInfo(WITH_BINDING_DATA)
         else:
-            STCLogger().i('cancel with_binding_data')
             self.cancelCheckBoxInfo(WITH_BINDING_DATA)
 
         if self.withPositionCheckBox.isChecked():
-            STCLogger().i('select with_postion')
             self.selectCheckBoxInfo(WITH_POSITION)
         else:
-            STCLogger().i('cancel with_postion')
             self.cancelCheckBoxInfo(WITH_POSITION)
 
     def selectCheckBoxInfo(self, str):
@@ -537,7 +537,6 @@ class MainWindow(BaseWindow):
                 '%s(%s)' % (ROOT_ITEM_USER_OBJECT, self.userobjectItem.rowCount()))
 
     def showXulDebugData(self, url):
-        STCLogger().i('request url:'+url)
         self.browser.load(QUrl(url))
         self.statusBar().showMessage(url)
 
@@ -558,13 +557,12 @@ class MainWindow(BaseWindow):
             setattr(self.qObject, k, v)
 
     def showQueryDialog(self, data):
-        STCLogger().i('show query dialog: ', data)
+        print('show query dialog: ', data)
         self.dialog = DataQueryDialog(data)
         self.dialog.finishSignal.connect(self.onGetQueryUrl)
         self.dialog.show()
 
     def onGetQueryUrl(self, url):
-        STCLogger().i('request url:' + url)
         self.favoriteTreeView.updateTree()
         self.browser.load(QUrl(url))
         self.statusBar().showMessage(url)
