@@ -1,6 +1,5 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-import re
 import sys
 
 from PyQt5.QtCore import Qt
@@ -108,12 +107,7 @@ class ConsoleWindow(QMainWindow):
     def normalOutputWritten(self, text):
         cursor = self.textEdit.textCursor()
         cursor.movePosition(QTextCursor.End)
-        logContent = self.getLogContent(text)
-        if self.isConUrl:
-            cursor.insertHtml(logContent)
-        else:
-            cursor.insertText(logContent)
-        self.isConUrl = False
+        cursor.insertHtml(text)
         self.textEdit.setTextCursor(cursor)
         self.textEdit.ensureCursorVisible()
 
@@ -127,17 +121,6 @@ class ConsoleWindow(QMainWindow):
         helpMenu = menuBar.addMenu('Setting')
         aboutAction = QAction(IconTool.buildQIcon('setting.png'), 'About', self)
         helpMenu.addAction(aboutAction)
-
-    def getLogContent(self,text):
-        regexUrl = re.compile(r"http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*,]|(?:%[0-9a-fA-F][0-9a-fA-F]))+",
-                           re.IGNORECASE)
-        urls = regexUrl.findall(text)
-        for url in urls:
-            preS = "<a href=\"" + url + "\">" + url + "</a>"
-            text = text.replace(url, preS) + "<br/>"
-            self.isConUrl = True
-
-        return text
 
     def clear(self):
         self.textEdit.clear()

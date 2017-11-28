@@ -4,8 +4,6 @@ import sqlite3
 
 from PyQt5.QtCore import QObject
 
-from XulDebugTool.logcatapi.Logcat import STCLogger
-
 
 class FavoriteDB(QObject):
 

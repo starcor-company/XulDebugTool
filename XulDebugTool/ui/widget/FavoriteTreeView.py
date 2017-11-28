@@ -1,5 +1,6 @@
-import pyperclip
 import time
+
+import pyperclip
 from PyQt5.QtCore import Qt, pyqtSlot, QModelIndex, QPoint
 from PyQt5.QtGui import QStandardItemModel, QStandardItem
 from PyQt5.QtWidgets import QTreeView, QAbstractItemView, QMenu, QAction
