@@ -10,11 +10,16 @@ from XulDebugTool.controller.ConsoleDeskController import ConsoleController
 
 
 class STCLogger():
+    DEBUG = "debug"
+    INFO = "info"
+    WARNING = "warning"
+    ERROR = "error"
+    CRITICAL = "critical"
     def __init__(self):
 
         self.loggername = "STCLogger"
         #当前日志模式
-        self.setLogLevel("INFO")
+        self.setLogLevel(self.INFO)
 
         #logging.basicConfig(level=logging.DEBUG)
         self.logger = logging.getLogger(self.loggername)
@@ -38,32 +43,32 @@ class STCLogger():
 
     def e(self, *args):
         self.logger.error(args)
-        self.filterLog("ERROR",args)
+        self.filterLog(self.ERROR,args)
         self.removeHandler()
         return
 
 
     def w(self, *args):
         self.logger.warning(args)
-        self.filterLog("WARNING", args)
+        self.filterLog(self.WARNING, args)
         self.removeHandler()
         return
 
     def i(self, *args):
         self.logger.info(args)
-        self.filterLog("INFO", args)
+        self.filterLog(self.INFO, args)
         self.removeHandler()
         return
 
     def d(self, *args):
         self.logger.debug(args)
-        self.filterLog("DEBUG", args)
+        self.filterLog(self.DEBUG, args)
         self.removeHandler()
         return
 
     def c(self, *args):
         self.logger.critical(args)
-        self.filterLog("CRITICAL", args)
+        self.filterLog(self.CRITICAL, args)
         self.removeHandler()
         return
 
@@ -77,26 +82,26 @@ class STCLogger():
             return
 
     def setLogLevel(self,level):
-        if level is "DEBUG":
+        if level is self.DEBUG:
             self.level = 0
-        elif level is "INFO":
+        elif level is self.INFO:
             self.level = 1
-        elif level is "ERROR":
+        elif level is self.WARNING:
             self.level = 2
-        elif level is "WARNING":
+        elif level is self.ERROR:
             self.level = 3
-        elif level is "CRITICAL":
+        elif level is self.CRITICAL:
             self.level = 4
 
     def getCurLogLevel(self,level):
-        if level is "DEBUG":
+        if level is self.DEBUG:
             return 0
-        elif level is "INFO":
+        elif level is self.INFO:
             return 1
-        elif level is "ERROR":
+        elif level is self.WARNING:
             return 2
-        elif level is "WARNING":
+        elif level is self.ERROR:
             return 3
-        elif level is "CRITICAL":
+        elif level is self.CRITICAL:
             return 4
 

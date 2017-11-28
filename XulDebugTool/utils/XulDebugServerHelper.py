@@ -3,6 +3,8 @@
 
 import urllib3
 
+from XulDebugTool.logcatapi.Logcat import STCLogger
+
 
 class XulDebugServerHelper(object):
     HOST = ''
@@ -25,7 +27,7 @@ class XulDebugServerHelper(object):
                 http = urllib3.PoolManager()
                 r = http.request('GET', url)
             except Exception as e:
-                print(e)
+                STCLogger().e(e)
                 return
             return r
 
@@ -42,7 +44,7 @@ class XulDebugServerHelper(object):
                                          'with-binding-data': withBindingData,
                                          'with-position': withPosition})
             except Exception as e:
-                print(e)
+                STCLogger().e(e)
                 return
             return r
 
@@ -64,7 +66,7 @@ class XulDebugServerHelper(object):
                 http = urllib3.PoolManager()
                 r = http.request('GET', url)
             except Exception as e:
-                print(e)
+                STCLogger().e(e)
                 return
             return r
 
@@ -78,7 +80,7 @@ class XulDebugServerHelper(object):
                 http = urllib3.PoolManager()
                 r = http.request('GET', url)
             except Exception as e:
-                print(e)
+                STCLogger().e(e)
                 return
             return r
 
@@ -92,6 +94,6 @@ class XulDebugServerHelper(object):
                 http = urllib3.PoolManager()
                 r = http.request('GET', url)
             except Exception as e:
-                print(e)
+                STCLogger().e(e)
                 return
             return r

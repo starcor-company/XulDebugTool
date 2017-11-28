@@ -1,12 +1,12 @@
-import sys
 import webbrowser
 
 from PyQt5 import QtWidgets, QtCore
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QFont
-
 from PyQt5.QtWidgets import QLabel
+
 from XulDebugTool.ui.BaseWindow import BaseWindow
+
 
 class AboutWindow(BaseWindow):
     def __init__(self):
