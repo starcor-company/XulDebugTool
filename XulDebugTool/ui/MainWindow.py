@@ -53,7 +53,6 @@ WITH_CHILDREN = 'with-children'
 WITH_BINDING_DATA = 'with-binding-data'
 WITH_POSITION = 'with-position'
 
-
 class MainWindow(BaseWindow):
     def __init__(self):
         super().__init__()
@@ -102,14 +101,19 @@ class MainWindow(BaseWindow):
 
     def openAboutWindow(self):
         print('open about')
-        self.about = AboutWindow()
-        self.about.show()
+        self.aboutWindow = AboutWindow()
+        self.aboutWindow.show()
 
     def restartProgram(self):
         from XulDebugTool.ui.ConnectWindow import ConnectWindow  # 不应该在这里导入，但是放在前面会有问题
+        try:
+            hasAbout = object.__getattribute__(self, "aboutWindow")
+        except:
+            hasAbout = None
+        if hasAbout is not None:
+            self.aboutWindow.close()
         print("新建连接页面")
         self.con = ConnectWindow()
-        self.about.close()
         self.close()
 
     # def openSettingWindow(self):
