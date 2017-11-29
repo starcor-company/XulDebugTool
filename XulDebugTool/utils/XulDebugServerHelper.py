@@ -27,7 +27,8 @@ class XulDebugServerHelper(object):
             try:
                 url = XulDebugServerHelper.HOST + XulDebugServerHelper.__LIST_PAGE
                 http = urllib3.PoolManager()
-                r = http.request('GET', url)
+                newUrl = quote(url, safe=string.printable)
+                r = http.request('GET', newUrl)
             except Exception as e:
                 STCLogger().e(e)
                 return
@@ -41,7 +42,8 @@ class XulDebugServerHelper(object):
             try:
                 url = XulDebugServerHelper.HOST + XulDebugServerHelper.__GET_LAYOUT + '/' + pageId
                 http = urllib3.PoolManager()
-                r = http.request('GET', url,
+                newUrl = quote(url, safe=string.printable)
+                r = http.request('GET', newUrl,
                                  fields={'skip-prop': skipProp,
                                          'with-binding-data': withBindingData,
                                          'with-position': withPosition})
@@ -66,7 +68,8 @@ class XulDebugServerHelper(object):
             try:
                 url = XulDebugServerHelper.HOST + XulDebugServerHelper.__LIST_USER_OBJECTS
                 http = urllib3.PoolManager()
-                r = http.request('GET', url)
+                newUrl = quote(url, safe=string.printable)
+                r = http.request('GET', newUrl)
             except Exception as e:
                 STCLogger().e(e)
                 return
@@ -80,7 +83,8 @@ class XulDebugServerHelper(object):
             try:
                 url = XulDebugServerHelper.HOST + XulDebugServerHelper.__GET_USER_OBJECT + '/' + objectId
                 http = urllib3.PoolManager()
-                r = http.request('GET', url)
+                newUrl = quote(url, safe=string.printable)
+                r = http.request('GET', newUrl)
             except Exception as e:
                 STCLogger().e(e)
                 return
