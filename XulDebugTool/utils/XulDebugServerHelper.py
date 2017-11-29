@@ -1,5 +1,7 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
+import string
+from urllib.parse import quote
 
 import urllib3
 
@@ -92,7 +94,8 @@ class XulDebugServerHelper(object):
             try:
                 url = XulDebugServerHelper.HOST + type + '/' + id + '/' + key + '/' + value
                 http = urllib3.PoolManager()
-                r = http.request('GET', url)
+                newUrl = quote(url, safe=string.printable)
+                r = http.request('GET', newUrl)
             except Exception as e:
                 STCLogger().e(e)
                 return
