@@ -99,6 +99,7 @@ class XulDebugServerHelper(object):
                 url = XulDebugServerHelper.HOST + type + '/' + id + '/' + key + '/' + value
                 http = urllib3.PoolManager()
                 newUrl = quote(url, safe=string.printable)
+                STCLogger().i("updateUrl = " + url)
                 r = http.request('GET', newUrl)
             except Exception as e:
                 STCLogger().e(e)
