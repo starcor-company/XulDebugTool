@@ -79,10 +79,12 @@ class UpdateProperty(QTreeWidget):
         for key, value in data.items():
             if type == 'set-attr':
                 attr = self.inputAttr.child(num).text(1)
-                XulDebugServerHelper.updateUrl(type, self.viewId, key, attr)
+                if attr != data[self.inputAttr.child(num).text(0)]:
+                    XulDebugServerHelper.updateUrl(type, self.viewId, key, attr)
             elif type == 'set-style':
                 style = self.inputStyle.child(num).text(1)
-                XulDebugServerHelper.updateUrl(type, self.viewId, key, style)
+                if style != data[self.inputStyle.child(num).text(0)]:
+                    XulDebugServerHelper.updateUrl(type, self.viewId, key, style)
             num += 1
         if num < 1:
             return
