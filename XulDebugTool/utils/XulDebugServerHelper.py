@@ -107,7 +107,7 @@ class XulDebugServerHelper(object):
             return r
 
     @staticmethod
-    def cleanAllCaches():
+    def clearAllCaches():
         if XulDebugServerHelper.HOST == '':
             raise ValueError('Host is empty!')
         else:
