@@ -81,8 +81,13 @@ class MainWindow(BaseWindow):
         settingAction.setShortcut('Ctrl+Shift+S')
         settingAction.setShortcutContext(Qt.ApplicationShortcut)
         settingAction.triggered.connect(lambda: STCLogger().d('setting'))
+        clearCacheAction = QAction(IconTool.buildQIcon('clearCache.png'),'&ClearCache',self);
+        clearCacheAction.setShortcut('Ctrl+Alt+C');
+        clearCacheAction.setShortcutContext(Qt.ApplicationShortcut)
+        clearCacheAction.triggered.connect(self.clearCache)
         showLogAction = QAction('Show Log', self)
         fileMenu.addAction(disConnectAction)
+        fileMenu.addAction(clearCacheAction)
         # fileMenu.addAction(settingAction)
         # fileMenu.addAction(showLogAction)
 
@@ -425,6 +430,14 @@ class MainWindow(BaseWindow):
                 self.rightSiderTabWidget.setMaximumWidth(1800)
                 self.rightSiderTabWidget.setMinimumWidth(32)
         self.rightSiderClickInfo = self.rightSiderTabBar.tabText(index)
+
+    def clearCache(self):
+        r = XulDebugServerHelper.clearAllCaches()
+        if r.status == 200 :
+            self.statusBar().showMessage('cache cleanup success')
+        else:
+            self.statusBar().showMessage('cache cleanup failed')
+
 
     @pyqtSlot(QPoint)
     def openContextMenu(self, point):
