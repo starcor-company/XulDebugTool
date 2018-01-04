@@ -432,7 +432,7 @@ class MainWindow(BaseWindow):
         self.rightSiderClickInfo = self.rightSiderTabBar.tabText(index)
 
     def cleanCache(self):
-        r = XulDebugServerHelper.clearAllCaches()
+        r = XulDebugServerHelper.cleanAllCaches()
         if r.status == 200 :
             self.statusBar().showMessage('cache cleanup success')
         else:
