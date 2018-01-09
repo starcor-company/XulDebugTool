@@ -109,34 +109,28 @@ class FavoriteTreeView(QTreeView):
         menu = QMenu()
 
         if item.type == ITEM_TYPE_HISTORY:
-            queryAction = QAction(IconTool.buildQIcon('data.png'), '&Edit ...', self,
-                                  triggered=lambda: self.showQueryDialog(item))
+            queryAction = QAction(IconTool.buildQIcon('data.png'), '&Edit ...', self,triggered=lambda: self.showQueryDialog(item))
             queryAction.setShortcut('Alt+E')
             menu.addAction(queryAction)
 
-            favoritesAction = QAction(IconTool.buildQIcon('star.png'), 'Add to &favorites', self,
-                                      triggered=lambda: self.add2Favorites(item))
+            favoritesAction = QAction(IconTool.buildQIcon('star.png'), 'Add to &favorites', self,triggered=lambda: self.add2Favorites(item))
             favoritesAction.setShortcut('Alt+F')
             menu.addAction(favoritesAction)
 
-            deleteAction = QAction(IconTool.buildQIcon('clear.png'), '&Delete', self,
-                                   triggered=lambda: self.deleteHistory(item))
+            deleteAction = QAction(IconTool.buildQIcon('clear.png'), '&Delete', self,triggered=lambda: self.deleteHistory(item))
             deleteAction.setShortcut('Ctrl+D')
             menu.addAction(deleteAction)
 
         if item.type == ITEM_TYPE_FAVORITES:
-            queryAction = QAction(IconTool.buildQIcon('data.png'), '&Edit ...', self,
-                                  triggered=lambda: self.showQueryDialog(item))
+            queryAction = QAction(IconTool.buildQIcon('data.png'), '&Edit ...', self,triggered=lambda: self.showQueryDialog(item))
             queryAction.setShortcut('Alt+E')
             menu.addAction(queryAction)
 
-            disFavoritesAction = QAction(IconTool.buildQIcon('remove_favorites.png'), 'Remove from &favorites', self,
-                                         triggered=lambda: self.remove2Favorites(item))
+            disFavoritesAction = QAction(IconTool.buildQIcon('remove_favorites.png'), 'Remove from &favorites', self,triggered=lambda: self.remove2Favorites(item))
             disFavoritesAction.setShortcut('Alt+F')
             menu.addAction(disFavoritesAction)
 
-            deleteAction = QAction(IconTool.buildQIcon('clear.png'), '&Delete', self,
-                                   triggered=lambda: self.deleteFavorite(item))
+            deleteAction = QAction(IconTool.buildQIcon('clear.png'), '&Delete', self,triggered=lambda: self.deleteFavorite(item))
             deleteAction.setShortcut('Ctrl+D')
             menu.addAction(deleteAction)
 
