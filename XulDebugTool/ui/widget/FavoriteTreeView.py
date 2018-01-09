@@ -2,7 +2,7 @@ import time
 
 import pyperclip
 from PyQt5.QtCore import Qt, pyqtSlot, QModelIndex, QPoint
-from PyQt5.QtGui import QStandardItemModel, QStandardItem
+from PyQt5.QtGui import QStandardItemModel, QStandardItem, QCursor
 from PyQt5.QtWidgets import QTreeView, QAbstractItemView, QMenu, QAction
 
 from XulDebugTool.logcatapi.Logcat import STCLogger
@@ -36,6 +36,9 @@ class FavoriteTreeView(QTreeView):
             self.setContextMenuPolicy(Qt.CustomContextMenu)
             self.customContextMenuRequested.connect(self.openContextMenu)
             self.doubleClicked.connect(self.onTreeItemDoubleClicked)
+            self.setSelectionBehavior(QAbstractItemView.SelectItems)
+            # 设置该控件可以多选
+            self.setSelectionMode(QAbstractItemView.ExtendedSelection)
             # self.clicked.connect(self.clickState)
         except Exception as e:
             STCLogger().e(e)
@@ -91,7 +94,14 @@ class FavoriteTreeView(QTreeView):
             self.mainWindow.onGetQueryUrl(item.url)
 
     @pyqtSlot(QPoint)
-    def openContextMenu(self, point):
+    def openContextMenu(self,point):
+        list = self.selectedIndexes()
+        if len(list) > 1:
+            self.menuBatchOperation(list)
+        elif len(list) == 1:
+            self.menuOperation(point)
+
+    def menuOperation(self,point):
         index = self.indexAt(point)
         if not index.isValid():
             return
@@ -99,28 +109,34 @@ class FavoriteTreeView(QTreeView):
         menu = QMenu()
 
         if item.type == ITEM_TYPE_HISTORY:
-            queryAction = QAction(IconTool.buildQIcon('data.png'), '&Edit ...', self,triggered=lambda: self.showQueryDialog(item))
+            queryAction = QAction(IconTool.buildQIcon('data.png'), '&Edit ...', self,
+                                  triggered=lambda: self.showQueryDialog(item))
             queryAction.setShortcut('Alt+E')
             menu.addAction(queryAction)
 
-            favoritesAction = QAction(IconTool.buildQIcon('star.png'),'Add to &favorites',self,triggered = lambda: self.add2Favorites(item))
+            favoritesAction = QAction(IconTool.buildQIcon('star.png'), 'Add to &favorites', self,
+                                      triggered=lambda: self.add2Favorites(item))
             favoritesAction.setShortcut('Alt+F')
             menu.addAction(favoritesAction)
 
-            deleteAction = QAction(IconTool.buildQIcon('clear.png'),'&Delete',self,triggered = lambda: self.deleteHistory(item))
+            deleteAction = QAction(IconTool.buildQIcon('clear.png'), '&Delete', self,
+                                   triggered=lambda: self.deleteHistory(item))
             deleteAction.setShortcut('Ctrl+D')
             menu.addAction(deleteAction)
 
         if item.type == ITEM_TYPE_FAVORITES:
-            queryAction = QAction(IconTool.buildQIcon('data.png'), '&Edit ...', self,triggered=lambda: self.showQueryDialog(item))
+            queryAction = QAction(IconTool.buildQIcon('data.png'), '&Edit ...', self,
+                                  triggered=lambda: self.showQueryDialog(item))
             queryAction.setShortcut('Alt+E')
             menu.addAction(queryAction)
 
-            disFavoritesAction = QAction(IconTool.buildQIcon('remove_favorites.png'), 'Remove from &favorites', self,triggered=lambda: self.remove2Favorites(item))
+            disFavoritesAction = QAction(IconTool.buildQIcon('remove_favorites.png'), 'Remove from &favorites', self,
+                                         triggered=lambda: self.remove2Favorites(item))
             disFavoritesAction.setShortcut('Alt+F')
             menu.addAction(disFavoritesAction)
 
-            deleteAction = QAction(IconTool.buildQIcon('clear.png'), '&Delete', self,triggered=lambda: self.deleteFavorite(item))
+            deleteAction = QAction(IconTool.buildQIcon('clear.png'), '&Delete', self,
+                                   triggered=lambda: self.deleteFavorite(item))
             deleteAction.setShortcut('Ctrl+D')
             menu.addAction(deleteAction)
 
@@ -131,6 +147,30 @@ class FavoriteTreeView(QTreeView):
 
         menu.exec_(self.viewport().mapToGlobal(point))
 
+    def menuBatchOperation(self,list):
+        itemList = []
+        #标记本次批量操作所有记录的类别是否一致，如果不一致就不进行右键批量操作
+        itemTpye = None;
+        for modelIndex in list:
+            item = self.treeModel.itemFromIndex(modelIndex)
+            if itemTpye != None:
+                if itemTpye != item.type:
+                    return
+            itemTpye = item.type
+            itemList.append(item)
+
+        menu = QMenu()
+        if itemTpye == ITEM_TYPE_HISTORY:
+            deleteAction = QAction(IconTool.buildQIcon('clear.png'), '&Delete', self,triggered=lambda: self.deleteHistoryBatch(itemList))
+            deleteAction.setShortcut('Ctrl+D')
+            menu.addAction(deleteAction)
+
+        if itemTpye == ITEM_TYPE_FAVORITES:
+            deleteAction = QAction(IconTool.buildQIcon('clear.png'), '&Delete', self,triggered=lambda: self.deleteFavoritesBatch(itemList))
+            deleteAction.setShortcut('Ctrl+D')
+            menu.addAction(deleteAction)
+
+        menu.exec_(QCursor.pos())
 
     def showQueryDialog(self,item):
         self.dialog = DataQueryDialog(item)
@@ -152,11 +192,21 @@ class FavoriteTreeView(QTreeView):
             STCLogger().i('this record delete from DataBase:' + item.url)
             self.updateTree()
 
+    def deleteFavoritesBatch(self,list):
+        self.favoriteDB.deleteFavoritesBatch(list)
+        STCLogger().i('A batch of favorite records was deleted')
+        self.updateTree()
+
     def deleteHistory(self,item):
         if item.type == ITEM_TYPE_HISTORY:
             self.favoriteDB.deleteHistory('and id = '+str(item.id))
             STCLogger().i('this record delete from DataBase:' + item.url)
             self.updateTree()
+
+    def deleteHistoryBatch(self,list):
+        self.favoriteDB.deleteHistoryBatch(list)
+        STCLogger().i('A batch of historical records was deleted')
+        self.updateTree()
 
     def remove2Favorites(self,item):
         if item.type == ITEM_TYPE_FAVORITES:

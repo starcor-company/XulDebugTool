@@ -105,6 +105,18 @@ class FavoriteDB(QObject):
         conn.commit()
         conn.close()
 
+    def deleteHistoryBatch(self, list):
+        conn = sqlite3.connect('XulDebugTool.db')
+        ids = ""
+        for item in list:
+            if ids == "":
+                ids = str(item.id)
+            else:
+                ids = ids +","+ str(item.id)
+        conn.execute("delete from history_query where id in (" + ids+")")
+        conn.commit()
+        conn.close()
+
     def deleteFavorites(self,sentence = ''):
         conn = sqlite3.connect('XulDebugTool.db')
         if sentence != '' and sentence != None:
@@ -114,6 +126,17 @@ class FavoriteDB(QObject):
         conn.commit()
         conn.close()
 
+    def deleteFavoritesBatch(self,list):
+        conn = sqlite3.connect('XulDebugTool.db')
+        ids = ""
+        for item in list:
+            if ids == "":
+                ids = str(item.id)
+            else:
+                ids = ids +","+ str(item.id)
+        conn.execute("delete from favorites where id in (" + ids+")")
+        conn.commit()
+        conn.close()
 
 
 
