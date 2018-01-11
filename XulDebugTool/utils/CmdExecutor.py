@@ -19,17 +19,30 @@ class CmdExecutor(QThread):
         self.connectTime.start(1000)
         self.start()
 
+    def threadFinish(self):
+        print(self.isFinished())
+        if self.isRunning():
+            self.wait()
+        print(self.isFinished())
+        self.finishSignal.emit(self.l)
+
     def run(self):
+        self.finished.connect(self.threadFinish)
         from subprocess import Popen, PIPE
-        p = Popen(self.cmd, stdout=PIPE, bufsize=1)
-        l = []
-        for line in iter(p.stdout.readline, b''):
-            l.append(line.decode('utf-8'))
-        # p.stdout.close()
+        p = Popen(self.cmd, stdout=PIPE, bufsize=-1)
+        stdout_data, stderr_data = p.communicate(input=None, timeout=None)
+        if stderr_data is not None:
+            print("CmdExecutor stderr_data = " + stderr_data.decode('utf-8'))
+        if stdout_data is not None:
+            print("CmdExecutor stdout_data = "+stdout_data.decode('utf-8'))
+        self.l = stdout_data.decode('utf-8').split('\n')
+        # for line in iter(p.stdout.readline, b''):
+        #     l.append(line.decode('utf-8'))
+        #     # print("aaaaaaaaaaaaaa : "+line.decode('utf-8'))
+        p.stdout.close()
         # p.wait()
         if self.isInterruptionRequested():
             return
-        self.finishSignal.emit(l)
         self.connectTime.stop()
 
     def initConnectTimer(self):
