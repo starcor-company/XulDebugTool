@@ -52,7 +52,6 @@ SKIP_PROP = 'skip-prop'
 WITH_CHILDREN = 'with-children'
 WITH_BINDING_DATA = 'with-binding-data'
 WITH_POSITION = 'with-position'
-aboutWindow = None
 
 class MainWindow(BaseWindow):
     def __init__(self):
@@ -82,8 +81,13 @@ class MainWindow(BaseWindow):
         settingAction.setShortcut('Ctrl+Shift+S')
         settingAction.setShortcutContext(Qt.ApplicationShortcut)
         settingAction.triggered.connect(lambda: STCLogger().d('setting'))
+        clearCacheAction = QAction(IconTool.buildQIcon('clearCache.png'),'&ClearCache',self);
+        clearCacheAction.setShortcut('Ctrl+Alt+C');
+        clearCacheAction.setShortcutContext(Qt.ApplicationShortcut)
+        clearCacheAction.triggered.connect(self.clearCache)
         showLogAction = QAction('Show Log', self)
         fileMenu.addAction(disConnectAction)
+        fileMenu.addAction(clearCacheAction)
         # fileMenu.addAction(settingAction)
         # fileMenu.addAction(showLogAction)
 
@@ -102,14 +106,17 @@ class MainWindow(BaseWindow):
 
     def openAboutWindow(self):
         print('open about')
-        aboutWindow = AboutWindow()
-        aboutWindow.show()
+        self.aboutWindow = AboutWindow()
+        self.aboutWindow.show()
 
     def restartProgram(self):
         from XulDebugTool.ui.ConnectWindow import ConnectWindow  # 不应该在这里导入，但是放在前面会有问题
-        # print(self.about)
-        if aboutWindow is not None:
-            aboutWindow.close()
+        try:
+            hasAbout = object.__getattribute__(self, "aboutWindow")
+        except:
+            hasAbout = None
+        if hasAbout is not None:
+            self.aboutWindow.close()
         print("新建连接页面")
         self.con = ConnectWindow()
         self.close()
@@ -423,6 +430,14 @@ class MainWindow(BaseWindow):
                 self.rightSiderTabWidget.setMaximumWidth(1800)
                 self.rightSiderTabWidget.setMinimumWidth(32)
         self.rightSiderClickInfo = self.rightSiderTabBar.tabText(index)
+
+    def clearCache(self):
+        r = XulDebugServerHelper.clearAllCaches()
+        if r.status == 200 :
+            self.statusBar().showMessage('cache cleanup success')
+        else:
+            self.statusBar().showMessage('cache cleanup failed')
+
 
     @pyqtSlot(QPoint)
     def openContextMenu(self, point):

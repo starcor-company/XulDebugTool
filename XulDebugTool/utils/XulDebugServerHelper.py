@@ -1,5 +1,7 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
+import string
+from urllib.parse import quote
 
 import urllib3
 
@@ -16,6 +18,7 @@ class XulDebugServerHelper(object):
     __SET_STYLE = 'set-style'
     __ADD_CLASS = 'add-class'
     __REMOVE_CLASS = 'remove-class'
+    __CLEAR_ALL_CACHES = 'clear-all-caches'
 
     @staticmethod
     def listPages():
@@ -25,7 +28,8 @@ class XulDebugServerHelper(object):
             try:
                 url = XulDebugServerHelper.HOST + XulDebugServerHelper.__LIST_PAGE
                 http = urllib3.PoolManager()
-                r = http.request('GET', url)
+                newUrl = quote(url, safe=string.printable)
+                r = http.request('GET', newUrl)
             except Exception as e:
                 STCLogger().e(e)
                 return
@@ -39,7 +43,8 @@ class XulDebugServerHelper(object):
             try:
                 url = XulDebugServerHelper.HOST + XulDebugServerHelper.__GET_LAYOUT + '/' + pageId
                 http = urllib3.PoolManager()
-                r = http.request('GET', url,
+                newUrl = quote(url, safe=string.printable)
+                r = http.request('GET', newUrl,
                                  fields={'skip-prop': skipProp,
                                          'with-binding-data': withBindingData,
                                          'with-position': withPosition})
@@ -64,7 +69,8 @@ class XulDebugServerHelper(object):
             try:
                 url = XulDebugServerHelper.HOST + XulDebugServerHelper.__LIST_USER_OBJECTS
                 http = urllib3.PoolManager()
-                r = http.request('GET', url)
+                newUrl = quote(url, safe=string.printable)
+                r = http.request('GET', newUrl)
             except Exception as e:
                 STCLogger().e(e)
                 return
@@ -78,7 +84,8 @@ class XulDebugServerHelper(object):
             try:
                 url = XulDebugServerHelper.HOST + XulDebugServerHelper.__GET_USER_OBJECT + '/' + objectId
                 http = urllib3.PoolManager()
-                r = http.request('GET', url)
+                newUrl = quote(url, safe=string.printable)
+                r = http.request('GET', newUrl)
             except Exception as e:
                 STCLogger().e(e)
                 return
@@ -92,8 +99,25 @@ class XulDebugServerHelper(object):
             try:
                 url = XulDebugServerHelper.HOST + type + '/' + id + '/' + key + '/' + value
                 http = urllib3.PoolManager()
-                r = http.request('GET', url)
+                newUrl = quote(url, safe=string.printable)
+                STCLogger().i("updateUrl = " + url)
+                r = http.request('GET', newUrl)
             except Exception as e:
                 STCLogger().e(e)
                 return
             return r
+
+    @staticmethod
+    def clearAllCaches():
+        if XulDebugServerHelper.HOST == '':
+            raise ValueError('Host is empty!')
+        else:
+            try:
+                url = XulDebugServerHelper.HOST + XulDebugServerHelper.__CLEAR_ALL_CACHES
+                http = urllib3.PoolManager()
+                newUrl = quote(url,safe=string.printable)
+                r = http.request('GET',newUrl)
+            except Exception as e:
+                STCLogger().e(e)
+                return
+            return  r

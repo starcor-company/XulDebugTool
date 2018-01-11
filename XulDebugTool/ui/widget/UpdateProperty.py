@@ -9,6 +9,7 @@ from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QColor
 from PyQt5.QtWidgets import *
 
+from XulDebugTool.logcatapi.Logcat import STCLogger
 from XulDebugTool.utils.IconTool import IconTool
 from XulDebugTool.utils.Utils import Utils
 from XulDebugTool.utils.XulDebugServerHelper import XulDebugServerHelper
@@ -71,16 +72,19 @@ class UpdateProperty(QTreeWidget):
         self.inputWidget.insertTopLevelItem(0, self.inputAttr)
         self.inputWidget.insertTopLevelItem(1, self.inputStyle)
         # self.inputWidget.insertTopLevelItem(2, self.inputClass)
+        STCLogger().i('init UpdateProperty')
 
     def updateUrl(self, type=None, data=None):
         num = 0
         for key, value in data.items():
             if type == 'set-attr':
                 attr = self.inputAttr.child(num).text(1)
-                XulDebugServerHelper.updateUrl(type, self.viewId, key, attr)
+                if attr != data[self.inputAttr.child(num).text(0)]:
+                    XulDebugServerHelper.updateUrl(type, self.viewId, key, attr)
             elif type == 'set-style':
                 style = self.inputStyle.child(num).text(1)
-                XulDebugServerHelper.updateUrl(type, self.viewId, key, style)
+                if style != data[self.inputStyle.child(num).text(0)]:
+                    XulDebugServerHelper.updateUrl(type, self.viewId, key, style)
             num += 1
         if num < 1:
             return
@@ -114,6 +118,7 @@ class UpdateProperty(QTreeWidget):
         result = XulDebugServerHelper.updateUrl(type, self.viewId, item.text(0), item.text(1))
         if result is None or result.status != 200:
             return
+        STCLogger().i('updateAddProperty:'+item.text(0)+','+item.text(1))
         self.addQTreeWidgetItem(root)
 
     def updateAttrUI(self):
