@@ -4,9 +4,9 @@ author: CAI
 last edited: 2017.10.29
 """
 import logging
-import time
 
 from XulDebugTool.controller.ConsoleDeskController import ConsoleController
+from XulDebugTool.utils.FileHelper import FileHelper
 
 
 class STCLogger():
@@ -27,7 +27,7 @@ class STCLogger():
         self.logger.setLevel(logging.DEBUG)
 
         # create a file handler
-        self.handler = logging.FileHandler(time.strftime('%Y%m%d%H', time.localtime(time.time())) + ".txt", "a", encoding="UTF-8")
+        self.handler = logging.FileHandler(FileHelper.LOGPATH, "a", encoding="UTF-8")
         self.handler.setLevel(logging.DEBUG)
 
         # create a logging format
