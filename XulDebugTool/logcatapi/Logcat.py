@@ -6,7 +6,7 @@ last edited: 2017.10.29
 import logging
 
 from XulDebugTool.controller.ConsoleDeskController import ConsoleController
-from XulDebugTool.utils.FileHelper import FileHelper
+from XulDebugTool.utils.ConfigHelper import ConfigHelper
 
 
 class STCLogger():
@@ -27,7 +27,7 @@ class STCLogger():
         self.logger.setLevel(logging.DEBUG)
 
         # create a file handler
-        self.handler = logging.FileHandler(FileHelper.LOGPATH, "a", encoding="UTF-8")
+        self.handler = logging.FileHandler(ConfigHelper.LOGCATPATH, "a", encoding="UTF-8")
         self.handler.setLevel(logging.DEBUG)
 
         # create a logging format

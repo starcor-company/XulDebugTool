@@ -7,7 +7,7 @@ from PyQt5.QtCore import pyqtSignal
 
 from XulDebugTool.logcatapi.Logcat import STCLogger
 from XulDebugTool.ui.widget.BaseDialog import BaseDialog
-from XulDebugTool.ui.widget.model.FavoriteDB import FavoriteDB
+from XulDebugTool.ui.widget.model.database.FavoriteDB import FavoriteDB
 from XulDebugTool.utils.XulDebugServerHelper import XulDebugServerHelper
 
 # 查询的model应该从项目支持的mode获取, 但是因为各个项目的provider写的不标准,统一固定这些方式,不是所有的provider都支持这6种
@@ -39,7 +39,6 @@ class DataQueryDialog(BaseDialog):
             super().__init__(self.providerName)
             self.initWindow()
             self.requestLineEdit.setText(self.url)
-        self.favoriteDB = FavoriteDB()
 
     def initWindow(self):
         super().initWindow()
@@ -167,7 +166,7 @@ class DataQueryDialog(BaseDialog):
 
         #用左侧的model树来查询的时候
         if isinstance(self.data, dict):
-            self.favoriteDB.insertHistory(self.providerName,self.url,dateTime,0)
+            FavoriteDB.insertHistory(self.providerName,self.url,dateTime,0)
             STCLogger().i('dataQuery record is insert to DataBase of history: ' + self.url)
             return
 
@@ -175,16 +174,16 @@ class DataQueryDialog(BaseDialog):
         if self.data.type:
             if self.data.type == 'favorites_type':#更新收藏记录的时候要先更新历史记录，在更新收藏记录时将最新的历史记录和收藏记录关联起来
 
-                self.favoriteDB.insertHistory(self.providerName, self.url,dateTime, 1)
+                FavoriteDB.insertHistory(self.providerName, self.url,dateTime, 1)
                 STCLogger().i('dataQuery record is insert to DataBase of history :' + self.url)
-                rows = self.favoriteDB.selectBySQL('select max(id) from '+ self.favoriteDB.TABLE_HISTORY)
+                rows = FavoriteDB.selectBySQL('select max(id) from '+ FavoriteDB.TABLE_HISTORY)
                 for row in rows:
                     historyMaxId = row[0]
-                self.favoriteDB.updateFavorites('and id = '+ str(self.data.id), name = self.providerName,url = self.url,date = dateTime,history_id = historyMaxId)
-                self.favoriteDB.updateHistory('and id = '+str(self.data.historyId), favorite = 0)
+                FavoriteDB.updateFavorites('and id = '+ str(self.data.id), name = self.providerName,url = self.url,date = dateTime,history_id = historyMaxId)
+                FavoriteDB.updateHistory('and id = '+str(self.data.historyId), favorite = 0)
                 STCLogger().i('dataQuery record is update DataBase of favorites :' + self.url)
             elif self.data.type == 'history_type':
-                self.favoriteDB.insertHistory(self.providerName, self.url,dateTime, 0)
+                FavoriteDB.insertHistory(self.providerName, self.url,dateTime, 0)
                 STCLogger().i('dataQuery record is insert to DataBase of history :' + self.url)
 
 

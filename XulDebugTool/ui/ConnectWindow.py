@@ -20,8 +20,9 @@ from PyQt5.QtWidgets import QPushButton, QLabel, QTextEdit, QComboBox, QHBoxLayo
 
 from XulDebugTool.ui.BaseWindow import BaseWindow
 from XulDebugTool.ui.MainWindow import MainWindow, QListWidgetItem
+from XulDebugTool.ui.widget.model.database.DBManager import DBManager
 from XulDebugTool.utils.CmdExecutor import CmdExecutor
-from XulDebugTool.utils.FileHelper import FileHelper
+from XulDebugTool.utils.ConfigHelper import ConfigHelper
 from XulDebugTool.utils.IconTool import IconTool
 from XulDebugTool.utils.XulDebugServerHelper import XulDebugServerHelper
 
@@ -49,7 +50,8 @@ class ConnectWindow(BaseWindow):
 
         self.initUI()
         self.show()
-        FileHelper.initLogConfigPath()
+        DBManager.createTable()
+        ConfigHelper.initLogConfigPath()
 
     def initUI(self):
         # 只显示关闭按钮, 不显示最大化, 最小化, 并且固定窗口大小
@@ -297,7 +299,6 @@ class ConnectWindow(BaseWindow):
         try:
             conn = sqlite3.connect('XulDebugTool.db')
             cursor = conn.cursor()
-            cursor.execute('create table if not exists device (name varchar(50) primary key)')
             if self.ip != '':
                 cursor.execute('insert into device (name) values (\'' + device + '\')')
             conn.commit()
