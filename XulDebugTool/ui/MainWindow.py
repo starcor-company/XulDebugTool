@@ -25,7 +25,8 @@ from XulDebugTool.ui.widget.ButtomConsoleWindow import ButtomWindow
 from XulDebugTool.ui.widget.DataQueryDialog import DataQueryDialog
 from XulDebugTool.ui.widget.FavoriteTreeView import FavoriteTreeView
 from XulDebugTool.ui.widget.UpdateProperty import UpdateProperty
-from XulDebugTool.utils.FileHelper import FileHelper
+from XulDebugTool.ui.widget.model.database.ConfigurationDB import ConfigurationDB
+from XulDebugTool.utils.ConfigHelper import ConfigHelper
 from XulDebugTool.utils.IconTool import IconTool
 from XulDebugTool.utils.Utils import Utils
 from XulDebugTool.utils.XulDebugServerHelper import XulDebugServerHelper
@@ -442,10 +443,9 @@ class MainWindow(BaseWindow):
             self.statusBar().showMessage('cache cleanup failed')
 
     def setLogPath(self):
-        file_path = QFileDialog.getSaveFileName(self, 'save file', "C:\\Users\\Administrator\\logcat",
-                                                "Txt files(*.txt)")
-        FileHelper.writeLogSavePath(file_path)
-        FileHelper.setLogPath()
+        file_path = QFileDialog.getSaveFileName(self, 'save file', ConfigHelper.LOGCATPATH,"Txt files(*.txt)")
+        if len(file_path[0]) > 0:
+            ConfigurationDB.saveConfiguration(ConfigHelper.KEY_LOGCATPATH,file_path[0])
 
 
     @pyqtSlot(QPoint)

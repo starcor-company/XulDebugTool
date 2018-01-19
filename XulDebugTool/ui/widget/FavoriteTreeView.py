@@ -7,7 +7,7 @@ from PyQt5.QtWidgets import QTreeView, QAbstractItemView, QMenu, QAction
 
 from XulDebugTool.logcatapi.Logcat import STCLogger
 from XulDebugTool.ui.widget.DataQueryDialog import DataQueryDialog
-from XulDebugTool.ui.widget.model.FavoriteDB import FavoriteDB
+from XulDebugTool.ui.widget.model.database.FavoriteDB import FavoriteDB
 from XulDebugTool.utils.IconTool import IconTool
 
 ROOT_PROVIDERQUERYHISTORY = "History"
@@ -22,7 +22,6 @@ class FavoriteTreeView(QTreeView):
         self.mainWindow = window
         try:
             super(FavoriteTreeView,self).__init__(parent)
-            self.favoriteDB = FavoriteDB()
             self.treeModel = QStandardItemModel()
             self.favorites = QStandardItem(ROOT_FAVORITES)
             self.buildFavoritesTree()
@@ -45,7 +44,7 @@ class FavoriteTreeView(QTreeView):
 
     def buildFavoritesTree(self):
         self.favorites.removeRows(0,self.favorites.rowCount())
-        rows = self.favoriteDB.selectFavorites(" order by name asc")
+        rows = FavoriteDB.selectFavorites(" order by name asc")
         for row in rows:
             providerItem = QStandardItem(row[1] + "   " + row[3])
             providerItem.type = ITEM_TYPE_FAVORITES
@@ -61,7 +60,7 @@ class FavoriteTreeView(QTreeView):
 
     def buildQueryHistory(self):
         self.providerQueryHistory.removeRows(0,self.providerQueryHistory.rowCount())
-        rows = self.favoriteDB.selectHistory('order by date desc')
+        rows = FavoriteDB.selectHistory('order by date desc')
         for row in rows:
             providerItem = QStandardItem(row[1]+"   "+row[3])
             providerItem.type = ITEM_TYPE_HISTORY
@@ -81,16 +80,16 @@ class FavoriteTreeView(QTreeView):
         item = self.treeModel.itemFromIndex(index)
         dateTime = time.strftime("%Y/%m/%d %H:%M:%S", time.localtime(time.time()))
         if item.type == ITEM_TYPE_FAVORITES :#更新收藏记录的时候要先更新历史记录，在更新收藏记录时将最新的历史记录和收藏记录关联起来
-            self.favoriteDB.insertHistory(item.name, item.url,dateTime, 1)
-            rows = self.favoriteDB.selectBySQL('select max(id) from ' + self.favoriteDB.TABLE_HISTORY)
+            FavoriteDB.insertHistory(item.name, item.url,dateTime, 1)
+            rows = FavoriteDB.selectBySQL('select max(id) from ' + FavoriteDB.TABLE_HISTORY)
             for row in rows:
                 historyMaxId = row[0]
 
-            self.favoriteDB.updateFavorites('and id = '+ str(item.id), name = item.name,url = item.url,date = dateTime, history_id=historyMaxId)
-            self.favoriteDB.updateHistory('and id = ' + str(item.historyId), favorite=1)
+            FavoriteDB.updateFavorites('and id = '+ str(item.id), name = item.name,url = item.url,date = dateTime, history_id=historyMaxId)
+            FavoriteDB.updateHistory('and id = ' + str(item.historyId), favorite=1)
             self.mainWindow.onGetQueryUrl(item.url)
         elif item.type == ITEM_TYPE_HISTORY:
-            self.favoriteDB.insertHistory(item.name, item.url, dateTime, 0)
+            FavoriteDB.insertHistory(item.name, item.url, dateTime, 0)
             self.mainWindow.onGetQueryUrl(item.url)
 
     @pyqtSlot(QPoint)
@@ -175,36 +174,36 @@ class FavoriteTreeView(QTreeView):
     def add2Favorites(self,item):
         if item.type == ITEM_TYPE_HISTORY:
             dateTime = time.strftime("%Y/%m/%d %H:%M:%S", time.localtime(time.time()))
-            self.favoriteDB.insertFavorites(item.name,item.url,dateTime,item.id)
+            FavoriteDB.insertFavorites(item.name,item.url,dateTime,item.id)
             STCLogger().i('the history record add to DataBase of favorites :' + item.url)
             self.updateTree()
 
     def deleteFavorite(self,item):
         if item.type == ITEM_TYPE_FAVORITES:
-            self.favoriteDB.deleteFavorites('and id = ' + str(item.id))
-            self.favoriteDB.deleteHistory(' and id = '+ str(item.historyId))
+            FavoriteDB.deleteFavorites('and id = ' + str(item.id))
+            FavoriteDB.deleteHistory(' and id = '+ str(item.historyId))
             STCLogger().i('this record delete from DataBase:' + item.url)
             self.updateTree()
 
     def deleteFavoritesBatch(self,list):
-        self.favoriteDB.deleteFavoritesBatch(list)
+        FavoriteDB.deleteFavoritesBatch(list)
         STCLogger().i('A batch of favorite records was deleted')
         self.updateTree()
 
     def deleteHistory(self,item):
         if item.type == ITEM_TYPE_HISTORY:
-            self.favoriteDB.deleteHistory('and id = '+str(item.id))
+            FavoriteDB.deleteHistory('and id = '+str(item.id))
             STCLogger().i('this record delete from DataBase:' + item.url)
             self.updateTree()
 
     def deleteHistoryBatch(self,list):
-        self.favoriteDB.deleteHistoryBatch(list)
+        FavoriteDB.deleteHistoryBatch(list)
         STCLogger().i('A batch of historical records was deleted')
         self.updateTree()
 
     def remove2Favorites(self,item):
         if item.type == ITEM_TYPE_FAVORITES:
-            self.favoriteDB.deleteFavorites('and id = '+str(item.id))
+            FavoriteDB.deleteFavorites('and id = '+str(item.id))
             STCLogger().i('this record remove from DataBase of favorites:' + item.url)
             self.updateTree()
 
