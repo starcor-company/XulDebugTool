@@ -17,6 +17,7 @@ from PyQt5.QtGui import *
 from PyQt5.QtWebChannel import QWebChannel
 from PyQt5.QtWebEngineWidgets import QWebEngineView, QWebEngineScript, QWebEnginePage
 from PyQt5.QtWidgets import *
+import json
 
 from XulDebugTool.logcatapi.Logcat import STCLogger
 from XulDebugTool.ui.AboutWindow import AboutWindow
@@ -24,6 +25,7 @@ from XulDebugTool.ui.BaseWindow import BaseWindow
 from XulDebugTool.ui.widget.ButtomConsoleWindow import ButtomWindow
 from XulDebugTool.ui.widget.DataQueryDialog import DataQueryDialog
 from XulDebugTool.ui.widget.FavoriteTreeView import FavoriteTreeView
+from XulDebugTool.ui.widget.PropertyEditor import PropertyEditor
 from XulDebugTool.ui.widget.UpdateProperty import UpdateProperty
 from XulDebugTool.ui.widget.model.database.ConfigurationDB import ConfigurationDB
 from XulDebugTool.utils.ConfigHelper import ConfigHelper
@@ -102,6 +104,9 @@ class MainWindow(BaseWindow):
         findAction.setShortcut('Ctrl+F')
         findAction.triggered.connect(self.findActionClick)
         editMenu.addAction(findAction)
+        focusItemAction = QAction(IconTool.buildQIcon('focus.png'), '&Focus Item', self)
+        focusItemAction.triggered.connect(self.focusChooseItem)
+        editMenu.addAction(focusItemAction)
 
         helpMenu = menuBar.addMenu('Help')
         aboutAction = QAction(IconTool.buildQIcon('about.png'), '&About', self)
@@ -283,8 +288,17 @@ class MainWindow(BaseWindow):
 
     def addUpdate(self, value=None):
         self.inputWidget.initData(value)
+        self.propertyEditor.initData(value)
         self.inputWidget.updateAttrUI()
         self.inputWidget.updateStyleUI()
+        dict = json.loads(value)
+        if dict['action'] == "click":
+            self.chooseItemId = dict['Id']
+            self.chooseItemType = Utils.findNodeById(dict['Id'], dict['xml']).tag
+
+    def focusChooseItem(self):
+        if self.chooseItemType in ('area', 'item'):
+            XulDebugServerHelper.focusChooseItemUrl(self.chooseItemId)
 
     def initQCheckBoxUI(self):
         self.groupBox = QGroupBox()
