@@ -77,9 +77,9 @@ class UpdateProperty(QTreeWidget):
 
     def changeExpand(self):
         classHeight = 91;
-        if self.inputAttr.isExpanded():
+        if self.inputAttr.isExpanded() and self.inputAttr.child(0):
             classHeight = classHeight + (ITEM_ATTR.__len__() + 1) * 26
-        if self.inputStyle.isExpanded():
+        if self.inputStyle.isExpanded() and self.inputAttr.child(0):
             classHeight = classHeight + (ITEM_STYLE.__len__() + 1) * 26
         self.ClassBox_1.move(30, classHeight)
         self.ClassBox_2.move(150, classHeight)
@@ -210,15 +210,15 @@ class UpdateProperty(QTreeWidget):
         self.ClassBox_1.setEditable(False)
         self.ClassBox_1.setMaxVisibleItems(2)
         self.ClassBox_1.setInsertPolicy(QComboBox.InsertAtTop)
-        self.ClassBox_1.addItem("addClass")
-        self.ClassBox_1.addItem("removeClass")
+        self.ClassBox_1.addItem("add-class")
+        self.ClassBox_1.addItem("remove-class")
         self.ClassBox_1.move(30, 90)
         self.ClassBox_1.resize(150, 30)
 
         self.ClassBox_2 = QComboBox(self)
         self.ClassBox_2.setEditable(False)
         self.ClassBox_2.move(150, 90)
-        self.ClassBox_2.resize(150, 30)
+        self.ClassBox_2.resize(200, 30)
         self.ClassBox_2.activated.connect(self.updateClass)
         ITEM_CLASS.clear()
         self.initAllClassData()
