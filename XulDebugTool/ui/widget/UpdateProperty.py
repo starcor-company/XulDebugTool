@@ -17,6 +17,7 @@ from XulDebugTool.utils.XulDebugServerHelper import XulDebugServerHelper
 # 数据的整理，需要把数据填充至内显示
 ITEM_ATTR = {}
 ITEM_STYLE = {}
+ITEM_CLASS = []
 
 ITEM_TAG = ['area', 'item', 'layout']
 ATTR_AREA = ["x", "y", "height", "width", "align", "max-layers", "enabled", "animation", "animation-speed",
@@ -38,7 +39,7 @@ STYLE_AREA = ["font-face", "font-size", "font-color", "font-weight", "font-scale
               "rotate-center-y", "rotate-center-z", "lighting-color-filter", "round-rect", "max-width", "max-height",
               "min-width", "min-height", "preload", "keep-focus-visible"]
 
-item_color = QColor(255, 255, 255)
+item_color = QColor(233, 233, 233)
 property_color_one = QColor(255, 255, 255)
 property_color_two = QColor(255, 255, 255)
 add_color = QColor(255, 255, 255)
@@ -51,6 +52,7 @@ class UpdateProperty(QTreeWidget):
         self.viewId = ''
         self.sameFlag = True
         self.viewTag = ''
+        self.pageId = ''
         self.inputWidget = QTreeWidget(self)
         self.inputWidget.setFixedHeight(900)
         self.inputWidget.setFixedWidth(420)
@@ -60,19 +62,27 @@ class UpdateProperty(QTreeWidget):
         self.inputAttr.setText(0, 'Attr')
         self.inputAttr.setBackground(0, item_color)
         self.inputAttr.setBackground(1, item_color)
-        self.inputAttr.setSelected(True)
         self.inputStyle = QTreeWidgetItem()
         self.inputStyle.setText(0, 'Style')
         self.inputStyle.setBackground(0, item_color)
         self.inputStyle.setBackground(1, item_color)
-        # self.inputClass = QTreeWidgetItem()
-        # self.inputClass.setText(0, 'Class')
-        # self.inputClass.setBackground(0, item_color)
-        # self.inputClass.setBackground(1, item_color)
         self.inputWidget.insertTopLevelItem(0, self.inputAttr)
         self.inputWidget.insertTopLevelItem(1, self.inputStyle)
-        # self.inputWidget.insertTopLevelItem(2, self.inputClass)
+        self.inputAttr.setExpanded(True)
+        self.inputWidget.expanded.connect(self.changeExpand)
+        self.inputWidget.collapsed.connect(self.changeExpand)
+        self.initClassBox()
+
         STCLogger().i('init UpdateProperty')
+
+    def changeExpand(self):
+        classHeight = 91;
+        if self.inputAttr.isExpanded() and self.inputAttr.child(0):
+            classHeight = classHeight + (ITEM_ATTR.__len__() + 1) * 26
+        if self.inputStyle.isExpanded() and self.inputAttr.child(0):
+            classHeight = classHeight + (ITEM_STYLE.__len__() + 1) * 26
+        self.ClassBox_1.move(30, classHeight)
+        self.ClassBox_2.move(150, classHeight)
 
     def updateUrl(self, type=None, data=None):
         num = 0
@@ -144,6 +154,7 @@ class UpdateProperty(QTreeWidget):
         if self.viewTag in ITEM_TAG:
             self.addQTreeWidgetItem(self.inputStyle)
         self.inputWidget.itemChanged.connect(lambda: self.updateUrl('set-style', ITEM_STYLE))
+        self.changeExpand()
 
     def getQTreeWidgetItem(self, pos, key, value):
         item = QTreeWidgetItem()
@@ -168,7 +179,7 @@ class UpdateProperty(QTreeWidget):
         addItem.setFlags(Qt.ItemIsEnabled | Qt.ItemIsSelectable | Qt.ItemIsEditable)
         root.addChild(addItem)
 
-    def initData(self, data):
+    def initData(self, pageId, data):
         dict = json.loads(data)
         action = dict['action']
         if action == "click":
@@ -192,3 +203,55 @@ class UpdateProperty(QTreeWidget):
                         ITEM_ATTR.setdefault(item.attrib['name'], item.text)
                     if item.tag == 'style':
                         ITEM_STYLE.setdefault(item.attrib['name'], item.text)
+        self.initPageClassData(pageId)
+
+    def initClassBox(self):
+        self.ClassBox_1 = QComboBox(self)
+        self.ClassBox_1.setEditable(False)
+        self.ClassBox_1.setMaxVisibleItems(2)
+        self.ClassBox_1.setInsertPolicy(QComboBox.InsertAtTop)
+        self.ClassBox_1.addItem("add-class")
+        self.ClassBox_1.addItem("remove-class")
+        self.ClassBox_1.move(30, 90)
+        self.ClassBox_1.resize(150, 30)
+
+        self.ClassBox_2 = QComboBox(self)
+        self.ClassBox_2.setEditable(False)
+        self.ClassBox_2.move(150, 90)
+        self.ClassBox_2.resize(200, 30)
+        self.ClassBox_2.activated.connect(self.updateClass)
+        ITEM_CLASS.clear()
+        self.initAllClassData()
+
+    def initAllClassData(self):
+        all = XulDebugServerHelper.getAllSelector()
+        if all.data:
+            selector = Utils.xml2json(all.data, 'selector')
+            if selector == '':
+                return
+            for select in selector['select']:
+                if select['@class'] not in ITEM_CLASS:
+                    ITEM_CLASS.append(select['@class'])
+
+
+
+    def initPageClassData(self, pageId):
+        if self.pageId == pageId:
+            return
+        all = XulDebugServerHelper.getPageSelector(pageId)
+        if all.data:
+            page = Utils.xml2json(all.data, 'page')
+            if page == '':
+                return
+            for item in page:
+                if item == 'selector':
+                    selector = page['selector']
+                    for select in selector['select']:
+                        if select['@class'] not in ITEM_CLASS:
+                            ITEM_CLASS.append(select['@class'])
+
+        for name in ITEM_CLASS:
+            self.ClassBox_2.addItem(name)
+
+    def updateClass(self):
+        XulDebugServerHelper.updateClassUrl(self.ClassBox_1.currentText(), self.viewId, self.ClassBox_2.currentText())

@@ -56,6 +56,7 @@ SKIP_PROP = 'skip-prop'
 WITH_CHILDREN = 'with-children'
 WITH_BINDING_DATA = 'with-binding-data'
 WITH_POSITION = 'with-position'
+WITH_SELECTOR = 'with-selector'
 
 class MainWindow(BaseWindow):
     def __init__(self):
@@ -287,8 +288,8 @@ class MainWindow(BaseWindow):
         self.groupBox.setHidden(True)
 
     def addUpdate(self, value=None):
-        self.inputWidget.initData(value)
-        self.propertyEditor.initData(value)
+        self.inputWidget.initData(self.pageId, value)
+        # self.propertyEditor.initData(value)
         self.inputWidget.updateAttrUI()
         self.inputWidget.updateStyleUI()
         dict = json.loads(value)
@@ -302,21 +303,25 @@ class MainWindow(BaseWindow):
 
     def initQCheckBoxUI(self):
         self.groupBox = QGroupBox()
-        self.skipPropCheckBox = QCheckBox('skip-prop', self)
+        self.skipPropCheckBox = QCheckBox(SKIP_PROP, self)
         self.skipPropCheckBox.setChecked(False)
-        self.skipPropCheckBox.stateChanged.connect(self.clickSkipProp)
+        self.skipPropCheckBox.stateChanged.connect(lambda: self.clickCheckBox(self.skipPropCheckBox, SKIP_PROP))
 
-        self.withChildrenCheckBox = QCheckBox('with-children', self)
+        self.withChildrenCheckBox = QCheckBox(WITH_CHILDREN, self)
         self.withChildrenCheckBox.setChecked(False)
-        self.withChildrenCheckBox.stateChanged.connect(self.clickWithChildren)
+        self.withChildrenCheckBox.stateChanged.connect(lambda: self.clickCheckBox(self.withChildrenCheckBox, WITH_CHILDREN))
 
-        self.withBindingDataCheckBox = QCheckBox('with-binding-data', self)
+        self.withBindingDataCheckBox = QCheckBox(WITH_BINDING_DATA, self)
         self.withBindingDataCheckBox.setChecked(False)
-        self.withBindingDataCheckBox.stateChanged.connect(self.clickWithBindingData)
+        self.withBindingDataCheckBox.stateChanged.connect(lambda: self.clickCheckBox(self.withBindingDataCheckBox, WITH_BINDING_DATA))
 
-        self.withPositionCheckBox = QCheckBox('with-position', self)
+        self.withPositionCheckBox = QCheckBox(WITH_POSITION, self)
         self.withPositionCheckBox.setChecked(False)
-        self.withPositionCheckBox.stateChanged.connect(self.clickWithPostion)
+        self.withPositionCheckBox.stateChanged.connect(lambda: self.clickCheckBox(self.withPositionCheckBox, WITH_POSITION))
+
+        self.withSelectorCheckBox = QCheckBox(WITH_SELECTOR, self)
+        self.withSelectorCheckBox.setChecked(False)
+        self.withSelectorCheckBox.stateChanged.connect(lambda: self.clickCheckBox(self.withSelectorCheckBox, WITH_SELECTOR))
 
         checkGrouplayout = QHBoxLayout()
         checkGrouplayout.addWidget(self.skipPropCheckBox)
@@ -326,6 +331,8 @@ class MainWindow(BaseWindow):
         checkGrouplayout.addWidget(self.withBindingDataCheckBox)
         checkGrouplayout.setSpacing(10)
         checkGrouplayout.addWidget(self.withPositionCheckBox)
+        checkGrouplayout.addStretch(10)
+        checkGrouplayout.addWidget(self.withSelectorCheckBox)
         checkGrouplayout.addStretch(10)
         self.groupBox.setLayout(checkGrouplayout)
         return self.groupBox
@@ -374,37 +381,13 @@ class MainWindow(BaseWindow):
         self.searchWidget.setLayout(searchPageLayout)
         return self.searchWidget
 
-    def clickSkipProp(self):
-        if self.skipPropCheckBox.isChecked():
-            STCLogger().i('select skip-prop')
-            self.selectCheckBoxInfo(SKIP_PROP)
+    def clickCheckBox(self, checkBox, name):
+        if checkBox.isChecked():
+            STCLogger().i('select '+name)
+            self.selectCheckBoxInfo(name)
         else:
-            STCLogger().i('cancel skip-prop')
-            self.cancelCheckBoxInfo(SKIP_PROP)
-
-    def clickWithChildren(self):
-        if self.withChildrenCheckBox.isChecked():
-            STCLogger().i('select with_children')
-            self.selectCheckBoxInfo(WITH_CHILDREN)
-        else:
-            STCLogger().i('cancel with_children')
-            self.cancelCheckBoxInfo(WITH_CHILDREN)
-
-    def clickWithBindingData(self):
-        if self.withBindingDataCheckBox.isChecked():
-            STCLogger().i('select with_binding_data')
-            self.selectCheckBoxInfo(WITH_BINDING_DATA)
-        else:
-            STCLogger().i('cancel with_binding_data')
-            self.cancelCheckBoxInfo(WITH_BINDING_DATA)
-
-    def clickWithPostion(self):
-        if self.withPositionCheckBox.isChecked():
-            STCLogger().i('select with_postion')
-            self.selectCheckBoxInfo(WITH_POSITION)
-        else:
-            STCLogger().i('cancel with_postion')
-            self.cancelCheckBoxInfo(WITH_POSITION)
+            STCLogger().i('cancel '+name)
+            self.cancelCheckBoxInfo(name)
 
     def selectCheckBoxInfo(self, str):
         if None != self.url:
@@ -528,14 +511,14 @@ class MainWindow(BaseWindow):
                 for i, page in enumerate(pagesNodes['page']):
                     # 把page解析了以后放page节点下
                     row = QStandardItem(page['@pageId'])
-                    row.id = page['@id']
+                    row.id = self.pageId = page['@id']
                     row.data = page
                     row.type = ITEM_TYPE_PAGE
                     self.pageItem.appendRow(row)
             else:
                 page = pagesNodes['page']
                 row = QStandardItem(page['@pageId'])
-                row.id = page['@id']
+                row.id = self.pageId = page['@id']
                 row.data = page
                 row.type = ITEM_TYPE_PAGE
                 self.pageItem.appendRow(row)
