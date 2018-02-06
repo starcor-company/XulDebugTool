@@ -20,6 +20,7 @@ class XulDebugServerHelper(object):
     __REMOVE_CLASS = 'remove-class'
     __CLEAR_ALL_CACHES = 'clear-all-caches'
     __REQUEST_FOCUS = 'request-focus'
+    __GET_SELECTOR = 'get-selector'
 
     @staticmethod
     def listPages():
@@ -37,7 +38,7 @@ class XulDebugServerHelper(object):
             return r
 
     @staticmethod
-    def getLayout(pageId, skipProp=True, withBindingData=True, withPosition=True):
+    def getLayout(pageId, skipProp=True, withBindingData=True, withPosition=True, withSelector=True):
         if XulDebugServerHelper.HOST == '':
             raise ValueError('Host is empty!')
         else:
@@ -48,7 +49,8 @@ class XulDebugServerHelper(object):
                 r = http.request('GET', newUrl,
                                  fields={'skip-prop': skipProp,
                                          'with-binding-data': withBindingData,
-                                         'with-position': withPosition})
+                                         'with-position': withPosition,
+                                         'with-selector': withSelector})
             except Exception as e:
                 STCLogger().e(e)
                 return
@@ -130,6 +132,42 @@ class XulDebugServerHelper(object):
         else:
             try:
                 url = XulDebugServerHelper.HOST + XulDebugServerHelper.__REQUEST_FOCUS + '/' + id
+                http = urllib3.PoolManager()
+                newUrl = quote(url, safe=string.printable)
+                STCLogger().i("updateUrl = " + url)
+                r = http.request('GET', newUrl)
+            except Exception as e:
+                STCLogger().e(e)
+                return
+            return r
+
+    @staticmethod
+    def getAllSelector():
+        if XulDebugServerHelper.HOST == '':
+            raise ValueError('Host is empty!')
+        else:
+            try:
+                url = XulDebugServerHelper.HOST + XulDebugServerHelper.__GET_SELECTOR
+                http = urllib3.PoolManager()
+                newUrl = quote(url, safe=string.printable)
+                STCLogger().i("updateUrl = " + url)
+                r = http.request('GET', newUrl)
+            except Exception as e:
+                STCLogger().e(e)
+                return
+            return r
+
+    @staticmethod
+    def getPageSelector(pageId):
+        return XulDebugServerHelper.getLayout(pageId, False, False, False, True)
+
+    @staticmethod
+    def updateClassUrl(type, id, className):
+        if XulDebugServerHelper.HOST == '':
+            raise ValueError('Host is empty!')
+        else:
+            try:
+                url = XulDebugServerHelper.HOST + type + '/' + id + '/' + className
                 http = urllib3.PoolManager()
                 newUrl = quote(url, safe=string.printable)
                 STCLogger().i("updateUrl = " + url)
