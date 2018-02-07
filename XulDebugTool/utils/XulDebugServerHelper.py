@@ -21,6 +21,7 @@ class XulDebugServerHelper(object):
     __CLEAR_ALL_CACHES = 'clear-all-caches'
     __REQUEST_FOCUS = 'request-focus'
     __GET_SELECTOR = 'get-selector'
+    __FIRE_EVENT = 'fire-event'
 
     @staticmethod
     def listPages():
@@ -176,3 +177,18 @@ class XulDebugServerHelper(object):
                 STCLogger().e(e)
                 return
             return r
+
+    @staticmethod
+    def fireItemEvent(action, id):
+        if XulDebugServerHelper.HOST == '':
+            raise ValueError('Host is empty!')
+        else:
+            try:
+                url = XulDebugServerHelper.HOST + XulDebugServerHelper.__FIRE_EVENT + '/' + id + '/' + action
+                http = urllib3.PoolManager()
+                newUrl = quote(url, safe=string.printable)
+                STCLogger().i("updateUrl = " + url)
+                r = http.request('GET', newUrl)
+            except Exception as e:
+                STCLogger().e(e)
+                return r

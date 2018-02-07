@@ -5,7 +5,7 @@
 
 import json
 
-from PyQt5.QtCore import Qt, QStringListModel
+from PyQt5.QtCore import Qt, QStringListModel, QSize
 from PyQt5.QtGui import QColor
 from PyQt5.QtWidgets import *
 
@@ -75,12 +75,17 @@ class UpdateProperty(QTreeWidget):
         self.initClassBox()
 
         self.listView = QListView(self)
+
         self.slm = QStringListModel()
         self.qList = ['a', 'b', 'c']
         self.slm.setStringList(self.qList)
         self.listView.setModel(self.slm)
         self.listView.move(30, 150)
         self.listView.resize(300, 0)
+        self.listView.setSpacing(3)
+        qSize = QSize(300, 30)
+        self.listView.setGridSize(qSize)
+        self.listView.clicked.connect(self.itemClickedEvent)
 
 
         STCLogger().i('init UpdateProperty')
@@ -168,13 +173,15 @@ class UpdateProperty(QTreeWidget):
         self.changeExpand()
 
     def updateEventUi(self):
-        # if len(ITEM_EVENT) == 0:
-        #     return
-
-        self.qList = ['a', 'b', 'c', 'd', 'e']
-        self.slm.setStringList(self.qList)
+        if len(ITEM_EVENT) == 0:
+            return
+        self.slm.setStringList(ITEM_EVENT)
         self.listView.setModel(self.slm)
         self.listView.resize(300, len(self.qList)*30)
+
+    def itemClickedEvent(self, qModelIndex):
+        print("click " + ITEM_EVENT[qModelIndex.row()])
+        XulDebugServerHelper.fireItemEvent(ITEM_EVENT[qModelIndex.row()], self.viewId)
 
     def getQTreeWidgetItem(self, pos, key, value):
         item = QTreeWidgetItem()
@@ -217,12 +224,15 @@ class UpdateProperty(QTreeWidget):
             element = Utils.findNodeById(id, xml)
             self.viewTag = element.tag
             children = element.getchildren()
+            ITEM_EVENT.clear()
             for item in children:
                 if item.attrib is not None:
                     if item.tag == 'attr':
                         ITEM_ATTR.setdefault(item.attrib['name'], item.text)
                     if item.tag == 'style':
                         ITEM_STYLE.setdefault(item.attrib['name'], item.text)
+                    if item.tag == 'action':
+                        ITEM_EVENT.append(item.attrib['action'])
         self.initPageClassData(pageId)
 
     def initClassBox(self):
