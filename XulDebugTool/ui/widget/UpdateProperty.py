@@ -5,7 +5,7 @@
 
 import json
 
-from PyQt5.QtCore import Qt
+from PyQt5.QtCore import Qt, QStringListModel
 from PyQt5.QtGui import QColor
 from PyQt5.QtWidgets import *
 
@@ -18,6 +18,7 @@ from XulDebugTool.utils.XulDebugServerHelper import XulDebugServerHelper
 ITEM_ATTR = {}
 ITEM_STYLE = {}
 ITEM_CLASS = []
+ITEM_EVENT = []
 
 ITEM_TAG = ['area', 'item', 'layout']
 ATTR_AREA = ["x", "y", "height", "width", "align", "max-layers", "enabled", "animation", "animation-speed",
@@ -73,6 +74,15 @@ class UpdateProperty(QTreeWidget):
         self.inputWidget.collapsed.connect(self.changeExpand)
         self.initClassBox()
 
+        self.listView = QListView(self)
+        self.slm = QStringListModel()
+        self.qList = ['a', 'b', 'c']
+        self.slm.setStringList(self.qList)
+        self.listView.setModel(self.slm)
+        self.listView.move(30, 150)
+        self.listView.resize(300, 0)
+
+
         STCLogger().i('init UpdateProperty')
 
     def changeExpand(self):
@@ -83,6 +93,7 @@ class UpdateProperty(QTreeWidget):
             classHeight = classHeight + (ITEM_STYLE.__len__() + 1) * 26
         self.ClassBox_1.move(30, classHeight)
         self.ClassBox_2.move(150, classHeight)
+        self.listView.move(30, classHeight+30)
 
     def updateUrl(self, type=None, data=None):
         num = 0
@@ -155,6 +166,15 @@ class UpdateProperty(QTreeWidget):
             self.addQTreeWidgetItem(self.inputStyle)
         self.inputWidget.itemChanged.connect(lambda: self.updateUrl('set-style', ITEM_STYLE))
         self.changeExpand()
+
+    def updateEventUi(self):
+        # if len(ITEM_EVENT) == 0:
+        #     return
+
+        self.qList = ['a', 'b', 'c', 'd', 'e']
+        self.slm.setStringList(self.qList)
+        self.listView.setModel(self.slm)
+        self.listView.resize(300, len(self.qList)*30)
 
     def getQTreeWidgetItem(self, pos, key, value):
         item = QTreeWidgetItem()

@@ -292,6 +292,7 @@ class MainWindow(BaseWindow):
         # self.propertyEditor.initData(value)
         self.inputWidget.updateAttrUI()
         self.inputWidget.updateStyleUI()
+        self.inputWidget.updateEventUi()
         dict = json.loads(value)
         if dict['action'] == "click":
             self.chooseItemId = dict['Id']
