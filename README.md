@@ -1,12 +1,12 @@
 # xul-debugtool
 ## 一、项目资料
-### 1.[项目整体流程](http://github.com/starcor-company/XulDebugTool/blob/README/doc/design/flow.puml)<br/>
+### 1.[项目整体流程](http://github.com/starcor-company/XulDebugTool/blob/master/doc/design/flow.puml)<br/>
 
-### 2.[项目设计图](https://github.com/starcor-company/XulDebugTool/blob/README/doc/design/%E8%AE%BE%E8%AE%A1%E5%9B%BE.png)<br/>
+### 2.[项目设计图](https://github.com/starcor-company/XulDebugTool/blob/master/doc/design/%E8%AE%BE%E8%AE%A1%E5%9B%BE.png)<br/>
 
-### 3.[项目使用指令说明](https://github.com/starcor-company/XulDebugTool/blob/README/doc/debug%20instruction.txt)<br/>
+### 3.[项目使用指令说明](https://github.com/starcor-company/XulDebugTool/blob/master/doc/debug%20instruction.txt)<br/>
 
-### 4.[项目预期功能列表](https://github.com/starcor-company/XulDebugTool/blob/README/doc/%E5%8A%9F%E8%83%BD%E5%88%97%E8%A1%A8.txt)<br/>
+### 4.[项目预期功能列表](https://github.com/starcor-company/XulDebugTool/blob/master/doc/%E5%8A%9F%E8%83%BD%E5%88%97%E8%A1%A8.txt)<br/>
 
 ## 二、使用方法
 ### 1、连接页面功能
