@@ -77,14 +77,15 @@ class UpdateProperty(QTreeWidget):
         self.listView = QListView(self)
 
         self.slm = QStringListModel()
-        self.qList = ['a', 'b', 'c']
-        self.slm.setStringList(self.qList)
+        self.slm.setStringList(ITEM_EVENT)
         self.listView.setModel(self.slm)
         self.listView.move(30, 150)
-        self.listView.resize(300, 0)
-        self.listView.setSpacing(3)
-        qSize = QSize(300, 30)
-        self.listView.setGridSize(qSize)
+        #
+        # self.listView.setSpacing(3)
+        # qSize = QSize(300, len(ITEM_EVENT)*33-3)
+        self.listView.resize(300, len(ITEM_EVENT)*33)
+        # self.listView.setUniformItemSizes(True)
+        # self.listView.setGridSize(qSize)
         self.listView.clicked.connect(self.itemClickedEvent)
 
 
@@ -173,11 +174,9 @@ class UpdateProperty(QTreeWidget):
         self.changeExpand()
 
     def updateEventUi(self):
-        if len(ITEM_EVENT) == 0:
-            return
         self.slm.setStringList(ITEM_EVENT)
         self.listView.setModel(self.slm)
-        self.listView.resize(300, len(self.qList)*30)
+        self.listView.resize(300, len(ITEM_EVENT)*30)
 
     def itemClickedEvent(self, qModelIndex):
         print("click " + ITEM_EVENT[qModelIndex.row()])
