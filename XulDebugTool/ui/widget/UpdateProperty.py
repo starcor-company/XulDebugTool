@@ -5,7 +5,7 @@
 
 import json
 
-from PyQt5.QtCore import Qt
+from PyQt5.QtCore import Qt, QStringListModel, QSize
 from PyQt5.QtGui import QColor
 from PyQt5.QtWidgets import *
 
@@ -18,6 +18,7 @@ from XulDebugTool.utils.XulDebugServerHelper import XulDebugServerHelper
 ITEM_ATTR = {}
 ITEM_STYLE = {}
 ITEM_CLASS = []
+ITEM_EVENT = []
 
 ITEM_TAG = ['area', 'item', 'layout']
 ATTR_AREA = ["x", "y", "height", "width", "align", "max-layers", "enabled", "animation", "animation-speed",
@@ -73,6 +74,21 @@ class UpdateProperty(QTreeWidget):
         self.inputWidget.collapsed.connect(self.changeExpand)
         self.initClassBox()
 
+        self.listView = QListView(self)
+
+        self.slm = QStringListModel()
+        self.slm.setStringList(ITEM_EVENT)
+        self.listView.setModel(self.slm)
+        self.listView.move(30, 150)
+        #
+        # self.listView.setSpacing(3)
+        # qSize = QSize(300, len(ITEM_EVENT)*33-3)
+        self.listView.resize(300, len(ITEM_EVENT)*33)
+        # self.listView.setUniformItemSizes(True)
+        # self.listView.setGridSize(qSize)
+        self.listView.clicked.connect(self.itemClickedEvent)
+
+
         STCLogger().i('init UpdateProperty')
 
     def changeExpand(self):
@@ -83,6 +99,7 @@ class UpdateProperty(QTreeWidget):
             classHeight = classHeight + (ITEM_STYLE.__len__() + 1) * 26
         self.ClassBox_1.move(30, classHeight)
         self.ClassBox_2.move(150, classHeight)
+        self.listView.move(30, classHeight+30)
 
     def updateUrl(self, type=None, data=None):
         num = 0
@@ -156,6 +173,15 @@ class UpdateProperty(QTreeWidget):
         self.inputWidget.itemChanged.connect(lambda: self.updateUrl('set-style', ITEM_STYLE))
         self.changeExpand()
 
+    def updateEventUi(self):
+        self.slm.setStringList(ITEM_EVENT)
+        self.listView.setModel(self.slm)
+        self.listView.resize(300, len(ITEM_EVENT)*30)
+
+    def itemClickedEvent(self, qModelIndex):
+        print("click " + ITEM_EVENT[qModelIndex.row()])
+        XulDebugServerHelper.fireItemEvent(ITEM_EVENT[qModelIndex.row()], self.viewId)
+
     def getQTreeWidgetItem(self, pos, key, value):
         item = QTreeWidgetItem()
         item.setText(0, key)
@@ -197,12 +223,15 @@ class UpdateProperty(QTreeWidget):
             element = Utils.findNodeById(id, xml)
             self.viewTag = element.tag
             children = element.getchildren()
+            ITEM_EVENT.clear()
             for item in children:
                 if item.attrib is not None:
                     if item.tag == 'attr':
                         ITEM_ATTR.setdefault(item.attrib['name'], item.text)
                     if item.tag == 'style':
                         ITEM_STYLE.setdefault(item.attrib['name'], item.text)
+                    if item.tag == 'action':
+                        ITEM_EVENT.append(item.attrib['action'])
         self.initPageClassData(pageId)
 
     def initClassBox(self):
