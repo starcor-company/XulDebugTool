@@ -75,7 +75,7 @@ class UpdateProperty(QTreeWidget):
         self.initClassBox()
 
         self.listView = QListView(self)
-
+        self.listView.setEditTriggers(QAbstractItemView.NoEditTriggers)
         self.slm = QStringListModel()
         self.slm.setStringList(ITEM_EVENT)
         self.listView.setModel(self.slm)
