@@ -70,6 +70,9 @@ class MainWindow(BaseWindow):
         self.consoleWindow = ButtomWindow()
 
     def initUI(self):
+        self.__desktop = QApplication.desktop()
+        qRect = self.__desktop.screenGeometry()  # 设备屏幕尺寸
+        self.resize(qRect.width()*0.8, qRect.height()*0.8)
         self.resize(1400, 800)
         self.initMenuBar()
         self.initLayout()

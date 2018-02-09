@@ -275,6 +275,8 @@ class UpdateProperty(QTreeWidget):
             for item in page:
                 if item == 'selector':
                     selector = page['selector']
+                    if selector is None:
+                        return
                     for select in selector['select']:
                         if select['@class'] not in ITEM_CLASS:
                             ITEM_CLASS.append(select['@class'])
