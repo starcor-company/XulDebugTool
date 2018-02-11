@@ -16,7 +16,7 @@ import sqlite3
 
 from PyQt5.QtCore import pyqtSlot, Qt, QTimer
 from PyQt5.QtGui import QIcon
-from PyQt5.QtWidgets import QPushButton, QLabel, QTextEdit, QComboBox, QHBoxLayout, QListWidget, QWidget
+from PyQt5.QtWidgets import QPushButton, QLabel, QTextEdit, QComboBox, QHBoxLayout, QListWidget, QWidget, QApplication
 
 from XulDebugTool.ui.BaseWindow import BaseWindow
 from XulDebugTool.ui.MainWindow import MainWindow, QListWidgetItem
@@ -24,6 +24,7 @@ from XulDebugTool.ui.widget.model.database.DBManager import DBManager
 from XulDebugTool.utils.CmdExecutor import CmdExecutor
 from XulDebugTool.utils.ConfigHelper import ConfigHelper
 from XulDebugTool.utils.IconTool import IconTool
+from XulDebugTool.utils.Utils import Utils
 from XulDebugTool.utils.XulDebugServerHelper import XulDebugServerHelper
 
 
@@ -48,10 +49,17 @@ class ConnectWindow(BaseWindow):
         self.adbPort = ''
         self.xulPort = ''
 
+        self.initWindowSize()
         self.initUI()
         self.show()
         DBManager.createTable()
         ConfigHelper.initLogConfigPath()
+
+    def initWindowSize(self):
+        self.__desktop = QApplication.desktop()
+        qRect = self.__desktop.screenGeometry()
+        Utils.setWindowWidth(qRect.width())
+        Utils.setWindowHeight(qRect.height())
 
     def initUI(self):
         # 只显示关闭按钮, 不显示最大化, 最小化, 并且固定窗口大小

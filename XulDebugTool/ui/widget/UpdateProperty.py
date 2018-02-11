@@ -55,8 +55,10 @@ class UpdateProperty(QTreeWidget):
         self.viewTag = ''
         self.pageId = ''
         self.inputWidget = QTreeWidget(self)
-        self.inputWidget.setFixedHeight(900)
-        self.inputWidget.setFixedWidth(420)
+        self.inputWidget.setFixedHeight(Utils.getWindowHeight())
+        self.inputWidget.setFixedWidth(Utils.getWindowWidth())
+        self.inputWidget.setStyleSheet("QTreeWidget::item{height:"+str(Utils.getItemHeight())+"px}")
+
         self.inputWidget.setHeaderLabels(['Key', 'Value'])
 
         self.inputAttr = QTreeWidgetItem()
@@ -80,26 +82,21 @@ class UpdateProperty(QTreeWidget):
         self.slm.setStringList(ITEM_EVENT)
         self.listView.setModel(self.slm)
         self.listView.move(30, 150)
-        #
-        # self.listView.setSpacing(3)
-        # qSize = QSize(300, len(ITEM_EVENT)*33-3)
-        self.listView.resize(300, len(ITEM_EVENT)*33)
-        # self.listView.setUniformItemSizes(True)
-        # self.listView.setGridSize(qSize)
+        self.listView.resize(300, len(ITEM_EVENT)*Utils.getItemHeight())
         self.listView.clicked.connect(self.itemClickedEvent)
 
 
         STCLogger().i('init UpdateProperty')
 
     def changeExpand(self):
-        classHeight = 91;
+        classHeight = int(3.25*Utils.getItemHeight());
         if self.inputAttr.isExpanded() and self.inputAttr.child(0):
-            classHeight = classHeight + (ITEM_ATTR.__len__() + 1) * 26
+            classHeight = classHeight + (ITEM_ATTR.__len__() + 1) * Utils.getItemHeight()
         if self.inputStyle.isExpanded() and self.inputAttr.child(0):
-            classHeight = classHeight + (ITEM_STYLE.__len__() + 1) * 26
+            classHeight = classHeight + (ITEM_STYLE.__len__() + 1) * Utils.getItemHeight()
         self.ClassBox_1.move(30, classHeight)
         self.ClassBox_2.move(150, classHeight)
-        self.listView.move(30, classHeight+30)
+        self.listView.move(30, classHeight+Utils.getItemHeight())
 
     def updateUrl(self, type=None, data=None):
         num = 0
@@ -241,12 +238,12 @@ class UpdateProperty(QTreeWidget):
         self.ClassBox_1.setInsertPolicy(QComboBox.InsertAtTop)
         self.ClassBox_1.addItem("add-class")
         self.ClassBox_1.addItem("remove-class")
-        self.ClassBox_1.move(30, 90)
+        self.ClassBox_1.move(30, int(3.25*Utils.getItemHeight()))
         self.ClassBox_1.resize(150, 30)
 
         self.ClassBox_2 = QComboBox(self)
         self.ClassBox_2.setEditable(False)
-        self.ClassBox_2.move(150, 90)
+        self.ClassBox_2.move(150, int(3.25*Utils.getItemHeight()))
         self.ClassBox_2.resize(200, 30)
         self.ClassBox_2.activated.connect(self.updateClass)
         ITEM_CLASS.clear()
