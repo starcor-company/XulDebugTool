@@ -289,9 +289,7 @@ class MainWindow(BaseWindow):
 
     def addUpdate(self, value=None):
         self.inputWidget.initData(self.pageId, value)
-        self.inputWidget.updateAttrUI()
-        self.inputWidget.updateStyleUI()
-        self.inputWidget.updateEventUi()
+        self.inputWidget.updateItemUI()
         dict = json.loads(value)
         if dict['action'] == "click":
             self.chooseItemId = dict['Id']
