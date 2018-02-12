@@ -8,6 +8,7 @@ from PyQt5.QtCore import pyqtSignal
 from XulDebugTool.logcatapi.Logcat import STCLogger
 from XulDebugTool.ui.widget.BaseDialog import BaseDialog
 from XulDebugTool.ui.widget.model.database.FavoriteDB import FavoriteDB
+from XulDebugTool.utils.Utils import Utils
 from XulDebugTool.utils.XulDebugServerHelper import XulDebugServerHelper
 
 # 查询的model应该从项目支持的mode获取, 但是因为各个项目的provider写的不标准,统一固定这些方式,不是所有的provider都支持这6种
@@ -47,16 +48,16 @@ class DataQueryDialog(BaseDialog):
 
         self.requestLineEdit = QtWidgets.QLineEdit(self)
         self.requestLineEdit.move(36, 15)
-        self.requestLineEdit.resize(300, 24)
+        self.requestLineEdit.resize(300, Utils.getItemHeight())
 
         self.modeLable = QtWidgets.QLabel(self)
-        self.modeLable.move(36, 44)
-        self.modeLable.resize(130, 24)
+        self.modeLable.move(36, 50)
+        self.modeLable.resize(130, Utils.getItemHeight())
         self.modeLable.setText('Mode:')
 
         self.modeComboBox = QtWidgets.QComboBox(self)
-        self.modeComboBox.move(187, 44)
-        self.modeComboBox.resize(150, 24)
+        self.modeComboBox.move(187, 50)
+        self.modeComboBox.resize(150, Utils.getItemHeight())
         self.modeComboBox.setEditable(False)
 
         # 查询的mode应该从项目支持的mode获取
@@ -73,7 +74,7 @@ class DataQueryDialog(BaseDialog):
 
         self.requestButton = QtWidgets.QPushButton(self)
         self.requestButton.move(350, 15)
-        self.requestButton.resize(90, 24)
+        self.requestButton.resize(90, Utils.getItemHeight())
         self.requestButton.setText('Request')
         self.requestButton.clicked.connect(self.onBtnClicked)
 
@@ -89,13 +90,13 @@ class DataQueryDialog(BaseDialog):
                     row += 1
 
         self.tableView = QtWidgets.QTableWidget(row,2,self)
-        self.tableView.move(36, 80)
-        self.tableView.resize(300, 24 * (row+1))
+        self.tableView.move(36, 3*Utils.getItemHeight())
+        self.tableView.resize(300, Utils.getItemHeight() * (row+1))
         self.tableView.setColumnWidth(0, 150)
         self.tableView.setColumnWidth(1, 150)
-        self.tableView.horizontalHeader().setFixedHeight(24)
+        self.tableView.horizontalHeader().setFixedHeight(Utils.getItemHeight())
         self.tableView.horizontalHeader().setStyleSheet("QHeaderView::section{background:lightblue;}");
-        self.tableView.verticalHeader().setDefaultSectionSize(24)
+        self.tableView.verticalHeader().setDefaultSectionSize(Utils.getItemHeight())
         self.tableView.setAlternatingRowColors(True)
         self.tableView.setHorizontalHeaderLabels(['where', 'is'])
         self.tableView.setFrameStyle(QtWidgets.QTableWidget.NoFrame)
@@ -148,9 +149,9 @@ class DataQueryDialog(BaseDialog):
                 self.tableView.setItem(row, 1, QtWidgets.QTableWidgetItem())
                 # 加上表头,不超过7行,超过滚动条显示
                 if (self.currentRowCount + 2) <= 7:
-                    self.tableView.resize(300, 24 * (self.currentRowCount + 2))
+                    self.tableView.resize(300, Utils.getItemHeight() * (self.currentRowCount + 2))
                 else:
-                    self.tableView.resize(322, 24 * 7)
+                    self.tableView.resize(322, Utils.getItemHeight() * 7)
         url = self.url + self.__getQueryParam()
         self.requestLineEdit.setText(url)
 

@@ -70,10 +70,7 @@ class MainWindow(BaseWindow):
         self.consoleWindow = ButtomWindow()
 
     def initUI(self):
-        self.__desktop = QApplication.desktop()
-        qRect = self.__desktop.screenGeometry()  # 设备屏幕尺寸
-        self.resize(qRect.width()*0.8, qRect.height()*0.8)
-        self.resize(1400, 800)
+        self.resize(int(Utils.getWindowWidth()*0.8), int(Utils.getWindowHeight()*0.8))
         self.initMenuBar()
         self.initLayout()
         super().initWindow()
@@ -292,10 +289,7 @@ class MainWindow(BaseWindow):
 
     def addUpdate(self, value=None):
         self.inputWidget.initData(self.pageId, value)
-        # self.propertyEditor.initData(value)
-        self.inputWidget.updateAttrUI()
-        self.inputWidget.updateStyleUI()
-        self.inputWidget.updateEventUi()
+        self.inputWidget.updateItemUI()
         dict = json.loads(value)
         if dict['action'] == "click":
             self.chooseItemId = dict['Id']
@@ -329,15 +323,10 @@ class MainWindow(BaseWindow):
 
         checkGrouplayout = QHBoxLayout()
         checkGrouplayout.addWidget(self.skipPropCheckBox)
-        checkGrouplayout.setSpacing(10)
         checkGrouplayout.addWidget(self.withChildrenCheckBox)
-        checkGrouplayout.setSpacing(10)
         checkGrouplayout.addWidget(self.withBindingDataCheckBox)
-        checkGrouplayout.setSpacing(10)
         checkGrouplayout.addWidget(self.withPositionCheckBox)
-        checkGrouplayout.addStretch(10)
         checkGrouplayout.addWidget(self.withSelectorCheckBox)
-        checkGrouplayout.addStretch(10)
         self.groupBox.setLayout(checkGrouplayout)
         return self.groupBox
 
@@ -425,15 +414,15 @@ class MainWindow(BaseWindow):
     def rightSiderClick(self, index):
         # 两次单击同一个tabBar时显示隐藏内容区域
         if self.rightSiderTabBar.tabText(index) == self.rightSiderClickInfo:
-            if self.rightSiderTabWidget.width() == 32:
-                self.rightSiderTabWidget.setMaximumWidth(1800)
-                self.rightSiderTabWidget.setMinimumWidth(32)
+            if self.rightSiderTabWidget.width() == Utils.getItemHeight():
+                self.rightSiderTabWidget.setMaximumWidth(Utils.getWindowWidth())
+                self.rightSiderTabWidget.setMinimumWidth(Utils.getItemHeight())
             else:
-                self.rightSiderTabWidget.setFixedWidth(32)
+                self.rightSiderTabWidget.setFixedWidth(Utils.getItemHeight())
         else:
-            if self.rightSiderTabWidget.width() == 32:
-                self.rightSiderTabWidget.setMaximumWidth(1800)
-                self.rightSiderTabWidget.setMinimumWidth(32)
+            if self.rightSiderTabWidget.width() == Utils.getItemHeight():
+                self.rightSiderTabWidget.setMaximumWidth(Utils.getWindowWidth())
+                self.rightSiderTabWidget.setMinimumWidth(Utils.getItemHeight())
         self.rightSiderClickInfo = self.rightSiderTabBar.tabText(index)
 
     def clearCache(self):
@@ -578,14 +567,6 @@ class MainWindow(BaseWindow):
         STCLogger().i('request url:' + url)
         self.browser.load(QUrl(url))
         self.statusBar().showMessage(url)
-
-    # def fillPropertyEditor(self, data):
-    #     self.propertyEditor.clearProperty()
-    #     self.qObject = QObject()
-    #     if isinstance(data, dict):
-    #         for k, v in data.items():
-    #             self.convertProperty(k, v)
-    #     self.propertyEditor.addProperty(self.qObject)
 
     def convertProperty(self, k, v):
         """递归的将多层属性字典转成单层的."""

@@ -55,8 +55,10 @@ class UpdateProperty(QTreeWidget):
         self.viewTag = ''
         self.pageId = ''
         self.inputWidget = QTreeWidget(self)
-        self.inputWidget.setFixedHeight(900)
-        self.inputWidget.setFixedWidth(420)
+        self.inputWidget.setFixedHeight(Utils.getWindowHeight())
+        self.inputWidget.setFixedWidth(Utils.getWindowWidth())
+        self.inputWidget.setStyleSheet("QTreeWidget::item{height:"+str(Utils.getItemHeight())+"px}")
+
         self.inputWidget.setHeaderLabels(['Key', 'Value'])
 
         self.inputAttr = QTreeWidgetItem()
@@ -80,46 +82,43 @@ class UpdateProperty(QTreeWidget):
         self.slm.setStringList(ITEM_EVENT)
         self.listView.setModel(self.slm)
         self.listView.move(30, 150)
-        #
-        # self.listView.setSpacing(3)
-        # qSize = QSize(300, len(ITEM_EVENT)*33-3)
-        self.listView.resize(300, len(ITEM_EVENT)*33)
-        # self.listView.setUniformItemSizes(True)
-        # self.listView.setGridSize(qSize)
+        self.listView.resize(300, len(ITEM_EVENT)*Utils.getItemHeight())
         self.listView.clicked.connect(self.itemClickedEvent)
-
-
         STCLogger().i('init UpdateProperty')
 
     def changeExpand(self):
-        classHeight = 91;
+        classHeight = int(3.25*Utils.getItemHeight())
         if self.inputAttr.isExpanded() and self.inputAttr.child(0):
-            classHeight = classHeight + (ITEM_ATTR.__len__() + 1) * 26
+            classHeight = classHeight + (ITEM_ATTR.__len__() + 1) * Utils.getItemHeight()
         if self.inputStyle.isExpanded() and self.inputAttr.child(0):
-            classHeight = classHeight + (ITEM_STYLE.__len__() + 1) * 26
+            classHeight = classHeight + (ITEM_STYLE.__len__() + 1) * Utils.getItemHeight()
         self.ClassBox_1.move(30, classHeight)
         self.ClassBox_2.move(150, classHeight)
-        self.listView.move(30, classHeight+30)
+        self.listView.move(30, classHeight+Utils.getItemHeight())
 
-    def updateUrl(self, type=None, data=None):
+    def updateAttrUrl(self):
         num = 0
-        for key, value in data.items():
-            if type == 'set-attr':
-                attr = self.inputAttr.child(num).text(1)
-                if attr != data[self.inputAttr.child(num).text(0)]:
-                    XulDebugServerHelper.updateUrl(type, self.viewId, key, attr)
-            elif type == 'set-style':
-                style = self.inputStyle.child(num).text(1)
-                if style != data[self.inputStyle.child(num).text(0)]:
-                    XulDebugServerHelper.updateUrl(type, self.viewId, key, style)
-            num += 1
-        if num < 1:
+        if ITEM_ATTR.__len__() == 0:
             return
+        for key, value in ITEM_ATTR.items():
+            attr = self.inputAttr.child(num).text(1)
+            if attr != ITEM_ATTR[self.inputAttr.child(num).text(0)]:
+                ITEM_ATTR[key] = attr
+                XulDebugServerHelper.updateUrl('set-attr', self.viewId, key, attr)
+            num += 1
+        self.updateAddProperty('set-attr', num, self.inputAttr)
 
-        if type == 'set-attr':
-            self.updateAddProperty(type, num, self.inputAttr)
-        elif type == 'set-style':
-            self.updateAddProperty(type, num, self.inputStyle)
+    def updateStyleUrl(self):
+        if ITEM_STYLE.__len__() == 0:
+            return
+        num2 = 0
+        for key, value in ITEM_STYLE.items():
+            style = self.inputStyle.child(num2).text(1)
+            if style != ITEM_STYLE[self.inputStyle.child(num2).text(0)]:
+                ITEM_STYLE[key] = style
+                XulDebugServerHelper.updateUrl('set-style', self.viewId, key, style)
+            num2 += 1
+        self.updateAddProperty('set-style', num2, self.inputStyle)
 
     def updateAddProperty(self, type, num, root):
         if root.child(num) is None:
@@ -148,32 +147,23 @@ class UpdateProperty(QTreeWidget):
         STCLogger().i('updateAddProperty:'+item.text(0)+','+item.text(1))
         self.addQTreeWidgetItem(root)
 
-    def updateAttrUI(self):
+    def updateItemUI(self):
         if self.sameFlag:
             return
-        pos = 0
-        for key, value in ITEM_ATTR.items():
-            item = self.getQTreeWidgetItem(pos, key, value)
+        for pos1, item1 in enumerate(ITEM_ATTR.items()):
+            item = self.getQTreeWidgetItem(pos1, item1[0], item1[1])
             self.inputAttr.addChild(item)
-            pos += 1
+        for pos2, item2 in enumerate(ITEM_STYLE.items()):
+            item = self.getQTreeWidgetItem(pos2, item2[0], item2[1])
+            self.inputStyle.addChild(item)
         if self.viewTag in ITEM_TAG:
             self.addQTreeWidgetItem(self.inputAttr)
-        self.inputWidget.itemChanged.connect(lambda: self.updateUrl('set-attr', ITEM_ATTR))
-
-    def updateStyleUI(self):
-        if self.sameFlag:
-            return
-        pos = 0
-        for key, value in ITEM_STYLE.items():
-            item = self.getQTreeWidgetItem(pos, key, value)
-            self.inputStyle.addChild(item)
-            pos += 1
-        if self.viewTag in ITEM_TAG:
             self.addQTreeWidgetItem(self.inputStyle)
-        self.inputWidget.itemChanged.connect(lambda: self.updateUrl('set-style', ITEM_STYLE))
+
+        self.inputWidget.itemChanged.connect(self.updateAttrUrl)
+        self.inputWidget.itemChanged.connect(self.updateStyleUrl)
         self.changeExpand()
 
-    def updateEventUi(self):
         self.slm.setStringList(ITEM_EVENT)
         self.listView.setModel(self.slm)
         self.listView.resize(300, len(ITEM_EVENT)*30)
@@ -204,6 +194,7 @@ class UpdateProperty(QTreeWidget):
         addItem.setBackground(1, add_color)
         addItem.setFlags(Qt.ItemIsEnabled | Qt.ItemIsSelectable | Qt.ItemIsEditable)
         root.addChild(addItem)
+        self.changeExpand()
 
     def initData(self, pageId, data):
         dict = json.loads(data)
@@ -241,12 +232,12 @@ class UpdateProperty(QTreeWidget):
         self.ClassBox_1.setInsertPolicy(QComboBox.InsertAtTop)
         self.ClassBox_1.addItem("add-class")
         self.ClassBox_1.addItem("remove-class")
-        self.ClassBox_1.move(30, 90)
+        self.ClassBox_1.move(30, int(3.25*Utils.getItemHeight()))
         self.ClassBox_1.resize(150, 30)
 
         self.ClassBox_2 = QComboBox(self)
         self.ClassBox_2.setEditable(False)
-        self.ClassBox_2.move(150, 90)
+        self.ClassBox_2.move(150, int(3.25*Utils.getItemHeight()))
         self.ClassBox_2.resize(200, 30)
         self.ClassBox_2.activated.connect(self.updateClass)
         ITEM_CLASS.clear()
@@ -261,8 +252,6 @@ class UpdateProperty(QTreeWidget):
             for select in selector['select']:
                 if select['@class'] not in ITEM_CLASS:
                     ITEM_CLASS.append(select['@class'])
-
-
 
     def initPageClassData(self, pageId):
         if self.pageId == pageId:
