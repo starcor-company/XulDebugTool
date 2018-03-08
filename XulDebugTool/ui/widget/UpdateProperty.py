@@ -98,8 +98,6 @@ class UpdateProperty(QTreeWidget):
 
     def updateAttrUrl(self):
         num = 0
-        if ITEM_ATTR.__len__() == 0:
-            return
         for key, value in ITEM_ATTR.items():
             attr = self.inputAttr.child(num).text(1)
             if attr != ITEM_ATTR[self.inputAttr.child(num).text(0)]:
@@ -109,8 +107,6 @@ class UpdateProperty(QTreeWidget):
         self.updateAddProperty('set-attr', num, self.inputAttr)
 
     def updateStyleUrl(self):
-        if ITEM_STYLE.__len__() == 0:
-            return
         num2 = 0
         for key, value in ITEM_STYLE.items():
             style = self.inputStyle.child(num2).text(1)
@@ -128,7 +124,7 @@ class UpdateProperty(QTreeWidget):
             return
         if type == 'set-attr':
             for key, value in ITEM_ATTR.items():
-                if key == str(item.text(0)) or str(item.text(0)) not in ATTR_AREA:
+                if (key == str(item.text(0)) or str(item.text(0)) not in ATTR_AREA) and not str(item.text(0)).startswith("img"):
                     item.setText(0, '')
                     item.setText(1, '')
                     return
