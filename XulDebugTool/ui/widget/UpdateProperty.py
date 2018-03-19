@@ -125,6 +125,8 @@ class UpdateProperty(QTreeWidget):
         if type == 'set-attr':
             for key, value in ITEM_ATTR.items():
                 if (key == str(item.text(0)) or str(item.text(0)) not in ATTR_AREA) and not str(item.text(0)).startswith("img"):
+                    if str(item.text(0)) in STYLE_AREA:
+                        QMessageBox.critical(self, "提示", self.tr("您输入的为style属性，请在style栏内输入。"))
                     item.setText(0, '')
                     item.setText(1, '')
                     return
@@ -132,6 +134,8 @@ class UpdateProperty(QTreeWidget):
         elif type == 'set-style':
             for key, value in ITEM_STYLE.items():
                 if key == str(item.text(0)) or str(item.text(0)) not in STYLE_AREA:
+                    if str(item.text(0)) in ATTR_AREA:
+                        QMessageBox.critical(self, "提示", self.tr("您输入的为attr属性，请在attr栏内输入。"))
                     item.setText(0, '')
                     item.setText(1, '')
                     return
