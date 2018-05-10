@@ -250,7 +250,7 @@ class UpdateProperty(QTreeWidget):
             if selector == '':
                 return
             for select in selector['select']:
-                if select['@class'] not in ITEM_CLASS:
+                if '@class' in select.keys() and select['@class'] not in ITEM_CLASS:
                     ITEM_CLASS.append(select['@class'])
 
     def initPageClassData(self, pageId):
@@ -264,10 +264,10 @@ class UpdateProperty(QTreeWidget):
             for item in page:
                 if item == 'selector':
                     selector = page['selector']
-                    if selector is None:
+                    if selector is None or 'select' not in selector.keys():
                         return
                     for select in selector['select']:
-                        if select['@class'] not in ITEM_CLASS:
+                        if '@class' in select.keys() and select['@class'] not in ITEM_CLASS:
                             ITEM_CLASS.append(select['@class'])
 
         for name in ITEM_CLASS:
