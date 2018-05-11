@@ -140,7 +140,8 @@ class ConnectWindow(BaseWindow):
             # 数据库文件数据类型文档需添加
             conn = sqlite3.connect('XulDebugTool.db')
             cursor = conn.cursor()
-            cursor.execute("delete from device where name = \'" + text + "\'")
+            if text != '':
+                cursor.execute("delete from device where name = \'" + text + "\'")
             conn.commit()
         except Exception:
             print('onDeleteComBoxItem error')
@@ -293,6 +294,7 @@ class ConnectWindow(BaseWindow):
             cursor = conn.cursor()
             cursor.execute('select * from device')
             result = cursor.fetchall()
+            result.reverse()
         except Exception:
             return []
         finally:
@@ -308,6 +310,7 @@ class ConnectWindow(BaseWindow):
             conn = sqlite3.connect('XulDebugTool.db')
             cursor = conn.cursor()
             if self.ip != '':
+                cursor.execute("delete from device where name = \'" + device + "\'")
                 cursor.execute('insert into device (name) values (\'' + device + '\')')
             conn.commit()
         except Exception as e:
