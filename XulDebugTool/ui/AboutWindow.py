@@ -28,7 +28,7 @@ class AboutWindow(BaseWindow):
         self.versionNumber = QtWidgets.QLabel(self)
         self.versionNumber.setGeometry(QtCore.QRect(50, 230, 300, 21))
         self.versionNumber.setObjectName("label_4")
-        self.versionNumber.setText("版本号：1.0 beta1") #版本号应该写到版本配置文件里面去，从哪里读取
+        self.versionNumber.setText("版本号：1.3 beta") #版本号应该写到版本配置文件里面去，从哪里读取
 
     def initCompanyAddress(self):
         self.company = QtWidgets.QPushButton(self)

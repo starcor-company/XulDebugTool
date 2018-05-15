@@ -1,6 +1,5 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-import string
 from urllib.parse import quote
 
 import urllib3
@@ -31,8 +30,7 @@ class XulDebugServerHelper(object):
             try:
                 url = XulDebugServerHelper.HOST + XulDebugServerHelper.__LIST_PAGE
                 http = urllib3.PoolManager()
-                newUrl = quote(url, safe=string.printable)
-                r = http.request('GET', newUrl)
+                r = http.request('GET', url)
             except Exception as e:
                 STCLogger().e(e)
                 return
@@ -44,11 +42,9 @@ class XulDebugServerHelper(object):
             raise ValueError('Host is empty!')
         else:
             try:
-                url = XulDebugServerHelper.HOST + XulDebugServerHelper.__GET_LAYOUT + '/' + pageId
+                url = XulDebugServerHelper.HOST + quote(XulDebugServerHelper.__GET_LAYOUT + '/' + pageId)
                 http = urllib3.PoolManager()
-                newUrl = quote(url, safe=string.printable)
-                r = http.request('GET', newUrl,
-                                 fields={'skip-prop': skipProp,
+                r = http.request('GET', url, fields={'skip-prop': skipProp,
                                          'with-binding-data': withBindingData,
                                          'with-position': withPosition,
                                          'with-selector': withSelector})
@@ -73,8 +69,7 @@ class XulDebugServerHelper(object):
             try:
                 url = XulDebugServerHelper.HOST + XulDebugServerHelper.__LIST_USER_OBJECTS
                 http = urllib3.PoolManager()
-                newUrl = quote(url, safe=string.printable)
-                r = http.request('GET', newUrl)
+                r = http.request('GET', url)
             except Exception as e:
                 STCLogger().e(e)
                 return
@@ -86,10 +81,9 @@ class XulDebugServerHelper(object):
             raise ValueError('Host is empty!')
         else:
             try:
-                url = XulDebugServerHelper.HOST + XulDebugServerHelper.__GET_USER_OBJECT + '/' + objectId
+                url = XulDebugServerHelper.HOST + quote(XulDebugServerHelper.__GET_USER_OBJECT + '/' + objectId)
                 http = urllib3.PoolManager()
-                newUrl = quote(url, safe=string.printable)
-                r = http.request('GET', newUrl)
+                r = http.request('GET', url)
             except Exception as e:
                 STCLogger().e(e)
                 return
@@ -101,11 +95,10 @@ class XulDebugServerHelper(object):
             raise ValueError('Host is empty!')
         else:
             try:
-                url = XulDebugServerHelper.HOST + type + '/' + id + '/' + key + '/' + value
+                url = XulDebugServerHelper.HOST + quote(type + '/' + id + '/' + key + '/' + value)
                 http = urllib3.PoolManager()
-                newUrl = quote(url, safe=string.printable)
                 STCLogger().i("updateUrl = " + url)
-                r = http.request('GET', newUrl)
+                r = http.request('GET', url)
             except Exception as e:
                 STCLogger().e(e)
                 return
@@ -119,12 +112,12 @@ class XulDebugServerHelper(object):
             try:
                 url = XulDebugServerHelper.HOST + XulDebugServerHelper.__CLEAR_ALL_CACHES
                 http = urllib3.PoolManager()
-                newUrl = quote(url,safe=string.printable)
-                r = http.request('GET',newUrl)
+                STCLogger().i("clearAllCaches = " + url)
+                r = http.request('GET', url)
             except Exception as e:
                 STCLogger().e(e)
                 return
-            return  r
+            return r
 
     @staticmethod
     def focusChooseItemUrl(id):
@@ -134,9 +127,8 @@ class XulDebugServerHelper(object):
             try:
                 url = XulDebugServerHelper.HOST + XulDebugServerHelper.__REQUEST_FOCUS + '/' + id
                 http = urllib3.PoolManager()
-                newUrl = quote(url, safe=string.printable)
-                STCLogger().i("updateUrl = " + url)
-                r = http.request('GET', newUrl)
+                STCLogger().i("focusChooseItemUrl = " + url)
+                r = http.request('GET', url)
             except Exception as e:
                 STCLogger().e(e)
                 return
@@ -150,9 +142,8 @@ class XulDebugServerHelper(object):
             try:
                 url = XulDebugServerHelper.HOST + XulDebugServerHelper.__GET_SELECTOR
                 http = urllib3.PoolManager()
-                newUrl = quote(url, safe=string.printable)
-                STCLogger().i("updateUrl = " + url)
-                r = http.request('GET', newUrl)
+                STCLogger().i("getAllSelector = " + url)
+                r = http.request('GET', url)
             except Exception as e:
                 STCLogger().e(e)
                 return
@@ -168,11 +159,10 @@ class XulDebugServerHelper(object):
             raise ValueError('Host is empty!')
         else:
             try:
-                url = XulDebugServerHelper.HOST + type + '/' + id + '/' + className
+                url = XulDebugServerHelper.HOST + quote(type + '/' + id + '/' + className)
                 http = urllib3.PoolManager()
-                newUrl = quote(url, safe=string.printable)
-                STCLogger().i("updateUrl = " + url)
-                r = http.request('GET', newUrl)
+                STCLogger().i("updateClassUrl = " + url)
+                r = http.request('GET', url)
             except Exception as e:
                 STCLogger().e(e)
                 return
@@ -184,11 +174,10 @@ class XulDebugServerHelper(object):
             raise ValueError('Host is empty!')
         else:
             try:
-                url = XulDebugServerHelper.HOST + XulDebugServerHelper.__FIRE_EVENT + '/' + id + '/' + action
+                url = XulDebugServerHelper.HOST + quote(XulDebugServerHelper.__FIRE_EVENT + '/' + id + '/' + action)
                 http = urllib3.PoolManager()
-                newUrl = quote(url, safe=string.printable)
-                STCLogger().i("updateUrl = " + url)
-                r = http.request('GET', newUrl)
+                STCLogger().i("fireItemEvent = " + url)
+                r = http.request('GET', url)
             except Exception as e:
                 STCLogger().e(e)
                 return r
