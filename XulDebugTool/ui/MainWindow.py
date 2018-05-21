@@ -105,19 +105,33 @@ class MainWindow(BaseWindow):
         findAction.setShortcut('Ctrl+F')
         findAction.triggered.connect(self.findActionClick)
         editMenu.addAction(findAction)
+
         focusItemAction = QAction(IconTool.buildQIcon('focus.png'), '&Focus Item', self)
         focusItemAction.triggered.connect(self.focusChooseItem)
         editMenu.addAction(focusItemAction)
+        self.chooseItemType = ''
+        self.chooseItemId = ''
+
+        settingMenu = menuBar.addMenu('Setting')
+        autoLoginAction = QAction(IconTool.buildQIcon('setting.png'), '&Auto Login', self)
+        autoLoginAction.setShortcutContext(Qt.ApplicationShortcut)
+        autoLoginAction.triggered.connect(self.setAutoState)
+        settingMenu.addAction(autoLoginAction)
 
         helpMenu = menuBar.addMenu('Help')
         aboutAction = QAction(IconTool.buildQIcon('about.png'), '&About', self)
-        helpMenu.addAction(aboutAction)
         aboutAction.triggered.connect(self.openAboutWindow)
+        helpMenu.addAction(aboutAction)
 
     def openAboutWindow(self):
         print('open about')
         self.aboutWindow = AboutWindow()
         self.aboutWindow.show()
+
+    def setAutoState(self):
+        reply = QMessageBox.question(self, "提示", "是否取消自动登录功能", QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
+        if reply == QMessageBox.Yes:
+            Utils.setAutoLoginState(False)
 
     def restartProgram(self):
         from XulDebugTool.ui.ConnectWindow import ConnectWindow  # 不应该在这里导入，但是放在前面会有问题
