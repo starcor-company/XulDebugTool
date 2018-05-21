@@ -3,6 +3,8 @@
 
 
 import json
+import sqlite3
+
 import xmltodict
 from PyQt5.QtWebEngineWidgets import QWebEngineScript
 from lxml import etree
@@ -65,3 +67,31 @@ class Utils(object):
     @staticmethod
     def getItemHeight():
         return Utils.itemHeight
+
+    @staticmethod
+    def setAutoLoginState(loginState):
+        try:
+            conn = sqlite3.connect('XulDebugTool.db')
+            cursor = conn.cursor()
+            cursor.execute("delete from login")
+            cursor.execute("insert into login (name) values ('" + str(loginState) + "')")
+            conn.commit()
+        except Exception as e:
+            print(e)
+        finally:
+            cursor.close()
+            conn.close()
+
+    @staticmethod
+    def getAutoLoginState():
+        try:
+            conn = sqlite3.connect('XulDebugTool.db')
+            cursor = conn.cursor()
+            cursor.execute('select * from login')
+            result = cursor.fetchone()
+        except Exception:
+            return []
+        finally:
+            cursor.close()
+            conn.close()
+        return result

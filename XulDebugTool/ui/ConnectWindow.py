@@ -16,7 +16,8 @@ import sqlite3
 
 from PyQt5.QtCore import pyqtSlot, Qt, QTimer
 from PyQt5.QtGui import QIcon
-from PyQt5.QtWidgets import QPushButton, QLabel, QTextEdit, QComboBox, QHBoxLayout, QListWidget, QWidget, QApplication
+from PyQt5.QtWidgets import QPushButton, QLabel, QTextEdit, QComboBox, QHBoxLayout, QListWidget, QWidget, QApplication, \
+    QCheckBox
 
 from XulDebugTool.ui.BaseWindow import BaseWindow
 from XulDebugTool.ui.MainWindow import MainWindow, QListWidgetItem
@@ -100,8 +101,7 @@ class ConnectWindow(BaseWindow):
             self.ipComboBox.setItemText(pos, device[0])
 
         self.connectButton = QPushButton('connect', self)
-        self.connectButton.move(180, 90)
-        self.connectButton.setGeometry(180, 90, 120, 25)
+        self.connectButton.setGeometry(150, 90, 120, 25)
         self.connectButton.clicked.connect(self.onConnectClick)
 
         self.detailLabel = QPushButton(self)
@@ -114,12 +114,30 @@ class ConnectWindow(BaseWindow):
         self.detailEdit = QTextEdit(self)
         self.detailEdit.move(25, 150)
         self.detailEdit.resize(420, 180)
+
+        self.autoLogin = QCheckBox('自动登录', self)
+        self.autoLogin.move(350, 88)
+        self.autoLogin.clicked.connect(self.changeAutoLoginState)
+        self.initAutoLogin()
+
         super().initWindow()
 
     def getCmdExecutor(self, finishCallback):
         executor = CmdExecutor()
         executor.setFinishCallback(finishCallback)
         return executor
+
+    def changeAutoLoginState(self):
+        print(self.autoLogin.isChecked())
+        Utils.setAutoLoginState(self.autoLogin.isChecked())
+
+    def initAutoLogin(self):
+        state = Utils.getAutoLoginState()
+        if state and "True" == state[0]:
+            self.autoLogin.setChecked(True)
+            self.onConnectClick()
+        else:
+            self.autoLogin.setChecked(False)
 
     def ComboBoxItem(self, pos, ip_src):
         qWidget = QWidget()
