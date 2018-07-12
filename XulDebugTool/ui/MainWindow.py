@@ -538,7 +538,7 @@ class MainWindow(BaseWindow):
         if r:
             userObjectNodes = Utils.xml2json(r.data, 'objects')
             # 如果只有一个userObject,转化出来的json不是数据.分开处理
-            if isinstance(userObjectNodes['object'], list):
+            if userObjectNodes and isinstance(userObjectNodes['object'], list):
                 for i, o in enumerate(userObjectNodes['object']):
                     # 把userObject加到User-Object节点下
                     row = QStandardItem(o['@name'])
