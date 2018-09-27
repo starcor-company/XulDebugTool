@@ -277,12 +277,12 @@ class UpdateProperty(QTreeWidget):
                     selector = page['selector']
                     if selector is None or 'select' not in selector.keys():
                         return
-                    if selector.__len__() == 1 and '@class' in selector['select'].keys():
-                        ITEM_CLASS.append(selector['select']['@class'])
-                        return
-                    for select in selector['select']:
-                        if '@class' in select.keys() and select['@class'] not in ITEM_CLASS:
-                            ITEM_CLASS.append(select['@class'])
+                    try:
+                        for select in selector['select']:
+                            if '@class' in select.keys() and select['@class'] not in ITEM_CLASS:
+                                ITEM_CLASS.append(select['@class'])
+                    except:
+                        print("select exception!")
 
         for name in ITEM_CLASS:
             self.ClassBox_2.addItem(name)
