@@ -11,12 +11,22 @@ window.onload = function () {
             item.style.textDecoration = "underline";
             item.style.cursor = "pointer";
         }
+        if (item.children[0].innerText == "url") {
+            item.onclick = urlclick;
+            item.style.textDecoration = "underline";
+            item.style.cursor = "pointer";
+        }
     }
 
     function objclick() {
         var id = this.children[1].innerText
         var xml = document.getElementById("webkit-xml-viewer-source-xml").innerHTML
         window.bridge.strValue = JSON.stringify({"action":"click","Id":id,"xml":xml});
+    }
+
+    function urlclick() {
+        var url = this.children[1].innerText
+        window.bridge.strValue = JSON.stringify({"action":"load","url":url})
     }
 
     // function findParentByClass(node,clazzName) {

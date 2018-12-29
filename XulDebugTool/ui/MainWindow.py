@@ -36,12 +36,14 @@ from XulDebugTool.webprocess.WebShareObject import WebShareObject
 
 ROOT_ITEM_PAGE = 'Page'
 ROOT_ITEM_USER_OBJECT = 'User-Object'
+ROOT_ITEM_PROVIDER_REQUESTS = 'Provider-Requests'
 ROOT_ITEM_PLUGIN = 'Plugin'
 CHILD_ITEM_DATA_SERVICE = 'DataService'
 
 # Model树第一层的节点类型
 ITEM_TYPE_PAGE_ROOT = 'pageRoot'
 ITEM_TYPE_USER_OBJECT_ROOT = 'userObjectRoot'
+ITEM_TYPE_PROVIDER_REQUESTS_ROOT = 'providerRequestsRoot'
 ITEM_TYPE_PLUGIN_ROOT = 'pluginRoot'
 
 # Model树第二层的节点类型
@@ -158,9 +160,11 @@ class MainWindow(BaseWindow):
         self.userobjectItem = QStandardItem(ROOT_ITEM_USER_OBJECT)
         self.userobjectItem.type = ITEM_TYPE_USER_OBJECT_ROOT
         self.buildUserObjectItem()
+        self.providerRequestItem = QStandardItem(ROOT_ITEM_PROVIDER_REQUESTS)
+        self.providerRequestItem.type = ITEM_TYPE_PROVIDER_REQUESTS_ROOT
         self.pluginItem = QStandardItem(ROOT_ITEM_PLUGIN)
         self.pluginItem.type = ITEM_TYPE_PLUGIN_ROOT
-        self.treeModel.appendColumn([self.pageItem, self.userobjectItem, self.pluginItem])
+        self.treeModel.appendColumn([self.pageItem, self.userobjectItem, self.providerRequestItem, self.pluginItem])
         self.treeModel.setHeaderData(0, Qt.Horizontal, 'Model')
 
         self.treeView = QTreeView()
@@ -308,6 +312,10 @@ class MainWindow(BaseWindow):
         if dict['action'] == "click":
             self.chooseItemId = dict['Id']
             self.chooseItemType = Utils.findNodeById(dict['Id'], dict['xml']).tag
+        elif dict['action'] == "load":
+            self.browser.load(QUrl(dict['url']))
+        else:
+            pass
 
     def focusChooseItem(self):
         if self.chooseItemType in ('area', 'item'):
@@ -483,6 +491,9 @@ class MainWindow(BaseWindow):
         elif item.type == ITEM_TYPE_USER_OBJECT_ROOT:  # 树第一层,userObject节点
             self.buildUserObjectItem()
             self.url = XulDebugServerHelper.HOST + 'list-user-objects'
+            self.showXulDebugData(self.url)
+        elif item.type == ITEM_TYPE_PROVIDER_REQUESTS_ROOT:  # 树第一层,Provider Request节点
+            self.url = XulDebugServerHelper.HOST + 'list-provider-requests'
             self.showXulDebugData(self.url)
         elif item.type == ITEM_TYPE_PLUGIN_ROOT:  # 树第一层,plugin节点
             pass
