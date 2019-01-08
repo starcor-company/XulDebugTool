@@ -88,15 +88,18 @@ class MainWindow(BaseWindow):
         settingAction.setShortcut('Ctrl+Shift+S')
         settingAction.setShortcutContext(Qt.ApplicationShortcut)
         settingAction.triggered.connect(lambda: STCLogger().d('setting'))
-        clearCacheAction = QAction(IconTool.buildQIcon('clearCache.png'),'&ClearCache',self);
-        clearCacheAction.setShortcut('Ctrl+Alt+C');
+        clearCacheAction = QAction(IconTool.buildQIcon('clearCache.png'), '&ClearCache', self)
+        clearCacheAction.setShortcut('Ctrl+Alt+C')
         clearCacheAction.setShortcutContext(Qt.ApplicationShortcut)
         clearCacheAction.triggered.connect(self.clearCache)
-        settingLogPathAction = QAction(IconTool.buildQIcon('path.png'),'&LogPath',self);
+        clearSearchHistoryAction = QAction(IconTool.buildQIcon('clearCache.png'), '&ClearSearchHistory', self)
+        clearSearchHistoryAction.triggered.connect(self.clearSearchHistory)
+        settingLogPathAction = QAction(IconTool.buildQIcon('path.png'), '&LogPath', self)
         settingLogPathAction.triggered.connect(self.setLogPath)
         fileMenu.addAction(disConnectAction)
         fileMenu.addAction(clearCacheAction)
         fileMenu.addAction(settingLogPathAction)
+        fileMenu.addAction(clearSearchHistoryAction)
         # fileMenu.addAction(settingAction)
         # fileMenu.addAction(showLogAction)
 
@@ -124,6 +127,10 @@ class MainWindow(BaseWindow):
         aboutAction = QAction(IconTool.buildQIcon('about.png'), '&About', self)
         aboutAction.triggered.connect(self.openAboutWindow)
         helpMenu.addAction(aboutAction)
+
+    def closeEvent(self, e):
+        self.settings.setValue('searchHistory', self.searchHistory)
+        e.accept()
 
     def openAboutWindow(self):
         print('open about')
@@ -353,20 +360,34 @@ class MainWindow(BaseWindow):
         return self.groupBox
 
     def initSearchView(self):
+        self.settings = QSettings('XulDebugTool')
+        self.searchHistory = self.settings.value('searchHistory', [])
+
         self.searchWidget = QWidget()
         self.searchWidget.setStyleSheet(".QWidget{border:1px solid rgb(220, 220, 220)}")
         searchPageLayout = QHBoxLayout()
+        self.searchLineEdit = QLineEdit()
+
         self.searchIcon = QAction(self)
-        self.searchIcon.setIcon(IconTool.buildQIcon('find.png'))
+        self.searchIcon.setIcon(IconTool.buildQIcon('find_h.png'))
+
+        self.searchMenu = QMenu(self)
+        for text in self.searchHistory:
+            self.action = QAction(text, self, triggered=lambda: self.searchLineEdit.setText(text))
+            self.searchMenu.addAction(self.action)
+        self.searchIcon.setMenu(self.searchMenu)
+
         self.searchDelIcon = QAction(self)
         self.searchDelIcon.setIcon(IconTool.buildQIcon('del.png'))
-        self.searchLineEdit = QLineEdit()
+
         self.searchLineEdit.addAction(self.searchIcon, QLineEdit.LeadingPosition)
         self.searchLineEdit.addAction(self.searchDelIcon, QLineEdit.TrailingPosition)
         self.searchDelIcon.setVisible(False)
         self.searchLineEdit.setStyleSheet("border:2px groove gray;border-radius:10px;padding:2px 4px")
+
         searchPageLayout.addWidget(self.searchLineEdit)
         self.searchLineEdit.textChanged.connect(self.searchPage)
+        self.searchLineEdit.editingFinished.connect(self.saveSearchHistory)
         self.searchDelIcon.triggered.connect(self.searchDelClick)
         self.previousBtn = QPushButton()
         self.previousBtn.setStyleSheet("background:transparent;")
@@ -449,7 +470,7 @@ class MainWindow(BaseWindow):
 
     def clearCache(self):
         r = XulDebugServerHelper.clearAllCaches()
-        if r.status == 200 :
+        if r.status == 200:
             self.statusBar().showMessage('cache cleanup success')
         else:
             self.statusBar().showMessage('cache cleanup failed')
@@ -458,7 +479,6 @@ class MainWindow(BaseWindow):
         file_path = QFileDialog.getSaveFileName(self, 'save file', ConfigHelper.LOGCATPATH,"Txt files(*.txt)")
         if len(file_path[0]) > 0:
             ConfigurationDB.saveConfiguration(ConfigHelper.KEY_LOGCATPATH,file_path[0])
-
 
     @pyqtSlot(QPoint)
     def openContextMenu(self, point):
@@ -629,6 +649,16 @@ class MainWindow(BaseWindow):
         else:
             self.browser.findText(text, QWebEnginePage.FindFlags(0), lambda result: self.changeMatchTip(result))
 
+    def saveSearchHistory(self):
+        text = self.searchLineEdit.text()
+        if text != '' and text not in self.searchHistory:
+            self.action = QAction(text, self, triggered=lambda: self.searchLineEdit.setText(text))
+            self.searchMenu.addAction(self.action)
+            self.searchHistory.append(text)
+
+    def clearSearchHistory(self):
+        self.searchHistory = []
+
     def previousBtnClick(self, text):
         check = self.matchCase.isChecked()
         if check:
@@ -665,3 +695,5 @@ class MainWindow(BaseWindow):
         self.browser.findText("")
         self.matchTips.setText("")
         self.searchWidget.hide()
+
+
